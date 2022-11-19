@@ -82,6 +82,7 @@ DATABASES = {
         'NAME': 'nb',
         'USER': 'root',
         'PASSWORD': '123456',
+        'PORT': '3306',
     }
 }
 
@@ -116,7 +117,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

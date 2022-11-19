@@ -1,2 +1,3 @@
 Django==3.2.16
 mysqlclient==1.4.6
+efinance==0.4.9
