@@ -9,6 +9,7 @@ from public.jwt_sign import create_access_token
 from public.auth_token import auth_token
 from public.conf import ACCESS_TOKEN_EXPIRE_MINUTES, GET, POST
 from public.response import JsonResponse
+from public.log import logger
 
 
 @login_required
@@ -44,3 +45,13 @@ def logout(request):
     auth.logout(request)  # 退出登录
     response = HttpResponseRedirect('/login/action/')
     return response
+
+
+def page_not_found(request, exception, template_name='home/404.html'):
+    logger.error(f"页面出现异常 ===>>> {exception}")
+    return render(request, template_name)
+
+
+def server_error(exception, template_name='home/500.html'):
+    logger.error(f"系统出现异常 ===>>> {exception}")
+    return render(exception, template_name)
