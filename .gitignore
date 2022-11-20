@@ -131,4 +131,5 @@ media/
 .nb/
 .idea/
 tools/
+static/
 __pycache__/

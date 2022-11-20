@@ -15,6 +15,7 @@ class JsonResponse(HttpResponse):
         response["code"] = code
         response["message"] = message
         response["data"] = data
+        self.headers = {}
         super(JsonResponse, self).__init__(json.dumps(response, ensure_ascii=False), content_type="application/json", )
 
     @staticmethod
@@ -38,3 +39,7 @@ class JsonResponse(HttpResponse):
     @staticmethod
     def ServerError(message="系统异常.", data=None):
         return JsonResponse(500, message, data)
+
+    @staticmethod
+    def LoginRepeatException(message="用户已登录.", data=None):
+        return JsonResponse(1001, message, data)

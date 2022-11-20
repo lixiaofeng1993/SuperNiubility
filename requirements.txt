@@ -1,3 +1,5 @@
 Django==3.2.16
 mysqlclient==1.4.6
 efinance==0.4.9
+python-jose==3.3.0
+django-redis==5.2.0

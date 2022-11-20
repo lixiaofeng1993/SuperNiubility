@@ -7,8 +7,10 @@
 # @desc :
 from django.urls import path
 
-from nb import views
+from nb import views, views_api
 
 urlpatterns = [
-    path("shares/<str:beg>/<str:end>", views.shares, name="shares"),
+
+    path("shares/<str:beg>/<str:end>", views_api.shares, name="shares"),
+    path("poetry/random/", views_api.recommend_poetry, name="poetry_random"),
 ]
