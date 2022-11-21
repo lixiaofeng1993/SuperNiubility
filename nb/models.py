@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 import django.utils.timezone as timezone
+from django.contrib.auth.models import User
 
 
 class Author(models.Model):
@@ -66,6 +67,23 @@ class Shares(models.Model):
 
     class Meta:
         db_table = "shares"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
+class ToDo(models.Model):
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    describe = models.TextField(default=None, help_text="待办描述")
+    end_time = models.DateTimeField("截止时间", null=True, help_text="截止时间")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default="", null=True, help_text="用户id")
+    is_delete = models.BooleanField(default=0.00, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    class Meta:
+        db_table = "to_do"
 
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True

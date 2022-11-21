@@ -10,6 +10,9 @@ from django.urls import path
 from nb import views, views_api
 
 urlpatterns = [
+    path("do/", views.ToDOIndex.as_view(), name="to_do"),
+    path("do/add/", views.to_do_add, name="to_do_add"),
+    path("do/edit/<uuid:todo_id>/", views.to_do_edit, name="to_do_edit"),
 
     path("shares/<str:beg>/<str:end>", views_api.shares, name="shares"),
     path("poetry/random/", views_api.recommend_poetry, name="poetry_random"),

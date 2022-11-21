@@ -8,20 +8,21 @@
 from django.core.cache import cache
 
 from public.jwt_sign import get_current_user
+from public.conf import GET
 from public.response import JsonResponse
 
 
 def auth_token():
     def wrap1(view_func):  # page_cache装饰器
         def wrap2(request, *args, **kwargs):
-            access_token = request.META.get("HTTP_AUTHORIZATION")  # Authorization
-            username = get_current_user(token=access_token)
-            token = cache.get(username)
-            if access_token and token and access_token == token:
-                response = view_func(request, *args, **kwargs)
-                return response
-            else:
-                return JsonResponse.Unauthorized()
+            if request.method != GET:
+                access_token = request.META.get("HTTP_AUTHORIZATION")  # Authorization
+                username = get_current_user(token=access_token)
+                token = cache.get(username)
+                if not access_token or not token or access_token != token:
+                    return JsonResponse.Unauthorized()
+            response = view_func(request, *args, **kwargs)
+            return response
 
         return wrap2
 

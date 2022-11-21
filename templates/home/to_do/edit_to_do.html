@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+
+{% block body %}
+    <div role="alert" id="alert">
+
+    </div>
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="nav-item mb-4">待办列表</h6>
+                    <form>
+                        <div class="row mb-5">
+                            <label for="inputEmail3" class="col-sm-2 col-form-label">待办描述</label>
+                            <div class="col-sm-10">
+                                <textarea class="form-control" name="describe">{{ obj.describe }}</textarea>
+                            </div>
+                        </div>
+                        <div class="row mb-5">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">截止日期</label>
+                            <div class="col-sm-10">
+                                <input type="date" class="form-control calender" name="end_time"
+                                       value="{{ obj.end_time }}">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="add_todo();">保存</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        function add_todo() {
+            let describe = $("textarea[name='describe']").val();
+            let end_time = $("input[name='end_time']").val();
+            let ale = $("#alert");
+            if (!describe) {
+                ale.html("待办描述 字段不能为空.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
+            } else if (describe.length < 6) {
+                ale.html("待办描述 字段需要大于6位.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
+            }
+            let todo_id = "{{ obj.id }}"
+            let dataJson = JSON.stringify({
+                "describe": describe,
+                "end_time": end_time,
+                "todo_id": todo_id,
+            })
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "{% url 'to_do_add' %}",
+                headers: {
+                    "Authorization": token
+                },
+                dataType: "json",
+                data: dataJson,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let message = result.message;
+                    if (code === 200) {
+                        ale.html("保存成功.").addClass("alert-success").show().delay(1500).fadeOut();
+                        top.location.href = "{% url 'to_do' %}";
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        top.location.href = "{% url 'login' %}";
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
+    </script>
+{% endblock %}

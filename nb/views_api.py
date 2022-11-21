@@ -6,11 +6,6 @@
 # @Version：V 0.1
 # @desc :
 import efinance as ef
-import json
-from django.shortcuts import render
-from datetime import datetime
-from django.forms.models import model_to_dict
-from django.db.models import Q  # 与或非 查询
 from django.core.cache import cache
 
 from nb.models import Shares, Poetry

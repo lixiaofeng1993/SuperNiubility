@@ -17,6 +17,7 @@
     <!-- Custom-Files -->
     <!-- Bootstrap-Core-CSS -->
     <link rel="stylesheet" href="{% static 'css/login/style.css' %}" type="text/css" media="all"/>
+    <link rel="stylesheet" href="{% static 'css/alert.css' %}" type="text/css" media="all"/>
     <!-- Style-CSS -->
     <!-- font-awesome-icons -->
     <link href="{% static 'css/login/font-awesome.css' %}" rel="stylesheet">
@@ -25,6 +26,7 @@
     <link href="{% static 'css/login/font.css' %}" rel="stylesheet">
     {#    <link href="//fonts.googleapis.com/css?family=Raleway:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700"#}
     {#          rel="stylesheet">#}
+    <!-- Customized Bootstrap Stylesheet -->
     <!-- //Fonts -->
 </head>
 
@@ -37,7 +39,7 @@
             <header>
                 <div class="header-w3layouts">
                     <h1>
-                        <a class="navbar-brand logo" href="">
+                        <a class="navbar-brand logo" href="javascript:void(0);">
                             Super Niubility
                         </a>
                     </h1>
@@ -58,33 +60,34 @@
                 <div class="content-w3layouts-main">
 
                     <div class="form-w3ls-left-info">
-                        <form action="{% url 'login' %}" method="post">
+                        <form action="javascript:void(0);" method="post">
 
 
-                            <input type="text" name="username" placeholder="账户" required/>
+                            <input type="text" name="username" id="username" placeholder="账户" required/>
 
 
-                            <input type="password" name="password" placeholder="密码" required/>
+                            <input type="password" name="password" id="password" placeholder="密码" required/>
 
                             <div class="links">
-                                <p><a href="#">Forgot Password?</a></p>
+                                <p><a href="javascript:void(0);">Forgot Password?</a></p>
 
                             </div>
 
                             <div class="bottom">
-                                <button class="btn" type="submit">Log In</button>
-                                <button class="btn reg" type="reset">Reset</button>
+                                <button class="btn" type="button" onclick="login()">登录</button>
+                                <button class="btn reg" type="reset">重置</button>
                             </div>
                         </form>
                     </div>
                 </div>
-                <p class="errors" style="color: red; font-size: 12px"> {{ error }} </p>
+                <div role="alert" id="alert">
+
+                </div>
             </div>
             <!-- copyright -->
             <div class="copy-w3layouts-inf">
-                <p>© 2022
-                    Super Niubility Login. All rights reserved | Design by
-                    <a href=""> Bruce.</a>
+                <p>© 2022 Super Niubility Login. All rights reserved | Design by
+                    <a href="{% url 'index' %}"> Bruce.</a>
                 </p>
                 <div class="clear"></div>
             </div>
@@ -93,7 +96,6 @@
     </div>
 </div>
 <!-- //main -->
-
 </body>
 <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
 {#<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>#}
@@ -108,6 +110,7 @@
 
     function init() {
         $("#poetry-random").find("p").remove();
+        let ale = $("#alert");
         $.ajax({
             type: "get",
             url: "{% url 'poetry_random' %}",
@@ -123,10 +126,54 @@
                     }
                     $("#poetry-random").append(content)
                 }
+            }, error: function () {
+                ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
             }
         })
     }
 
     init();
+
+    function login() {
+        let username = $("#username").val();
+        let password = $("#password").val();
+        let ale = $("#alert");
+        if (!username || !password) {
+            return
+        } else if (username.length < 6 || password.length < 6) {
+            ale.html("用户名密码不能小于6位.").addClass("alert-warning").show().delay(1500).fadeOut();
+            return
+        }
+        let dataJson = JSON.stringify({
+            "username": username,
+            "password": password,
+        })
+        $.ajax({
+            type: "post",
+            url: "{% url 'login' %}",
+            dataType: "json",
+            data: dataJson,
+            success: function (result) {
+                console.log(result);
+                let message = result.message;
+                let error = result.data.error;
+                let code = result.code;
+                if (code === 200) {
+                    let token = result.data.token;
+                    sessionStorage.setItem(username, token);
+                    ale.html("登录成功.").addClass("alert-success").show().delay(1500).fadeOut();
+                    top.location.href = "{% url 'index' %}";
+                } else if (code === 1002) {
+                    ale.html(error).addClass("alert-warning").show().delay(1500).fadeOut();
+                } else if (code === 1003) {
+                    ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                } else {
+                    ale.html(message).addClass("alert-danger").show().delay(1500).fadeOut();
+                }
+            }, error: function () {
+                ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+            }
+        })
+    }
 </script>
 </html>

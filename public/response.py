@@ -29,7 +29,7 @@ class JsonResponse(HttpResponse):
         return response
 
     @staticmethod
-    def Unauthorized(message="没有权限.", data=None):
+    def Unauthorized(message="未经授权.", data=None):
         return JsonResponse(401, message, data)
 
     @staticmethod
@@ -43,3 +43,19 @@ class JsonResponse(HttpResponse):
     @staticmethod
     def LoginRepeatException(message="用户已登录.", data=None):
         return JsonResponse(1001, message, data)
+
+    @staticmethod
+    def CheckException(message="检查字段存在异常.", data=None):
+        return JsonResponse(1002, message, data)
+
+    @staticmethod
+    def JsonException(message="传参类型错误.", data=None):
+        return JsonResponse(1003, message, data)
+
+    @staticmethod
+    def DatabaseException(message="数据库保存出现错误.", data=None):
+        return JsonResponse(1004, message, data)
+
+    @staticmethod
+    def RepeatException(message="数据重复异常.", data=None):
+        return JsonResponse(1005, message, data)

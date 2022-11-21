@@ -16,6 +16,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 GET = "GET"
 POST = "POST"
 
+# 分页
+NumberOfPages = 10
+
 # redis缓存key
 # 诗词推荐
 RECOMMEND = "RECOMMEND"
