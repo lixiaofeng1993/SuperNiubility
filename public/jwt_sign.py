@@ -11,6 +11,7 @@ from typing import Optional
 from jose import JWTError, jwt
 
 from public.conf import SECRET_KEY, ALGORITHM
+from public.log import logger
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -26,12 +27,15 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 def get_current_user(token: str):
     try:
-        print(token, 1111111111111111111111)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         return username
-    except JWTError:
-        return
+    except JWTError as error:
+        logger.error(f"解析token - JWTError报错 ===>>> {error}")
+        return {"jwt": error}
+    except Exception as error:
+        logger.error(f"解析token报错 ===>>> {error}")
+        return {"error": error}
 
 
 if __name__ == '__main__':

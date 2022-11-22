@@ -153,6 +153,7 @@
             url: "{% url 'login' %}",
             dataType: "json",
             data: dataJson,
+            async: false,
             success: function (result) {
                 console.log(result);
                 let message = result.message;
@@ -163,6 +164,9 @@
                     sessionStorage.setItem(username, token);
                     ale.html("登录成功.").addClass("alert-success").show().delay(1500).fadeOut();
                     top.location.href = "{% url 'index' %}";
+                    setTimeout(function () {
+                        top.location.href = "{% url 'index' %}";
+                    }, 1500);
                 } else if (code === 1002) {
                     ale.html(error).addClass("alert-warning").show().delay(1500).fadeOut();
                 } else if (code === 1003) {

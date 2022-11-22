@@ -18,7 +18,7 @@
                             </div>
                         </div>
                         <div class="row mb-5">
-                            <label for="inputPassword3" class="col-sm-2 col-form-label">截止日期</label>
+                            <label for="inputPassword3" class="col-sm-2 col-form-label" title="默认选中当天日期.">截止日期</label>
                             <div class="col-sm-10">
                                 <input type="date" class="form-control calender" name="end_time">
                             </div>
@@ -52,22 +52,27 @@
             let token = sessionStorage.getItem(username);
             $.ajax({
                 type: "post",
-                url: "{% url 'to_do_add' %}",
+                url: "{% url 'todo_add' %}",
                 headers: {
                     "Authorization": token
                 },
                 dataType: "json",
                 data: dataJson,
+                async: false,
                 success: function (result) {
                     console.log(result);
                     let code = result.code;
                     let message = result.message;
                     if (code === 200) {
                         ale.html("保存成功.").addClass("alert-success").show().delay(1500).fadeOut();
-                        top.location.href = "{% url 'to_do' %}";
+                        setTimeout(function () {
+                            top.location.href = `{% url 'todo' %}`;
+                        }, 1500);
                     } else if (code === 401) {
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
-                        top.location.href = "{% url 'login' %}";
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
                     } else {
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                     }

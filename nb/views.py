@@ -4,11 +4,12 @@ from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
 from django.db.models import Q  # 与或非 查询
+from datetime import date
 
 from nb.models import ToDo
 from public.conf import GET, POST, NumberOfPages
 from public.auth_token import auth_token
-from public.common import handle_json, pagination_data, handle_date
+from public.common import handle_json, pagination_data, handle_model, request_get_search
 from public.response import JsonResponse
 
 
@@ -26,8 +27,8 @@ class ToDOIndex(ListView):
         return super(ToDOIndex, self).dispatch(*args, **kwargs)
 
     def get_queryset(self):
-        todo_list = self.model.objects.filter(is_delete=False)
-        todo_list = handle_date(list(todo_list))
+        todo_list = self.model.objects.filter(is_delete=False).order_by("-create_date")
+        todo_list = handle_model(list(todo_list))
         return todo_list
 
     def get_context_data(self, **kwargs):
@@ -38,13 +39,16 @@ class ToDOIndex(ListView):
         is_paginated = context.get('is_paginated')
         data = pagination_data(paginator, page, is_paginated)
         context.update(data)
+        # 列表序号
         flag = (int(self.page) - 1) * self.paginate_by
-        context.update({'page': self.page, "flag": flag})
+        # 删除跳转页面
+        number = len(self.object_list) % 10
+        context.update({'page': self.page, "flag": flag, "number": number})
         return context
 
 
 @auth_token()
-def to_do_add(request):
+def todo_add(request):
     if request.method == GET:
         return render(request, "home/to_do/add_to_do.html")
     elif request.method == POST:
@@ -54,7 +58,7 @@ def to_do_add(request):
         todo_id = body.get("todo_id")
         describe = body.get("describe")
         end_time = body.get("end_time")
-        end_time = end_time if end_time else None
+        end_time = end_time if end_time else date.today()
         if todo_id:
             if ToDo.objects.filter(describe=describe).exclude(id=todo_id):
                 return JsonResponse.RepeatException()
@@ -75,8 +79,52 @@ def to_do_add(request):
 
 
 @login_required
-def to_do_edit(request, todo_id):
+def todo_edit(request, todo_id):
     if request.method == GET:
+        info = request_get_search(request)
         td = ToDo.objects.get(id=todo_id)
-        data = handle_date(td)
-        return render(request, "home/to_do/edit_to_do.html", {"obj": data})
+        data = handle_model(td)
+        info.update({"obj": data})
+        return render(request, "home/to_do/edit_to_do.html", info)
+
+
+@auth_token()
+def todo_del(request, todo_id):
+    if request.method == POST:
+        td = ToDo.objects.get(id=todo_id)
+        try:
+            td.delete()
+        except Exception as error:
+            return JsonResponse.DatabaseException(data=str(error))
+        return JsonResponse.OK()
+
+
+@auth_token()
+def todo_done(request, todo_id):
+    if request.method == POST:
+        body = handle_json(request)
+        if not body:
+            return JsonResponse.JsonException()
+        flag = body.get("flag")
+        td = ToDo.objects.get(id=todo_id)
+        try:
+            if flag:
+                td.is_done = 0
+            else:
+                td.is_done = 1
+            td.save()
+        except Exception as error:
+            return JsonResponse.DatabaseException(data=str(error))
+        return JsonResponse.OK()
+
+
+@auth_token()
+def todo_find_number(request, number):
+    if request.method == POST:
+        try:
+            todo_list = ToDo.objects.filter(
+                Q(is_delete=False) & Q(end_time=date.today())).order_by("-create_date")[:number]
+        except Exception as error:
+            return JsonResponse.DatabaseException(data=str(error))
+        todo_list = handle_model(list(todo_list.values()))
+        return JsonResponse.OK(data=todo_list)

@@ -18,8 +18,12 @@ def auth_token():
             if request.method != GET:
                 access_token = request.META.get("HTTP_AUTHORIZATION")  # Authorization
                 username = get_current_user(token=access_token)
+                if isinstance(username, dict):
+                    if "jwt" in username.keys():
+                        return JsonResponse.Unauthorized()
+                    return JsonResponse.TokenException()
                 token = cache.get(username)
-                if not access_token or not token or access_token != token:
+                if not token or access_token != token:
                     return JsonResponse.Unauthorized()
             response = view_func(request, *args, **kwargs)
             return response

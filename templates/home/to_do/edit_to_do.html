@@ -24,7 +24,7 @@
                                        value="{{ obj.end_time }}">
                             </div>
                         </div>
-                        <button type="button" class="btn btn-primary" onclick="add_todo();">保存</button>
+                        <button type="button" class="btn btn-primary" onclick="edit_todo();">保存</button>
                     </form>
                 </div>
             </div>
@@ -34,7 +34,7 @@
 
 {% block js %}
     <script>
-        function add_todo() {
+        function edit_todo() {
             let describe = $("textarea[name='describe']").val();
             let end_time = $("input[name='end_time']").val();
             let ale = $("#alert");
@@ -55,22 +55,28 @@
             let token = sessionStorage.getItem(username);
             $.ajax({
                 type: "post",
-                url: "{% url 'to_do_add' %}",
+                url: "{% url 'todo_add' %}",
                 headers: {
                     "Authorization": token
                 },
                 dataType: "json",
                 data: dataJson,
+                async: false,
                 success: function (result) {
                     console.log(result);
                     let code = result.code;
                     let message = result.message;
                     if (code === 200) {
                         ale.html("保存成功.").addClass("alert-success").show().delay(1500).fadeOut();
-                        top.location.href = "{% url 'to_do' %}";
+                        let page = "{{ page }}";
+                        setTimeout(function () {
+                            top.location.href = `{% url 'todo' %}?page=${page}`;
+                        }, 1500);
                     } else if (code === 401) {
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
-                        top.location.href = "{% url 'login' %}";
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
                     } else {
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                     }

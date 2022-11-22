@@ -21,16 +21,60 @@ def handle_json(request):
         return
 
 
-def handle_date(model_obj):
+def format_obj(obj: object):
+    if obj.end_time:
+        obj.end_time = str(obj.end_time).split(" ")[0]
+    if obj.update_date:
+        obj.update_date = obj.update_date.strftime("%Y-%m-%d %H:%M:%S")
+    if obj.create_date:
+        obj.create_date = obj.create_date.strftime("%Y-%m-%d %H:%M:%S")
+    if hasattr(obj, "is_delete"):
+        obj.is_delete = "false"
+    if hasattr(obj, "id"):
+        obj.id = str(obj.id)
+    return obj
+
+
+def handle_model(model_obj):
+    """
+    end_time 时间格式化
+    """
     if isinstance(model_obj, list):
         obj_list = model_obj.copy()
         model_obj = []
         for obj in obj_list:
-            obj.end_time = str(obj.end_time).split(" ")[0]
+            if isinstance(obj, dict):
+                if "end_time" in obj.keys():
+                    obj["end_time"] = str(obj["end_time"]).split(" ")[0]
+                if "update_date" in obj.keys():
+                    obj["update_date"] = obj["update_date"].strftime("%Y-%m-%d %H:%M:%S")
+                if "create_date" in obj.keys():
+                    obj["create_date"] = obj["create_date"].strftime("%Y-%m-%d %H:%M:%S")
+                if "is_delete" in obj.keys():
+                    obj["is_delete"] = "false"
+                if "id" in obj.keys():
+                    obj["id"] = str(obj["id"])
+            else:
+                obj = format_obj(obj)
             model_obj.append(obj)
     else:
-        model_obj.end_time = str(model_obj.end_time).split(" ")[0]
+        model_obj = format_obj(model_obj)
     return model_obj
+
+
+def request_get_search(request) -> dict:
+    """
+    封装获取get请求公共参数
+    :param request:
+    :return:
+    """
+    search_name = request.GET.get('search-input', '')
+    page = request.GET.get('page', '1')
+    info = {
+        'search_name': search_name,
+        'page': page
+    }
+    return info
 
 
 def pagination_data(paginator, page, is_paginated):

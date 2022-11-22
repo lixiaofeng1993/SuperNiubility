@@ -61,7 +61,7 @@ class Shares(models.Model):
     rise_and_fall = models.FloatField(default=0.00, help_text="涨跌幅")
     rise_and_price = models.FloatField(default=0.00, help_text="涨跌额")
     turnover_rate = models.FloatField(default=0.00, help_text="换手率")
-    is_delete = models.BooleanField(default=0.00, help_text="是否删除")
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
     create_date = models.DateTimeField("保存时间", default=timezone.now)
 
@@ -78,7 +78,8 @@ class ToDo(models.Model):
     describe = models.TextField(default=None, help_text="待办描述")
     end_time = models.DateTimeField("截止时间", null=True, help_text="截止时间")
     user = models.ForeignKey(User, on_delete=models.CASCADE, default="", null=True, help_text="用户id")
-    is_delete = models.BooleanField(default=0.00, help_text="是否删除")
+    is_done = models.IntegerField(default=0, help_text="是否完成")  # 0 未完成 1 已完成 2 已过期
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
     create_date = models.DateTimeField("保存时间", default=timezone.now)
 

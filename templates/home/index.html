@@ -2,150 +2,9 @@
 {% load static %}
 {% block body %}
     <h6 class="nav-item" style="display: none;">首页</h6>
-    <div class="container-fluid pt-4 px-4">
-        <div class="row g-4">
-            <div class="col-sm-6 col-xl-3">
-                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                    <i class="fa fa-chart-line fa-3x text-primary"></i>
-                    <div class="ms-3">
-                        <p class="mb-2">Today Sale</p>
-                        <h6 class="mb-0">$1234</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                    <i class="fa fa-chart-bar fa-3x text-primary"></i>
-                    <div class="ms-3">
-                        <p class="mb-2">Total Sale</p>
-                        <h6 class="mb-0">$1234</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                    <i class="fa fa-chart-area fa-3x text-primary"></i>
-                    <div class="ms-3">
-                        <p class="mb-2">Today Revenue</p>
-                        <h6 class="mb-0">$1234</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-xl-3">
-                <div class="bg-light rounded d-flex align-items-center justify-content-between p-4">
-                    <i class="fa fa-chart-pie fa-3x text-primary"></i>
-                    <div class="ms-3">
-                        <p class="mb-2">Total Revenue</p>
-                        <h6 class="mb-0">$1234</h6>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div role="alert" id="alert">
+
     </div>
-    <!-- Sale & Revenue End -->
-
-
-    <!-- Sales Chart Start -->
-    <div class="container-fluid pt-4 px-4">
-        <div class="row g-4">
-            <div class="col-sm-12 col-xl-6">
-                <div class="bg-light text-center rounded p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h6 class="mb-0">Worldwide Sales</h6>
-                        <a href="">Show All</a>
-                    </div>
-                    <canvas id="worldwide-sales"></canvas>
-                </div>
-            </div>
-            <div class="col-sm-12 col-xl-6">
-                <div class="bg-light text-center rounded p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h6 class="mb-0">Salse & Revenue</h6>
-                        <a href="">Show All</a>
-                    </div>
-                    <canvas id="salse-revenue"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Sales Chart End -->
-
-
-    <!-- Recent Sales Start -->
-    <div class="container-fluid pt-4 px-4">
-        <div class="bg-light text-center rounded p-4">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h6 class="mb-0">Recent Salse</h6>
-                <a href="">Show All</a>
-            </div>
-            <div class="table-responsive">
-                <table class="table text-start align-middle table-bordered table-hover mb-0">
-                    <thead>
-                    <tr class="text-dark">
-                        <th scope="col"><input class="form-check-input" type="checkbox"></th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Invoice</th>
-                        <th scope="col">Customer</th>
-                        <th scope="col">Amount</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td><input class="form-check-input" type="checkbox"></td>
-                        <td>01 Jan 2045</td>
-                        <td>INV-0123</td>
-                        <td>Jhon Doe</td>
-                        <td>$123</td>
-                        <td>Paid</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
-                    <tr>
-                        <td><input class="form-check-input" type="checkbox"></td>
-                        <td>01 Jan 2045</td>
-                        <td>INV-0123</td>
-                        <td>Jhon Doe</td>
-                        <td>$123</td>
-                        <td>Paid</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
-                    <tr>
-                        <td><input class="form-check-input" type="checkbox"></td>
-                        <td>01 Jan 2045</td>
-                        <td>INV-0123</td>
-                        <td>Jhon Doe</td>
-                        <td>$123</td>
-                        <td>Paid</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
-                    <tr>
-                        <td><input class="form-check-input" type="checkbox"></td>
-                        <td>01 Jan 2045</td>
-                        <td>INV-0123</td>
-                        <td>Jhon Doe</td>
-                        <td>$123</td>
-                        <td>Paid</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
-                    <tr>
-                        <td><input class="form-check-input" type="checkbox"></td>
-                        <td>01 Jan 2045</td>
-                        <td>INV-0123</td>
-                        <td>Jhon Doe</td>
-                        <td>$123</td>
-                        <td>Paid</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <!-- Recent Sales End -->
-
-
-    <!-- Widgets Start -->
     <div class="container-fluid pt-4 px-4">
         <div class="row g-4">
             <div class="col-sm-12 col-md-6 col-xl-4">
@@ -187,24 +46,12 @@
                             <span>Short message goes here...</span>
                         </div>
                     </div>
-                    <div class="d-flex align-items-center pt-3">
-                        <img class="rounded-circle flex-shrink-0" src="{% static 'images/user.jpg' %}" alt=""
-                             style="width: 40px; height: 40px;">
-                        <div class="w-100 ms-3">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-0">Jhon Doe</h6>
-                                <small>15 minutes ago</small>
-                            </div>
-                            <span>Short message goes here...</span>
-                        </div>
-                    </div>
                 </div>
             </div>
             <div class="col-sm-12 col-md-6 col-xl-4">
                 <div class="h-100 bg-light rounded p-4">
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h6 class="mb-0">Calender</h6>
-                        <a href="">Show All</a>
+                        <h6 class="mb-0">日历</h6>
                     </div>
                     <div id="calender"></div>
                 </div>
@@ -212,60 +59,196 @@
             <div class="col-sm-12 col-md-6 col-xl-4">
                 <div class="h-100 bg-light rounded p-4">
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h6 class="mb-0">To Do List</h6>
-                        <a href="">Show All</a>
+                        <h6 class="mb-0">今日待办</h6>
+                        <a href="{% url 'todo' %}"><i class="fa fa-angle-double-right"></i></a>
                     </div>
                     <div class="d-flex mb-2">
-                        <input class="form-control bg-transparent" type="text" placeholder="Enter task">
-                        <button type="button" class="btn btn-primary ms-2">Add</button>
+                        <input class="form-control bg-transparent" type="text" placeholder="待办描述" name="describe">
+                        <button type="button" class="btn btn-primary ms-2" onclick="add_today_todo()">Add</button>
                     </div>
-                    <div class="d-flex align-items-center border-bottom py-2">
-                        <input class="form-check-input m-0" type="checkbox">
-                        <div class="w-100 ms-3">
-                            <div class="d-flex w-100 align-items-center justify-content-between">
-                                <span>Short task goes here...</span>
-                                <button class="btn btn-sm"><i class="fa fa-times"></i></button>
-                            </div>
+                    <div id="todo_five">
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">Testimonial</h6>
+                    <div class="owl-carousel testimonial-carousel">
+                        <div class="testimonial-item text-center">
+                            <img class="img-fluid rounded-circle mx-auto mb-4" src="{% static 'images/user.jpg' %}"
+                                 style="width: 100px; height: 100px;">
+                            <h5 class="mb-1">Client Name</h5>
+                            <p>Profession</p>
+                            <p class="mb-0">Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet
+                                eirmod eos labore diam</p>
                         </div>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2">
-                        <input class="form-check-input m-0" type="checkbox">
-                        <div class="w-100 ms-3">
-                            <div class="d-flex w-100 align-items-center justify-content-between">
-                                <span>Short task goes here...</span>
-                                <button class="btn btn-sm"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2">
-                        <input class="form-check-input m-0" type="checkbox" checked>
-                        <div class="w-100 ms-3">
-                            <div class="d-flex w-100 align-items-center justify-content-between">
-                                <span><del>Short task goes here...</del></span>
-                                <button class="btn btn-sm text-primary"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2">
-                        <input class="form-check-input m-0" type="checkbox">
-                        <div class="w-100 ms-3">
-                            <div class="d-flex w-100 align-items-center justify-content-between">
-                                <span>Short task goes here...</span>
-                                <button class="btn btn-sm"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center pt-2">
-                        <input class="form-check-input m-0" type="checkbox">
-                        <div class="w-100 ms-3">
-                            <div class="d-flex w-100 align-items-center justify-content-between">
-                                <span>Short task goes here...</span>
-                                <button class="btn btn-sm"><i class="fa fa-times"></i></button>
-                            </div>
+                        <div class="testimonial-item text-center">
+                            <img class="img-fluid rounded-circle mx-auto mb-4" src="{% static 'images/user.jpg' %}"
+                                 style="width: 100px; height: 100px;">
+                            <h5 class="mb-1">Client Name</h5>
+                            <p>Profession</p>
+                            <p class="mb-0">Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet
+                                eirmod eos labore diam</p>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+
+                </div>
+            </div>
         </div>
     </div>
+{% endblock %}
+{% block js %}
+    <script>
+        function todo_number() {
+            let ale = $("#alert");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "/nb/do/5/",
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let message = result.message;
+                    let data = result.data;
+                    if (code === 200) {
+                        let content = "";
+                        let todo = $("#todo_five");
+                        for (let i = 0; i < data.length; i++) {
+                            if (data[i].is_done === 1) {
+                                content += '<div class="d-flex align-items-center border-bottom py-2">' +
+                                    `<input class="form-check-input m-0" type="checkbox" onclick="todo_done('${data[i].id}', true)">` +
+                                    '<div class="w-100 ms-3">' +
+                                    '<div class="d-flex w-100 align-items-center justify-content-between">' +
+                                    `<span id="cen"><del>${data[i].describe}</del></span>` +
+                                    '</div></div></div>';
+                            } else {
+                                content += '<div class="d-flex align-items-center border-bottom py-2">' +
+                                    `<input class="form-check-input m-0" type="checkbox" onclick="todo_done('${data[i].id}', false)">` +
+                                    '<div class="w-100 ms-3">' +
+                                    '<div class="d-flex w-100 align-items-center justify-content-between">' +
+                                    `<span id="cen">${data[i].describe}</span>` +
+                                    '</div></div></div>';
+                            }
+                        }
+                        todo.append(content);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
+
+        todo_number();
+
+        function todo_done(todo_id, flag) {
+            let text = "";
+            if (flag) {
+                text = "请确认标记未完成.";
+            } else {
+                text = "请确认标记已完成."
+            }
+            let dataJson = JSON.stringify({"flag": flag});
+            if (window.confirm(text)) {
+                let ale = $("#alert");
+                let username = "{{ user.username }}";
+                let token = sessionStorage.getItem(username);
+                $.ajax({
+                    type: "post",
+                    url: `/nb/do/done/${todo_id}/`,
+                    headers: {
+                        "Authorization": token
+                    },
+                    dataType: "json",
+                    data: dataJson,
+                    async: false,
+                    success: function (result) {
+                        let code = result.code
+                        let message = result.message
+                        if (code === 200) {
+                            ale.html("标记成功.").addClass("alert-success").show().delay(1500).fadeOut();
+                            setTimeout(function () {
+                                top.location.href = `{% url 'index' %}`
+                            }, 1500);
+                        } else if (code === 401) {
+                            ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                            setTimeout(function () {
+                                top.location.href = "{% url 'login' %}";
+                            }, 1500);
+                        } else {
+                            ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        }
+                    }, error: function () {
+                        ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                    }
+                })
+            } else {
+                return false;//取消
+            }
+        }
+
+        function add_today_todo() {
+            let describe = $("input[name='describe']").val();
+            let ale = $("#alert");
+            if (!describe) {
+                ale.html("待办描述 字段不能为空.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
+            } else if (describe.length < 6) {
+                ale.html("待办描述 字段需要大于6位.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
+            }
+            let dataJson = JSON.stringify({
+                "describe": describe,
+            })
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "{% url 'todo_add' %}",
+                headers: {
+                    "Authorization": token
+                },
+                dataType: "json",
+                data: dataJson,
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let message = result.message;
+                    if (code === 200) {
+                        ale.html("保存成功.").addClass("alert-success").show().delay(1500).fadeOut();
+                        let page = "{{ page }}";
+                        setTimeout(function () {
+                            top.location.href = `{% url 'index' %}`;
+                        }, 1500);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
+    </script>
 {% endblock %}

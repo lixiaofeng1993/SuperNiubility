@@ -53,9 +53,13 @@ class JsonResponse(HttpResponse):
         return JsonResponse(1003, message, data)
 
     @staticmethod
-    def DatabaseException(message="数据库保存出现错误.", data=None):
+    def DatabaseException(message="操作数据库出现错误.", data=None):
         return JsonResponse(1004, message, data)
 
     @staticmethod
     def RepeatException(message="数据重复异常.", data=None):
         return JsonResponse(1005, message, data)
+
+    @staticmethod
+    def TokenException(message="token参数错误.", data=None):
+        return JsonResponse(1006, message, data)
