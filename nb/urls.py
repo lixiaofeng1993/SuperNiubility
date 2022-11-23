@@ -15,6 +15,7 @@ urlpatterns = [
     path("do/edit/<uuid:todo_id>/", views.todo_edit, name="todo_edit"),
     path("do/del/<uuid:todo_id>/", views.todo_del, name="todo_del"),
     path("do/done/<uuid:todo_id>/", views.todo_done, name="todo_done"),
+    path("do/home/<uuid:todo_id>/", views.todo_home, name="todo_home"),
     path("do/<int:number>/", views.todo_find_number, name="todo_number"),
 
     path("shares/<str:beg>/<str:end>", views_api.shares, name="shares"),

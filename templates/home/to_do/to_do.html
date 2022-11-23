@@ -28,26 +28,28 @@
                             <tbody>
                             {% for object in object_list %}
                                 <tr>
-                                    <th scope="row">{{ forloop.counter|add:flag }}</th>
+                                    <th scope="row" id="cen">{{ forloop.counter|add:flag }}</th>
                                     <td id="cen">{{ object.describe }}</td>
                                     {% if object.end_time != None %}
-                                        <td>{{ object.end_time }}</td>
+                                        <td id="cen">{{ object.end_time }}</td>
                                     {% else %}
-                                        <td>-</td>
+                                        <td id="cen">-</td>
                                     {% endif %}
                                     {% if object.is_done == 0 %}
                                         <td style="color: orange;" onclick="todo_done('{{ object.id }}', false)"
+                                            id="cen"
                                             title="未完成">
                                             <i class="fa fa-minus-square"></i>
                                         </td>
                                     {% elif object.is_done == 1 %}
-                                        <td style="color: green;" onclick="todo_done('{{ object.id }}', true)"
+                                        <td style="color: green;" onclick="todo_done('{{ object.id }}', true)" id="cen"
                                             title="已完成">
                                             <i class="fa fa-check-square"></i></td>
                                     {% elif object.is_done == 2 %}
-                                        <td style="color: red;" title="已过期"><i class="fa fa-window-close"></i></td>
+                                        <td style="color: red;" title="已过期" id="cen"><i class="fa fa-window-close"></i>
+                                        </td>
                                     {% else %}
-                                        <td>-</td>
+                                        <td id="cen">-</td>
                                     {% endif %}
                                     <td>
                                         <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
@@ -180,7 +182,7 @@
             if (window.confirm("请确认删除.")) {
                 let ale = $("#alert");
                 // 删除跳转页面
-                let page = "{{ number }}";
+                let page = "{{ page }}";
                 let username = "{{ user.username }}";
                 let token = sessionStorage.getItem(username);
                 $.ajax({

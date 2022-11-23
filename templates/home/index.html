@@ -130,6 +130,7 @@
                                     '<div class="w-100 ms-3">' +
                                     '<div class="d-flex w-100 align-items-center justify-content-between">' +
                                     `<span id="cen"><del>${data[i].describe}</del></span>` +
+                                    `<button class="btn btn-sm" onclick="del_home('${data[i].id}')"><i class="fa fa-times"></i></button>` +
                                     '</div></div></div>';
                             } else {
                                 content += '<div class="d-flex align-items-center border-bottom py-2">' +
@@ -137,6 +138,7 @@
                                     '<div class="w-100 ms-3">' +
                                     '<div class="d-flex w-100 align-items-center justify-content-between">' +
                                     `<span id="cen">${data[i].describe}</span>` +
+                                    `<button class="btn btn-sm" onclick="del_home('${data[i].id}')"><i class="fa fa-times"></i></button>` +
                                     '</div></div></div>';
                             }
                         }
@@ -249,6 +251,46 @@
                     ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
                 }
             })
+        }
+
+        function del_home(todo_id) {
+            if (window.confirm("请确认不再展示到首页.")) {
+                let ale = $("#alert");
+                let username = "{{ user.username }}";
+                let token = sessionStorage.getItem(username);
+                $.ajax({
+                    type: "post",
+                    url: `/nb/do/home/${todo_id}/`,
+                    headers: {
+                        "Authorization": token
+                    },
+                    async: false,
+                    success: function (result) {
+                        console.log(result);
+                        let code = result.code
+                        let message = result.message
+                        if (code === 200) {
+                            ale.html("操作成功.").addClass("alert-success").show().delay(1500).fadeOut();
+                            setTimeout(function () {
+                                top.location.href = `{% url 'index' %}`
+                            }, 1500);
+                        } else if (code === 400) {
+                            ale.html("请先标记已完成.").addClass("alert-warning").show().delay(1500).fadeOut();
+                        } else if (code === 401) {
+                            ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                            setTimeout(function () {
+                                top.location.href = "{% url 'login' %}";
+                            }, 1500);
+                        } else {
+                            ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        }
+                    }, error: function () {
+                        ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                    }
+                })
+            } else {
+                return false;//取消
+            }
         }
     </script>
 {% endblock %}

@@ -6,6 +6,7 @@ from django.forms.models import model_to_dict
 from django.db.models import Q  # 与或非 查询
 from datetime import date
 
+from .tasks import make_overdue_todo
 from nb.models import ToDo
 from public.conf import GET, POST, NumberOfPages
 from public.auth_token import auth_token
@@ -43,7 +44,9 @@ class ToDOIndex(ListView):
         flag = (int(self.page) - 1) * self.paginate_by
         # 删除跳转页面
         number = len(self.object_list) % 10
-        context.update({'page': self.page, "flag": flag, "number": number})
+        if number == 1:
+            self.page = int(self.page) - 1
+        context.update({'page': self.page, "flag": flag})
         return context
 
 
@@ -119,11 +122,28 @@ def todo_done(request, todo_id):
 
 
 @auth_token()
+def todo_home(request, todo_id):
+    if request.method == POST:
+        td = ToDo.objects.get(id=todo_id)
+        print(td.is_done)
+        if td.is_done == 0:
+            return JsonResponse.BadRequest()
+        try:
+            td.is_home = True
+            td.save()
+        except Exception as error:
+            return JsonResponse.DatabaseException(data=str(error))
+        return JsonResponse.OK()
+
+
+@auth_token()
 def todo_find_number(request, number):
     if request.method == POST:
         try:
-            todo_list = ToDo.objects.filter(
-                Q(is_delete=False) & Q(end_time=date.today())).order_by("-create_date")[:number]
+            todo_list = ToDo.objects.filter(Q(is_delete=False) &
+                                            Q(is_home=False) &
+                                            (Q(is_done=0) | Q(is_done=1)) &
+                                            Q(end_time=date.today())).order_by("-create_date")[:number]
         except Exception as error:
             return JsonResponse.DatabaseException(data=str(error))
         todo_list = handle_model(list(todo_list.values()))

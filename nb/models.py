@@ -79,6 +79,7 @@ class ToDo(models.Model):
     end_time = models.DateTimeField("截止时间", null=True, help_text="截止时间")
     user = models.ForeignKey(User, on_delete=models.CASCADE, default="", null=True, help_text="用户id")
     is_done = models.IntegerField(default=0, help_text="是否完成")  # 0 未完成 1 已完成 2 已过期
+    is_home = models.BooleanField(default=False, help_text="是否展示到首页")
     is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
     create_date = models.DateTimeField("保存时间", default=timezone.now)

@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 import platform
+import django_celery_beat
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat',
     'nb',
 ]
 
@@ -144,3 +147,29 @@ STATICFILES_DIRS = (
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 定时任务
+# Broker配置，使用Redis作为消息中间件
+BROKER_URL = 'redis://:123456@127.0.0.1:6379/0'
+
+# BACKEND配置，这里使用redis
+CELERY_RESULT_BACKEND = 'redis://:123456@127.0.0.1:6379/0'
+
+# 结果序列化方案
+CELERY_RESULT_SERIALIZER = 'json'
+
+# 任务结果过期时间，秒
+CELERY_TASK_RESULT_EXPIRES = 60 * 60 * 24
+
+# 时区配置
+CELERY_TIMEZONE = 'Asia/Shanghai'
+
+# CELERYBEAT_SCHEDULE = {
+#     'make_overdue_todo': {
+#         # 任务路径
+#         'task': 'nb.tasks.make_overdue_todo',
+#         # 每30秒执行一次
+#         'schedule': 5,
+#         'args': (14, 5)
+#     }
+# }
