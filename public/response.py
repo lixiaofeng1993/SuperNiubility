@@ -63,3 +63,7 @@ class JsonResponse(HttpResponse):
     @staticmethod
     def TokenException(message="token参数错误.", data=None):
         return JsonResponse(1006, message, data)
+
+    @staticmethod
+    def EqualException(message="数据不相等异常.", data=None):
+        return JsonResponse(1007, message, data)

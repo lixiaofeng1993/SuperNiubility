@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+{% load static %}
+{% block body %}
+    <div role="alert" id="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="bg-light rounded h-100 p-4">
+                <h6 class="nav-item">股票分析</h6>
+                <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
+                   href="{% url 'stock_add' %}?page={{ page }}">
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                </a>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">持仓股票</th>
+                            <th scope="col">股票代码</th>
+                            <th scope="col">持仓数量</th>
+                            <th scope="col">持仓成本</th>
+                            <th scope="col">持仓盈亏</th>
+                            <th scope="col">持仓天数</th>
+                            <th scope="col">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for object in object_list %}
+                            <tr>
+                                <th scope="row" id="cen">{{ forloop.counter|add:flag }}</th>
+                                <td id="cen">{{ object.name }}</td>
+                                <td id="cen">{{ object.code }}</td>
+                                <td id="cen">{{ object.number }}</td>
+                                <td id="cen">{{ object.cost_price }}</td>
+                                {% if object.profit_and_loss %}
+                                    {% if object.profit_and_loss < 0 %}
+                                        <td id="cen" style="color: green;font-weight: 900;">{{ object.profit_and_loss }}</td>
+                                    {% elif object.profit_and_loss == 0 %}
+                                        <td id="cen">{{ object.profit_and_loss }}</td>
+                                    {% else %}
+                                        <td id="cen" style="color: red;font-weight: 900;">{{ object.profit_and_loss }}</td>
+                                    {% endif %}
+
+                                {% else %}
+                                    <td id="cen">-</td>
+                                {% endif %}
+                                <td id="cen">{{ object.days }}</td>
+                                <td>
+                                    <button class="btn btn-square btn-outline-primary m-2" title="导入历史数据."
+                                            onclick="return import_data('{{ object.id }}');">
+                                        <i class="fa fa-spinner"></i>
+                                    </button>
+                                    <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
+                                       href="/nb/do/edit/{{ object.id }}/?page={{ page }}">
+                                        <i class="fa fa-paint-brush"></i>
+                                    </a>
+                                    <button class="btn btn-square btn-outline-danger m-2"
+                                            onclick="return todo_del('{{ object.id }}');">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% if is_paginated %}
+            <ul class="pagination">
+                {% if first %}
+                    {% if search_name %}
+                        <li class="page"><a href="?search-input={{ search_name }}&&page=1">1</a>
+                        </li>
+                    {% else %}
+                        <li class="page"><a href="?page=1">1</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+                {% if left %}
+                    {% if left_has_more %}
+                        <li class="page"><a href="javascript:void(0)">...</a></li>
+                    {% endif %}
+                    {% for i in left %}
+                        {% if search_name %}
+                            <li class="page"><a
+                                    href="?search-input={{ search_name }}&&page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page"><a href="?page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                <li class="page"><a href="javascript:void(0)"
+                                    class="active" id="page"> {{ page_obj.number }}</a></li>
+                {% if right %}
+                    {% for i in right %}
+                        {% if search_name %}
+                            <li class="page"><a
+                                    href="?search-input={{ search_name }}&&page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page"><a href="?page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if right_has_more %}
+                        <li class="page"><a href="javascript:void(0)">...</a></li>
+                    {% endif %}
+                {% endif %}
+                {% if last %}
+                    {% if search_name %}
+                        <li class="page"><a
+                                href="?search-input={{ search_name }}&&page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page"><a
+                                href="?page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+        {% endif %}
+    </div>
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">今日走势</h6>
+                    <canvas id="today"></canvas>
+                </div>
+            </div>
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4" id="five-day"></h6>
+                    <canvas id="five-days"></canvas>
+                </div>
+            </div>
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4" id="ten-day"></h6>
+                    <canvas id="ten-days"></canvas>
+                </div>
+            </div>
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4" id="all-day"></h6>
+                    <canvas id="all-days"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'lib/chart/chart.min.js' %}"></script>
+    <script>
+        function List() {
+            this.dataStore = [];
+            this.append = function (data) {
+                //根据当前数组的长度插入新的数据
+                this.dataStore[this.length()] = data;
+            }
+            this.length = function () {
+                //获得数组的长度
+                var length = this.dataStore.length;
+                return length;
+            }
+            //如果找到当前的数据，就返回当前数据的下标，如果没有找到数据就返回-1
+            this.find = function (data) {
+                //1,获得数组的长度
+                var length = this.length();
+                //2,设置返回数据的下标
+                var index = -1;
+                //3,遍历数据
+                for (var i = 0; i < length; i++) {
+                    if (data == this.dataStore[i]) {
+                        index = i;
+                        return index;
+                    }
+                }
+                return index;
+            }
+            this.forEach = function (call) {
+                //1,获得数组的长度
+                var length = this.length();
+                //2,遍历数据
+                for (var i = 0; i < length; i++) {
+                    call(this.dataStore[i]);
+                }
+            }
+            //在after后面插入数据,如果after有数据，就插入在after后面，如果after没有数据，就把data插入到最后面的数据
+            this.insert = function (data, after) {
+                //找到当前after数据的下标
+                var index = this.find(after);
+                if (index == -1) {
+                    //向队列后面添加数据
+                    this.append(data);
+                } else {
+                    var length = this.length();
+                    for (var i = length - 1; i > index; i--) {
+                        this.dataStore[i + 1] = this.dataStore[i]
+                    }
+                    this.dataStore[index + 1] = data;
+                }
+            }
+        }
+
+        function import_data(hold_id) {
+            if (window.confirm("请确认导入数据.")) {
+                let ale = $("#alert");
+                // 删除跳转页面
+                let page = "{{ page }}";
+                let username = "{{ user.username }}";
+                let token = sessionStorage.getItem(username);
+                $.ajax({
+                    type: "post",
+                    url: `/nb/stock/import/${hold_id}/`,
+                    headers: {
+                        "Authorization": token
+                    },
+                    async: false,
+                    success: function (result) {
+                        let code = result.code
+                        let message = result.message
+                        if (code === 200) {
+                            ale.html("异步导入中，稍后刷新查看.").addClass("alert-success").show().delay(1500).fadeOut();
+                            setTimeout(function () {
+                                top.location.href = `{% url 'stock' %}?page=${page}`
+                            }, 1500);
+                        } else if (code === 401) {
+                            ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                            setTimeout(function () {
+                                top.location.href = "{% url 'login' %}";
+                            }, 1500);
+                        } else {
+                            ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        }
+                    }, error: function () {
+                        ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                    }
+                })
+            } else {
+                return false;//取消
+            }
+        }
+
+        function TodayChart() {
+            let ale = $("#alert");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "{% url 'day_chart' %}",
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let message = result.message;
+                    if (code === 200) {
+                        let chart_obj = $("#today").get(0).getContext("2d");
+                        let labels = result.data.labels;
+                        let data = result.data;
+                        let datasets = new List();
+                        for (const key in data) {
+                            if (key !== "labels" && key !== "days") {
+                                let borderColor = data[key].color;
+                                datasets.append({
+                                    label: key,
+                                    data: data[key].data,
+                                    fill: false,
+                                    tension: 0.1,
+                                    borderColor: borderColor
+                                })
+                            }
+                        }
+                        let data_dict = {
+                            labels: labels,
+                            datasets: datasets.dataStore
+                        }
+                        let config = {
+                            type: 'line', // 设置图表类型
+                            data: data_dict,
+                        };
+                        new Chart(chart_obj, config);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }
+
+            })
+        }
+
+        function FiveDayChart() {
+            let ale = $("#alert");
+            let fiveDay = $("#five-day");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "{% url 'five_chart' %}",
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let message = result.message;
+                    if (code === 200) {
+                        let chart_obj = $("#five-days").get(0).getContext("2d");
+                        let labels = result.data.labels;
+                        let data = result.data;
+                        let days = result.data.days;
+                        let datasets = new List();
+                        fiveDay.text(`${days}日走势`)
+                        for (const key in data) {
+                            if (key !== "labels" && key !== "days") {
+                                let borderColor = data[key].color;
+                                datasets.append({
+                                    label: key,
+                                    data: data[key].data,
+                                    fill: false,
+                                    tension: 0.1,
+                                    borderColor: borderColor
+                                })
+                            }
+                        }
+                        let data_dict = {
+                            labels: labels,
+                            datasets: datasets.dataStore
+                        }
+                        let config = {
+                            type: 'line', // 设置图表类型
+                            data: data_dict,
+                        };
+                        new Chart(chart_obj, config);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }
+            })
+        }
+
+        function TenDayChart() {
+            let ale = $("#alert");
+            let tenDay = $("#ten-day");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "{% url 'ten_chart' %}",
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let message = result.message;
+                    if (code === 200) {
+                        let chart_obj = $("#ten-days").get(0).getContext("2d");
+                        let labels = result.data.labels;
+                        let data = result.data;
+                        let days = result.data.days;
+                        let datasets = new List();
+                        tenDay.text(`${days}日走势`)
+                        for (const key in data) {
+                            if (key !== "labels" && key !== "days") {
+                                let borderColor = data[key].color;
+                                datasets.append({
+                                    label: key,
+                                    data: data[key].data,
+                                    fill: false,
+                                    tension: 0.1,
+                                    borderColor: borderColor
+                                })
+                            }
+                        }
+                        let data_dict = {
+                            labels: labels,
+                            datasets: datasets.dataStore
+                        }
+                        let config = {
+                            type: 'line', // 设置图表类型
+                            data: data_dict,
+                        };
+                        new Chart(chart_obj, config);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }
+            })
+        }
+
+        function AllDayChart() {
+            let ale = $("#alert");
+            let allDay = $("#all-day");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "{% url 'half_year_chart' %}",
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let message = result.message;
+                    if (code === 200) {
+                        let chart_obj = $("#all-days").get(0).getContext("2d");
+                        let labels = result.data.labels;
+                        let data = result.data;
+                        let days = result.data.days;
+                        let datasets = new List();
+                        allDay.text(`${days}日走势`)
+                        for (const key in data) {
+                            if (key !== "labels" && key !== "days") {
+                                let borderColor = data[key].color;
+                                datasets.append({
+                                    label: key,
+                                    data: data[key].data,
+                                    fill: false,
+                                    tension: 0.1,
+                                    borderColor: borderColor
+                                })
+                            }
+                        }
+                        let data_dict = {
+                            labels: labels,
+                            datasets: datasets.dataStore
+                        }
+                        let config = {
+                            type: 'line', // 设置图表类型
+                            data: data_dict,
+                        };
+                        new Chart(chart_obj, config);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }
+            })
+        }
+
+        AllDayChart();
+        TenDayChart();
+        FiveDayChart();
+        TodayChart();
+    </script>
+{% endblock %}

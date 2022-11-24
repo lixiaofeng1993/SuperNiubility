@@ -18,6 +18,16 @@ urlpatterns = [
     path("do/home/<uuid:todo_id>/", views.todo_home, name="todo_home"),
     path("do/<int:number>/", views.todo_find_number, name="todo_number"),
 
-    path("shares/<str:beg>/<str:end>", views_api.shares, name="shares"),
+    path("stock/", views.StockIndex.as_view(), name="stock"),
+    path("stock/add/", views.stock_add, name="stock_add"),
+    path("stock/import/<uuid:hold_id>/", views.stock_import, name="stock_import"),
+    path("stock/year/chart/", views.half_year_chart, name="half_year_chart"),
+    path("stock/day/chart/", views.day_chart, name="day_chart"),
+    path("stock/five/chart/", views.five_chart, name="five_chart"),
+    path("stock/ten/chart/", views.ten_chart, name="ten_chart"),
+
+    path("shares/<str:beg>/<str:end>/", views_api.shares, name="shares"),
+    path("shares/today/", views_api.shares_today, name="shares_today"),
+
     path("poetry/random/", views_api.recommend_poetry, name="poetry_random"),
 ]

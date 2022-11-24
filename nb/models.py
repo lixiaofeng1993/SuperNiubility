@@ -46,10 +46,30 @@ class Poetry(models.Model):
         self.save()
 
 
+class SharesHold(models.Model):
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, null=False, help_text="持仓股票名称")
+    code = models.CharField(max_length=20, null=False, help_text="持仓股票代码")
+    number = models.IntegerField(default=0, null=False, help_text="持仓数量")
+    cost_price = models.FloatField(default=0.00, null=False, help_text="成本价")
+    profit_and_loss = models.FloatField(default=0.00, null=True, help_text="持仓盈亏")
+    color = models.CharField(max_length=20, default="green", null=True, help_text="折线颜色")
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    class Meta:
+        db_table = "shares_hold"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
 class Shares(models.Model):
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=20, null=False, help_text="股票名称")
-    code = models.CharField(max_length=20, null=False, help_text="股票代码")
+    name = models.CharField(max_length=20, default=None, help_text="股票名称")
+    code = models.CharField(max_length=20, default=None, help_text="股票代码")
     date_time = models.CharField(max_length=20, null=False, help_text="股票日期")
     open_price = models.FloatField(default=0.00, help_text="开盘价格")
     new_price = models.FloatField(default=0.00, help_text="收盘价格")
@@ -64,6 +84,7 @@ class Shares(models.Model):
     is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
     create_date = models.DateTimeField("保存时间", default=timezone.now)
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
 
     class Meta:
         db_table = "shares"

@@ -22,7 +22,7 @@ def handle_json(request):
 
 
 def format_obj(obj: object):
-    if obj.end_time:
+    if hasattr(obj, "end_time"):
         obj.end_time = str(obj.end_time).split(" ")[0]
     if obj.update_date:
         obj.update_date = obj.update_date.strftime("%Y-%m-%d %H:%M:%S")

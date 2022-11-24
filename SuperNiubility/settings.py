@@ -162,14 +162,21 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_RESULT_EXPIRES = 60 * 60 * 24
 
 # 时区配置
-CELERY_TIMEZONE = 'Asia/Shanghai'
+# CELERY_TIMEZONE = 'Asia/Shanghai'
 
-# CELERYBEAT_SCHEDULE = {
-#     'make_overdue_todo': {
-#         # 任务路径
-#         'task': 'nb.tasks.make_overdue_todo',
-#         # 每30秒执行一次
-#         'schedule': 5,
-#         'args': (14, 5)
-#     }
-# }
+CELERYBEAT_SCHEDULE = {
+    'make_overdue_todo': {
+        # 任务路径
+        'task': 'nb.tasks.make_overdue_todo',
+        'schedule': crontab(minute=50, hour=23),
+        # 'schedule': 5,
+        'args': (),
+    },
+    'stock_today': {
+        # 任务路径
+        'task': 'nb.tasks.stock_today',
+        # 'schedule': crontab(minute=10, hour=15),
+        'schedule': 5 * 10,
+        'args': (),
+    }
+}
