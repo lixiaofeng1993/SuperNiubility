@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+
+{% block body %}
+    <div role="alert" id="alert">
+
+    </div>
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="nav-item mb-4">股票分析</h6>
+                    <form>
+                        <div class="row mb-5">
+                            <label for="inputEmail3" class="col-sm-2 col-form-label">持仓股票</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control calender" name="name" value="{{ obj.name }}">
+                            </div>
+                        </div>
+                        <div class="row mb-5">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">股票代码</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control calender" name="code" value="{{ obj.code }}">
+                            </div>
+                        </div>
+                        <div class="row mb-5">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">持仓数量</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control calender" name="number" value="{{ obj.number }}">
+
+                            </div>
+                        </div>
+                        <div class="row mb-5">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">持仓成本</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control calender" name="cost_price" value="{{ obj.cost_price }}">
+                            </div>
+                        </div>
+                        <div class="row mb-5">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">线条颜色</label>
+                            <div class="col-sm-10">
+                                <input type="color" class="form-control calender" name="color" value="{{ obj.color }}">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="edit_stock();">保存</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        function edit_stock() {
+            let name = $("input[name='name']").val();
+            let code = $("input[name='code']").val();
+            let number = $("input[name='number']").val();
+            let cost_price = $("input[name='cost_price']").val();
+            let color = $("input[name='color']").val();
+            let ale = $("#alert");
+            let stock_id = "{{ obj.id }}"
+            if (!name || !code || !number || !cost_price | !color) {
+                ale.html("字段不能为空.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
+            }
+            let dataJson = JSON.stringify({
+                "name": name,
+                "code": code,
+                "number": number,
+                "cost_price": cost_price,
+                "color": color,
+                "stock_id": stock_id,
+            })
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "{% url 'stock_add' %}",
+                headers: {
+                    "Authorization": token
+                },
+                dataType: "json",
+                data: dataJson,
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let message = result.message;
+                    if (code === 200) {
+                        let page = "{{ page }}";
+                        ale.html("保存成功.").addClass("alert-success").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = `{% url 'stock' %}?page=${page}`;
+                        }, 1500);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
+    </script>
+{% endblock %}

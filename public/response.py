@@ -67,3 +67,7 @@ class JsonResponse(HttpResponse):
     @staticmethod
     def EqualException(message="数据不相等异常.", data=None):
         return JsonResponse(1007, message, data)
+
+    @staticmethod
+    def TimeException(message="时间错误.", data=None):
+        return JsonResponse(1008, message, data)

@@ -2,127 +2,143 @@
 {% load static %}
 {% block body %}
     <div role="alert" id="alert"></div>
-
-    <div class="row g-4">
-        <div class="col-12">
-            <div class="bg-light rounded h-100 p-4">
-                <h6 class="nav-item">股票分析</h6>
-                <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
-                   href="{% url 'stock_add' %}?page={{ page }}">
-                    <i class="fa fa-plus" aria-hidden="true"></i>
-                </a>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">持仓股票</th>
-                            <th scope="col">股票代码</th>
-                            <th scope="col">持仓数量</th>
-                            <th scope="col">持仓成本</th>
-                            <th scope="col">持仓盈亏</th>
-                            <th scope="col">持仓天数</th>
-                            <th scope="col">操作</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for object in object_list %}
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="nav-item">股票分析</h6>
+                    <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
+                       href="{% url 'stock_add' %}?page={{ page }}">
+                        <i class="fa fa-plus" aria-hidden="true"></i>
+                    </a>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
                             <tr>
-                                <th scope="row" id="cen">{{ forloop.counter|add:flag }}</th>
-                                <td id="cen">{{ object.name }}</td>
-                                <td id="cen">{{ object.code }}</td>
-                                <td id="cen">{{ object.number }}</td>
-                                <td id="cen">{{ object.cost_price }}</td>
-                                {% if object.profit_and_loss %}
-                                    {% if object.profit_and_loss < 0 %}
-                                        <td id="cen" style="color: green;font-weight: 900;">{{ object.profit_and_loss }}</td>
-                                    {% elif object.profit_and_loss == 0 %}
-                                        <td id="cen">{{ object.profit_and_loss }}</td>
-                                    {% else %}
-                                        <td id="cen" style="color: red;font-weight: 900;">{{ object.profit_and_loss }}</td>
-                                    {% endif %}
-
-                                {% else %}
-                                    <td id="cen">-</td>
-                                {% endif %}
-                                <td id="cen">{{ object.days }}</td>
-                                <td>
-                                    <button class="btn btn-square btn-outline-primary m-2" title="导入历史数据."
-                                            onclick="return import_data('{{ object.id }}');">
-                                        <i class="fa fa-spinner"></i>
-                                    </button>
-                                    <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
-                                       href="/nb/do/edit/{{ object.id }}/?page={{ page }}">
-                                        <i class="fa fa-paint-brush"></i>
-                                    </a>
-                                    <button class="btn btn-square btn-outline-danger m-2"
-                                            onclick="return todo_del('{{ object.id }}');">
-                                        <i class="fa fa-times"></i>
-                                    </button>
-                                </td>
+                                <th scope="col">#</th>
+                                <th scope="col">持仓股票</th>
+                                <th scope="col">股票代码</th>
+                                <th scope="col">持仓数量</th>
+                                <th scope="col">持仓成本</th>
+                                <th scope="col">持仓盈亏</th>
+                                <th scope="col">当日盈亏</th>
+                                <th scope="col">持仓天数</th>
+                                <th scope="col">操作</th>
                             </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            {% for object in object_list %}
+                                <tr>
+                                    <th scope="row" id="cen">{{ forloop.counter|add:flag }}</th>
+                                    <td id="cen">{{ object.name }}</td>
+                                    <td id="cen">{{ object.code }}</td>
+                                    <td id="cen">{{ object.number }}</td>
+                                    <td id="cen">{{ object.cost_price }}</td>
+                                    {% if object.profit_and_loss %}
+                                        {% if object.profit_and_loss < 0 %}
+                                            <td id="cen"
+                                                style="color: green;font-weight: 900;">{{ object.profit_and_loss }}</td>
+                                        {% elif object.profit_and_loss == 0 %}
+                                            <td id="cen">{{ object.profit_and_loss }}</td>
+                                        {% else %}
+                                            <td id="cen"
+                                                style="color: red;font-weight: 900;">{{ object.profit_and_loss }}</td>
+                                        {% endif %}
+                                    {% else %}
+                                        <td id="cen">-</td>
+                                    {% endif %}
+                                    {% if object.today_price %}
+                                        {% if object.today_price < 0 %}
+                                            <td id="cen"
+                                                style="color: green;font-weight: 900;">{{ object.today_price }}</td>
+                                        {% elif object.today_price == 0 %}
+                                            <td id="cen">{{ object.today_price }}</td>
+                                        {% else %}
+                                            <td id="cen"
+                                                style="color: red;font-weight: 900;">{{ object.today_price }}</td>
+                                        {% endif %}
+                                    {% else %}
+                                        <td id="cen">-</td>
+                                    {% endif %}
+                                    <td id="cen">{{ object.days }}</td>
+                                    <td>
+                                        <button class="btn btn-square btn-outline-primary m-2" title="导入历史数据."
+                                                onclick="return import_data('{{ object.id }}');">
+                                            <i class="fa fa-spinner"></i>
+                                        </button>
+                                        <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
+                                           href="/nb/stock/edit/{{ object.id }}/?page={{ page }}">
+                                            <i class="fa fa-paint-brush"></i>
+                                        </a>
+                                        <button class="btn btn-square btn-outline-danger m-2"
+                                                onclick="return stock_del('{{ object.id }}');">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+            {% if is_paginated %}
+                <ul class="pagination">
+                    {% if first %}
+                        {% if search_name %}
+                            <li class="page"><a href="?search-input={{ search_name }}&&page=1">1</a>
+                            </li>
+                        {% else %}
+                            <li class="page"><a href="?page=1">1</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                    {% if left %}
+                        {% if left_has_more %}
+                            <li class="page"><a href="javascript:void(0)">...</a></li>
+                        {% endif %}
+                        {% for i in left %}
+                            {% if search_name %}
+                                <li class="page"><a
+                                        href="?search-input={{ search_name }}&&page={{ i }}">{{ i }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page"><a href="?page={{ i }}">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <li class="page"><a href="javascript:void(0)"
+                                        class="active" id="page"> {{ page_obj.number }}</a></li>
+                    {% if right %}
+                        {% for i in right %}
+                            {% if search_name %}
+                                <li class="page"><a
+                                        href="?search-input={{ search_name }}&&page={{ i }}">{{ i }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page"><a href="?page={{ i }}">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if right_has_more %}
+                            <li class="page"><a href="javascript:void(0)">...</a></li>
+                        {% endif %}
+                    {% endif %}
+                    {% if last %}
+                        {% if search_name %}
+                            <li class="page"><a
+                                    href="?search-input={{ search_name }}&&page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page"><a
+                                    href="?page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            {% endif %}
         </div>
-        {% if is_paginated %}
-            <ul class="pagination">
-                {% if first %}
-                    {% if search_name %}
-                        <li class="page"><a href="?search-input={{ search_name }}&&page=1">1</a>
-                        </li>
-                    {% else %}
-                        <li class="page"><a href="?page=1">1</a>
-                        </li>
-                    {% endif %}
-                {% endif %}
-                {% if left %}
-                    {% if left_has_more %}
-                        <li class="page"><a href="javascript:void(0)">...</a></li>
-                    {% endif %}
-                    {% for i in left %}
-                        {% if search_name %}
-                            <li class="page"><a
-                                    href="?search-input={{ search_name }}&&page={{ i }}">{{ i }}</a>
-                            </li>
-                        {% else %}
-                            <li class="page"><a href="?page={{ i }}">{{ i }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-                <li class="page"><a href="javascript:void(0)"
-                                    class="active" id="page"> {{ page_obj.number }}</a></li>
-                {% if right %}
-                    {% for i in right %}
-                        {% if search_name %}
-                            <li class="page"><a
-                                    href="?search-input={{ search_name }}&&page={{ i }}">{{ i }}</a>
-                            </li>
-                        {% else %}
-                            <li class="page"><a href="?page={{ i }}">{{ i }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                    {% if right_has_more %}
-                        <li class="page"><a href="javascript:void(0)">...</a></li>
-                    {% endif %}
-                {% endif %}
-                {% if last %}
-                    {% if search_name %}
-                        <li class="page"><a
-                                href="?search-input={{ search_name }}&&page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
-                        </li>
-                    {% else %}
-                        <li class="page"><a
-                                href="?page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
-                        </li>
-                    {% endif %}
-                {% endif %}
-            </ul>
-        {% endif %}
     </div>
     <div class="container-fluid pt-4 px-4">
         <div class="row g-4">
@@ -208,6 +224,46 @@
             }
         }
 
+        function stock_del(stock_id) {
+            if (window.confirm("请确认删除.")) {
+                let ale = $("#alert");
+                // 删除跳转页面
+                let page = "{{ page }}";
+                let username = "{{ user.username }}";
+                let token = sessionStorage.getItem(username);
+                $.ajax({
+                    type: "post",
+                    url: `/nb/stock/del/${stock_id}/`,
+                    headers: {
+                        "Authorization": token
+                    },
+                    async: false,
+                    success: function (result) {
+                        let code = result.code
+                        let message = result.message
+                        if (code === 200) {
+                            ale.html("删除成功.").addClass("alert-success").show().delay(1500).fadeOut();
+                            setTimeout(function () {
+                                top.location.href = `{% url 'stock' %}?page=${page}`
+                            }, 1500);
+                        } else if (code === 401) {
+                            ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                            setTimeout(function () {
+                                top.location.href = "{% url 'login' %}";
+                            }, 1500);
+                        } else {
+                            ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        }
+                    }, error: function () {
+                        ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                    }
+                })
+            } else {
+                return false;//取消
+            }
+
+        }
+
         function import_data(hold_id) {
             if (window.confirm("请确认导入数据.")) {
                 let ale = $("#alert");
@@ -273,9 +329,10 @@
                                 datasets.append({
                                     label: key,
                                     data: data[key].data,
-                                    fill: false,
-                                    tension: 0.1,
-                                    borderColor: borderColor
+                                    fill: true, // 阴影
+                                    tension: 0.1, // 曲线
+                                    showLine: true, // 是否展示线
+                                    borderColor: borderColor // 折线颜色
                                 })
                             }
                         }
@@ -330,7 +387,7 @@
                                 datasets.append({
                                     label: key,
                                     data: data[key].data,
-                                    fill: false,
+                                    fill: true,
                                     tension: 0.1,
                                     borderColor: borderColor
                                 })
@@ -386,7 +443,7 @@
                                 datasets.append({
                                     label: key,
                                     data: data[key].data,
-                                    fill: false,
+                                    fill: true,
                                     tension: 0.1,
                                     borderColor: borderColor
                                 })
@@ -442,7 +499,7 @@
                                 datasets.append({
                                     label: key,
                                     data: data[key].data,
-                                    fill: false,
+                                    fill: true,
                                     tension: 0.1,
                                     borderColor: borderColor
                                 })
@@ -469,9 +526,11 @@
             })
         }
 
-        AllDayChart();
-        TenDayChart();
-        FiveDayChart();
+
         TodayChart();
+        FiveDayChart();
+        TenDayChart();
+        AllDayChart();
+
     </script>
 {% endblock %}

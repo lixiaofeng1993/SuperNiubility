@@ -7,6 +7,75 @@
 # @desc :
 
 import json
+import time
+from django.core.cache import cache
+from chinese_calendar import is_workday
+
+from public.conf import *
+from public.log import logger
+
+
+def delete_cache():
+    """
+    清除redis缓存
+    """
+    cache.delete(YearChart)
+    cache.delete(FiveChart)
+    cache.delete(TenChart)
+
+
+def etc_time():
+    """
+    日期字典
+    """
+    # 当前日期
+    today = date.today()  # 2022-11-25
+    # 当前年、月、日
+    year, month, day = today.year, today.month, today.day
+    moment = {
+        "today": today,
+        "now": datetime.now(),
+        "year": today.year,
+        "month": today.month,
+        "day": today.day,
+        "no_time": datetime(year, month, day, 9, 0, 0),
+        "start_time": datetime(year, month, day, 9, 25, 0),
+        "end_time": datetime(year, month, day, 15, 5, 0),
+        "ap_time": datetime(year, month, day, 11, 35, 0),
+        "pm_time": datetime(year, month, day, 13, 00, 0),
+    }
+    return moment
+
+
+def surplus_second():
+    """
+    当天剩余秒数
+    """
+    today = date.today()
+    today_end = f"{str(today)} 23:59:59"
+    end_second = int(time.mktime(time.strptime(today_end, "%Y-%m-%d %H:%M:%S")))
+    now_second = int(time.time())
+    return end_second - now_second
+
+
+def check_stoke_day():
+    moment = etc_time()
+    weekday = date(moment["year"], moment["month"], moment["day"]).strftime("%A")
+    if not is_workday(date(moment["year"], moment["month"], moment["day"])) or weekday in ["Saturday", "Sunday"]:
+        logger.info(f"当前时间 {moment['today']} 休市日!!!")
+        return
+    return moment
+
+
+def check_stoke_date():
+    moment = check_stoke_day()
+    if not moment:
+        return
+    if moment["now"] < moment["start_time"] or moment["now"] > moment["end_time"] or \
+            moment["ap_time"] < moment["now"] < moment["pm_time"]:
+        logger.info(f"当前时间 {moment['now']} 未开盘!!!")
+        return
+    return True
 
 
 def handle_json(request):

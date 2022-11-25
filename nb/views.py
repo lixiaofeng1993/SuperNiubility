@@ -2,19 +2,15 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
-from django.forms.models import model_to_dict
 from django.db.models import Q  # 与或非 查询
-from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 import efinance as ef
 
-from .tasks import stock_history, stock_today
+from .tasks import stock_history
 from nb.models import ToDo, SharesHold, Shares
-from public.conf import GET, POST, NumberOfPages
 from public.auth_token import auth_token
-from public.common import handle_json, pagination_data, handle_model, request_get_search
+from public.common import *
 from public.response import JsonResponse
-from public.log import logger
 
 
 @method_decorator(login_required, name='dispatch')
@@ -54,6 +50,7 @@ class ToDOIndex(ListView):
 
 
 @auth_token()
+@login_required
 def todo_add(request):
     if request.method == GET:
         return render(request, "home/to_do/add_to_do.html")
@@ -66,7 +63,7 @@ def todo_add(request):
         end_time = body.get("end_time")
         end_time = end_time if end_time else date.today()
         if todo_id:
-            if ToDo.objects.filter(describe=describe).exclude(id=todo_id):
+            if ToDo.objects.filter(describe=describe).exclude(id=todo_id).exists():
                 return JsonResponse.RepeatException()
         else:
             if ToDo.objects.filter(describe=describe).exists():
@@ -160,16 +157,16 @@ class StockIndex(ListView):
     model = SharesHold
     template_name = 'home/stock/stock.html'
     context_object_name = 'object_list'
-    paginate_by = NumberOfPages / 2
+    paginate_by = NumberOfPages / 5
 
     def dispatch(self, *args, **kwargs):
         return super(StockIndex, self).dispatch(*args, **kwargs)
 
     def get_queryset(self):
         obj_list = self.model.objects.filter(is_delete=False).order_by("-create_date")
-        today = datetime.now()
+        moment = etc_time()
         for obj in obj_list:
-            setattr(obj, "days", (today - obj.create_date).days + 1)  # 持仓天数
+            setattr(obj, "days", (moment["now"] - obj.create_date).days + 1)  # 持仓天数
         obj_list = handle_model(list(obj_list))
         return obj_list
 
@@ -185,7 +182,7 @@ class StockIndex(ListView):
         flag = (int(self.page) - 1) * self.paginate_by
         # 删除跳转页面
         number = len(self.object_list) % 10
-        if number == 1:
+        if number == 1 and len(self.object_list) > 10:
             self.page = int(self.page) - 1
         context.update({'page': self.page, "flag": flag})
         return context
@@ -199,34 +196,68 @@ def stock_add(request):
         body = handle_json(request)
         if not body:
             return JsonResponse.JsonException()
+        stock_id = body.get("stock_id")
         name = body.get("name")
         code = body.get("code")
         number = body.get("number")
         cost_price = body.get("cost_price")
         color = body.get("color")
-        hold = SharesHold.objects.filter(Q(name=name) | Q(code=code)).exists()
-        if hold:
-            return JsonResponse.RepeatException()
-        name_df = ef.stock.get_quote_history(name, klt=101)
-        if name_df.empty:
-            return JsonResponse.CheckException(message="股票名称错误.")
-        share_name = name_df["股票名称"].values[0]
+        if stock_id:
+            if SharesHold.objects.filter(Q(code=code) & Q(is_delete=False)).exclude(id=stock_id).exists():
+                return JsonResponse.RepeatException()
+        else:
+            hold = SharesHold.objects.filter(Q(code=code) & Q(is_delete=False)).exists()
+            if hold:
+                return JsonResponse.RepeatException()
+        moment = etc_time()
+        if moment["no_time"] < moment["now"] < moment["start_time"]:
+            return JsonResponse.TimeException(message="当前时间禁止添加.")
         code_df = ef.stock.get_quote_history(code, klt=101)
         if code_df.empty:
             return JsonResponse.CheckException(message="股票代码错误.")
-        code_name = code_df["股票名称"].values[0]
-        if share_name != code_name:
+        share_name = code_df["股票名称"].values[0]
+        if name != share_name:
             return JsonResponse.EqualException(message="名称和代码不相符.")
         try:
-            hold = SharesHold()
-            hold.name = name
-            hold.code = code
-            hold.number = number
-            hold.cost_price = cost_price
-            hold.color = color
-            hold.save()
+            if stock_id:
+                SharesHold.objects.filter(Q(id=stock_id) & Q(is_delete=False)).update(
+                    name=name, code=code, number=number, cost_price=cost_price, color=color
+                )
+            else:
+                hold = SharesHold()
+                hold.name = name
+                hold.code = code
+                hold.number = number
+                hold.cost_price = cost_price
+                hold.color = color
+                hold.save()
         except Exception as error:
             return JsonResponse.DatabaseException(data=str(error))
+        delete_cache()
+        return JsonResponse.OK()
+
+
+@login_required
+def stock_edit(request, stock_id):
+    if request.method == GET:
+        info = request_get_search(request)
+        hold = SharesHold.objects.get(id=stock_id)
+        data = handle_model(hold)
+        info.update({"obj": data})
+        return render(request, "home/stock/edit_stock.html", info)
+
+
+@auth_token()
+def stock_del(request, stock_id):
+    if request.method == POST:
+        hold = SharesHold.objects.get(id=stock_id)
+        share = Shares.objects.filter(shares_hold_id=stock_id)
+        try:
+            share.delete()
+            hold.delete()
+        except Exception as error:
+            return JsonResponse.DatabaseException(data=str(error))
+        delete_cache()
         return JsonResponse.OK()
 
 
@@ -234,26 +265,36 @@ def stock_add(request):
 def stock_import(request, hold_id):
     if request.method == POST:
         hold = SharesHold.objects.get(id=hold_id)
-        name = hold.name
+        code = hold.code
         hold_id = hold.id
-        end = (datetime.now() + relativedelta(days=-1)).strftime("%Y%m%d")
-        start = (datetime.now() + relativedelta(months=-6)).strftime("%Y%m%d")
-        share = Shares.objects.filter(name=name)
+        moment = etc_time()
+        if moment["now"] >= moment["end_time"]:
+            end = moment["now"].strftime("%Y%m%d")
+        else:
+            end = (moment["now"] + relativedelta(days=-1)).strftime("%Y%m%d")
+        start = (moment["now"] + relativedelta(months=-6)).strftime("%Y%m%d")
+        share = Shares.objects.filter(code=code)
         if share:
             return JsonResponse.RepeatException()
-        stock_history.delay(name=name, hold_id=hold_id, beg=start, end=end)
+        stock_history.delay(code=code, hold_id=hold_id, beg=start, end=end)
         return JsonResponse.OK()
 
 
 @auth_token()
 def half_year_chart(request):
     if request.method == POST:
+        datasets = cache.get(YearChart)
+        if datasets:
+            return JsonResponse.OK(data=datasets)
         hold_list = SharesHold.objects.filter(is_delete=False)
         datasets = dict()
+        moment = etc_time()
         for hold in hold_list:
-            now = str(date.today())
-            share_list = Shares.objects.filter(shares_hold_id=hold.id).exclude(date_time__contains=now) \
-                .order_by("date_time")
+            share_list = Shares.objects.filter(
+                Q(shares_hold_id=hold.id) &
+                Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("date_time")
+            if not share_list:
+                continue
             share_list = handle_model(list(share_list))
             labels = list()
             data_list = list()
@@ -275,6 +316,7 @@ def half_year_chart(request):
                 "days": len((set(day_list)))
 
             })
+        cache.set(YearChart, datasets, surplus_second())
         return JsonResponse.OK(data=datasets)
 
 
@@ -283,10 +325,19 @@ def day_chart(request):
     if request.method == POST:
         hold_list = SharesHold.objects.filter(is_delete=False)
         datasets = dict()
-        now = str(date.today())
+        moment = etc_time()
         for hold in hold_list:
-            share_list = Shares.objects.filter(Q(shares_hold_id=hold.id) &
-                                               Q(date_time__contains=now)).order_by("date_time")
+            if check_stoke_day():
+                share_list = Shares.objects.filter(
+                    Q(shares_hold_id=hold.id) & Q(is_delete=False) &
+                    Q(date_time__contains=str(moment["today"]))).order_by("date_time")
+            else:
+                last_day = (moment["now"] + relativedelta(days=-1)).strftime("%Y-%m-%d")
+                share_list = Shares.objects.filter(
+                    Q(shares_hold_id=hold.id) & Q(is_delete=False) &
+                    Q(date_time__contains=last_day)).order_by("date_time")
+            if len(share_list) != 240:
+                continue
             share_list = handle_model(list(share_list))
             labels = list()
             data_list = list()
@@ -307,16 +358,26 @@ def day_chart(request):
 @auth_token()
 def five_chart(request):
     if request.method == POST:
+        datasets = cache.get(FiveChart)
+        if datasets:
+            return JsonResponse.OK(data=datasets)
         hold_list = SharesHold.objects.filter(is_delete=False)
         datasets = dict()
+        moment = etc_time()
         for hold in hold_list:
-            share_list = Shares.objects.filter(shares_hold_id=hold.id).order_by("-date_time")
+            share_list = Shares.objects.filter(
+                Q(shares_hold_id=hold.id) &
+                Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("-date_time")
+            if not share_list:
+                continue
             share_list = handle_model(list(share_list))
             labels = list()
             data_list = list()
             day_list = list()
             for share in share_list:
-                if len((set(day_list))) >= 5:
+                if len((set(day_list))) > 5:
+                    labels.pop()
+                    data_list.pop()
                     break
                 date_time = share.date_time
                 day_flag = date_time.split(" ")[0]
@@ -333,25 +394,36 @@ def five_chart(request):
                     "color": hold.color,
                 },
                 "labels": labels,
-                "days": len((set(day_list)))
+                "days": len((set(day_list))) - 1
 
             })
+        cache.set(FiveChart, datasets, surplus_second())
         return JsonResponse.OK(data=datasets)
 
 
 @auth_token()
 def ten_chart(request):
     if request.method == POST:
+        datasets = cache.get(TenChart)
+        if datasets:
+            return JsonResponse.OK(data=datasets)
         hold_list = SharesHold.objects.filter(is_delete=False)
         datasets = dict()
+        moment = etc_time()
         for hold in hold_list:
-            share_list = Shares.objects.filter(shares_hold_id=hold.id).order_by("-date_time")
+            share_list = Shares.objects.filter(
+                Q(shares_hold_id=hold.id) &
+                Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("-date_time")
+            if not share_list:
+                continue
             share_list = handle_model(list(share_list))
             labels = list()
             data_list = list()
             day_list = list()
             for share in share_list:
-                if len((set(day_list))) >= 10:
+                if len((set(day_list))) > 10:
+                    labels.pop()
+                    data_list.pop()
                     break
                 date_time = share.date_time
                 day_flag = date_time.split(" ")[0]
@@ -368,7 +440,8 @@ def ten_chart(request):
                     "color": hold.color,
                 },
                 "labels": labels,
-                "days": len((set(day_list)))
+                "days": len((set(day_list))) - 1
 
             })
+        cache.set(TenChart, datasets, surplus_second())
         return JsonResponse.OK(data=datasets)

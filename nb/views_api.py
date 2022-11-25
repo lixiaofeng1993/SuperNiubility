@@ -10,7 +10,8 @@ from django.core.cache import cache
 
 from nb.models import Shares, Poetry
 from public.response import JsonResponse
-from public.recommend import recommend_handle, surplus_second
+from public.recommend import recommend_handle
+from public.common import surplus_second
 from public.conf import GET, POST, RECOMMEND
 from public.auth_token import auth_token
 from public.log import logger

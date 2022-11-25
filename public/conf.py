@@ -5,7 +5,7 @@
 # 创建时间: 2022/11/20 0020 12:47
 # @Version：V 0.1
 # @desc :
-
+from datetime import date, datetime
 
 # token
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
@@ -22,6 +22,12 @@ NumberOfPages = 10
 # redis缓存key
 # 诗词推荐
 RECOMMEND = "RECOMMEND"
+# 股票年k线
+YearChart = "YearChart"
+# 5天k线
+FiveChart = "FiveChart"
+# 10天k线
+TenChart = "TenChart"
 
 # 万年历KEY
 CALENDAR_KEY = "197557d5fc1f3a26fa772bc694ea4c2d"

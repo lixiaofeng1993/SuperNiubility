@@ -21,15 +21,14 @@ def get_holiday(msg: str = ""):
         day = str(int(now.year)) + "-" + str(int(now.month)) + "-" + str(int(now.day))
     else:
         day = msg
-    # res = requests.get(f"http://v.juhe.cn/calendar/day?date={day}&key={CALENDAR_KEY}").json()
-    # if res["error_code"] == 10012:
-    #     logger.error(f"获取当天的详细信息接口 请求超过次数限制 ===>>> {res['reason']} ===>>> {res['error_code']}")
-    #     return
-    # elif res["error_code"] != 0:
-    #     logger.error(f"获取当天的详细信息接口出现异常 ===>>> {res['reason']} ===>>> {res['error_code']}")
-    #     return
-    # holiday = res["result"]["data"]["holiday"]
-    holiday = ""
+    res = requests.get(f"http://v.juhe.cn/calendar/day?date={day}&key={CALENDAR_KEY}").json()
+    if res["error_code"] == 10012:
+        logger.error(f"获取当天的详细信息接口 请求超过次数限制 ===>>> {res['reason']} ===>>> {res['error_code']}")
+        return
+    elif res["error_code"] != 0:
+        logger.error(f"获取当天的详细信息接口出现异常 ===>>> {res['reason']} ===>>> {res['error_code']}")
+        return
+    holiday = res["result"]["data"]["holiday"]
     return holiday
 
 
@@ -44,16 +43,15 @@ def get_weather():
         "key": WEATHER_KEY,
         "city": CITY_NAME
     }
-    # res = requests.get("http://apis.juhe.cn/simpleWeather/query", headers=headers, params=params, verify=False).json()
-    # if res["error_code"] == 10012:
-    #     logger.error(f"根据城市查询天气接口 请求超过次数限制 ===>>> {res['reason']} ===>>> {res['error_code']}")
-    #     return
-    # elif res["error_code"] != 0:
-    #     logger.error(f"根据城市查询天气接口出现异常 ===>>> {res['reason']} ===>>> {res['error_code']}")
-    #     return
-    # weather = jsonpath(res, "$.result.realtime.info")
-    # weather = weather[0] if weather else ""
-    weather = "沙"
+    res = requests.get("http://apis.juhe.cn/simpleWeather/query", headers=headers, params=params, verify=False).json()
+    if res["error_code"] == 10012:
+        logger.error(f"根据城市查询天气接口 请求超过次数限制 ===>>> {res['reason']} ===>>> {res['error_code']}")
+        return
+    elif res["error_code"] != 0:
+        logger.error(f"根据城市查询天气接口出现异常 ===>>> {res['reason']} ===>>> {res['error_code']}")
+        return
+    weather = jsonpath(res, "$.result.realtime.info")
+    weather = weather[0] if weather else ""
     return weather
 
 
@@ -138,14 +136,6 @@ def recommend_handle():
         type_list.append(now_season())
         poetry_type = type_list[randint(0, len(type_list) - 1)]
     return poetry_type
-
-
-def surplus_second():
-    today = date.today()
-    today_end = f"{str(today)} 23:59:59"
-    end_second = int(time.mktime(time.strptime(today_end, "%Y-%m-%d %H:%M:%S")))
-    now_second = int(time.time())
-    return end_second - now_second
 
 
 if __name__ == '__main__':

@@ -20,6 +20,8 @@ urlpatterns = [
 
     path("stock/", views.StockIndex.as_view(), name="stock"),
     path("stock/add/", views.stock_add, name="stock_add"),
+    path("stock/edit/<uuid:stock_id>/", views.stock_edit, name="stock_edit"),
+    path("stock/del/<uuid:stock_id>/", views.stock_del, name="stock_del"),
     path("stock/import/<uuid:hold_id>/", views.stock_import, name="stock_import"),
     path("stock/year/chart/", views.half_year_chart, name="half_year_chart"),
     path("stock/day/chart/", views.day_chart, name="day_chart"),

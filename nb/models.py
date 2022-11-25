@@ -53,6 +53,8 @@ class SharesHold(models.Model):
     number = models.IntegerField(default=0, null=False, help_text="持仓数量")
     cost_price = models.FloatField(default=0.00, null=False, help_text="成本价")
     profit_and_loss = models.FloatField(default=0.00, null=True, help_text="持仓盈亏")
+    last_close_price = models.FloatField(default=0.00, null=True, help_text="上一天收盘价")
+    today_price = models.FloatField(default=0.00, null=True, help_text="当天盈亏")
     color = models.CharField(max_length=20, default="green", null=True, help_text="折线颜色")
     is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")

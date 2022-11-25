@@ -168,7 +168,7 @@ CELERYBEAT_SCHEDULE = {
     'make_overdue_todo': {
         # 任务路径
         'task': 'nb.tasks.make_overdue_todo',
-        'schedule': crontab(minute=50, hour=23),
+        'schedule': crontab(minute=59, hour=23),
         # 'schedule': 5,
         'args': (),
     },
@@ -176,7 +176,7 @@ CELERYBEAT_SCHEDULE = {
         # 任务路径
         'task': 'nb.tasks.stock_today',
         # 'schedule': crontab(minute=10, hour=15),
-        'schedule': 5 * 10,
+        'schedule': 5 * 60,
         'args': (),
     }
 }
