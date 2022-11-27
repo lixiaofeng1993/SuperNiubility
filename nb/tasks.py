@@ -35,12 +35,10 @@ def make_overdue_todo():
 
 
 @shared_task()
-def stock_history(code: str, hold, beg: str, end: str):
+def stock_history(code: str, hold_id: str, user_id, beg: str, end: str, last_day_time: str):
     """
     持仓股票历史数据写入
     """
-    hold_id = hold.id
-    user_id = hold.user_id
     freq = 15  # 间隔15分钟
     df = ef.stock.get_quote_history([code], klt=freq, beg=beg, end=end)
     if not df:
@@ -57,7 +55,11 @@ def stock_history(code: str, hold, beg: str, end: str):
                 rise_and_price=data["涨跌额"], turnover_rate=data["换手率"], shares_hold_id=hold_id
             )
             shares_list.append(obj)
-        share = Shares.objects.filter(name=key)
+        if last_day_time:
+            share = Shares.objects.filter(Q(code=code) &
+                                          Q(shares_hold_id=hold_id)).exclude(date_time__contains=last_day_time).exists()
+        else:
+            share = Shares.objects.filter(Q(code=code) & Q(shares_hold_id=hold_id)).exists()
         if not share:
             Shares.objects.bulk_create(objs=shares_list)
             delete_cache(user_id)  # 导入成功，删除缓存
@@ -65,12 +67,10 @@ def stock_history(code: str, hold, beg: str, end: str):
 
 
 @shared_task()
-def last_day_stock_history(code: str, hold):
+def last_day_stock_history(code: str, hold_id: str, user_id):
     """
     持仓股票最近一天数据写入
     """
-    hold_id = hold.id
-    user_id = hold.user_id
     freq = 1  # 间隔1分钟
     df = ef.stock.get_quote_history(code, klt=freq)
     if df.empty:
@@ -87,7 +87,8 @@ def last_day_stock_history(code: str, hold):
             rise_and_price=value["涨跌额"], turnover_rate=value["换手率"], shares_hold_id=hold_id
         )
         shares_list.append(obj)
-    share = Shares.objects.filter(code=code).exclude(date_time__contains=now_time).exists()
+    share = Shares.objects.filter(Q(code=code) & Q(shares_hold_id=hold_id)).exclude(
+        date_time__contains=now_time).exists()
     if not share:
         Shares.objects.bulk_create(objs=shares_list)
         delete_cache(user_id)  # 导入成功，删除缓存
@@ -116,7 +117,7 @@ def stock_today():
         logger.error(f"持仓股票 {stock_list} 查询数据为空.")
         return
     for key, value in df.items():
-        share_list = Shares.objects.filter(name=key).order_by("-date_time")
+        share_list = Shares.objects.filter(Q(name=key) & Q(shares_hold_id=stock_dict[key])).order_by("-date_time")
         base_date_time = share_list[0].date_time
         df_list = value.to_dict(orient="records")
         shares_list = []
@@ -166,7 +167,7 @@ def stock_today():
         except Exception as error:
             logger.error(f"更新持仓盈亏出现错误. ===>>> {error}")
             return
-        share = Shares.objects.filter(Q(name=key) & Q(date_time__gt=base_date_time))
+        share = Shares.objects.filter(Q(name=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
         if not share:
             Shares.objects.bulk_create(objs=shares_list)
             logger.info(f"保存成功===>>>{len(shares_list)} 条")

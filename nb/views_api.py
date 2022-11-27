@@ -117,9 +117,10 @@ def stock_import(request, hold_id):
         if share:
             return JsonResponse.RepeatException()
         flag = True
+        last_day_time = ""
         if not check_stoke_date() or moment["now"] >= moment["end_time"]:
             flag = False
-            last_day_stock_history.delay(code=code, hold=hold)
+            last_day_stock_history.delay(code=code, hold_id=hold_id, user_id=user_id)
             while 1:
                 end_time = cache.get(StockEndTime.format(user_id=user_id))
                 if not end_time:
@@ -128,8 +129,11 @@ def stock_import(request, hold_id):
         if not flag:
             share = Shares.objects.filter(Q(code=code) & Q(shares_hold_id=hold_id)).first()
             date_time = datetime.strptime(share.date_time, "%Y-%m-%d %H:%M")
+            last_day_time = share.date_time.split(" ")[0]
             end = (date_time + relativedelta(days=-1)).strftime("%Y%m%d")
-        stock_history.delay(code=code, hold=hold, beg=start, end=end)
+        stock_history.delay(
+            code=code, hold_id=hold_id, user_id=user_id, beg=start, end=end, last_day_time=last_day_time
+        )
         repr = "股票"
         msg = f"导入 {hold.name} 历史数据"
         operation_record(request, hold, hold.id, repr, "", msg)

@@ -42,7 +42,7 @@ class ToDOIndex(ListView):
         flag = (int(self.page) - 1) * self.paginate_by
         # 删除跳转页面
         number = len(self.object_list) % 10
-        if number == 1:
+        if number == 1 and len(self.object_list) > 10:
             self.page = int(self.page) - 1
         context.update({'page': self.page, "flag": flag})
         return context
