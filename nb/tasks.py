@@ -117,8 +117,9 @@ def stock_today():
         logger.error(f"持仓股票 {stock_list} 查询数据为空.")
         return
     for key, value in df.items():
-        share_list = Shares.objects.filter(Q(name=key) & Q(shares_hold_id=stock_dict[key])).order_by("-date_time")
-        base_date_time = share_list[0].date_time
+        shares = Shares.objects.filter(
+            Q(name=key) & Q(shares_hold_id=stock_dict[key])).order_by("-date_time").first()
+        base_date_time = shares.date_time
         df_list = value.to_dict(orient="records")
         shares_list = []
         new_price = 0

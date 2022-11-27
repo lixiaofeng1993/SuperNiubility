@@ -28,10 +28,11 @@ def poetry_detail(request, poetry_id):
     if request.method == POST:
         poetry = Poetry.objects.get(id=poetry_id)
         result = model_to_dict(handle_model(poetry))
+        introduce = poetry.author.introduce.split("►")[0] if poetry.author.introduce else ""
         result.update({
             "author": poetry.author.name,
             "dynasty": poetry.author.dynasty,
-            "introduce": poetry.author.introduce,
+            "introduce": introduce,
         })
         repr = "诗词"
         msg = f"查看{repr}《{poetry.name}》"
