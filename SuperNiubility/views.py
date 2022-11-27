@@ -1,22 +1,24 @@
 import json
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.core.cache import cache
 from django.http import HttpResponseRedirect
 from django.contrib import auth  # django认证系统
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 from public.jwt_sign import create_access_token
 from public.conf import ACCESS_TOKEN_EXPIRE_MINUTES, GET, POST
 from public.response import JsonResponse
-from public.common import handle_json
+from public.common import handle_json, home_poetry, operation_record
 from public.log import logger
 
 
 @login_required
 def index(request):
-    return render(request, "home/index.html")
+    user_id = request.session.get("user_id")
+    obj_list = home_poetry(user_id)
+    return render(request, "home/index.html", {"obj": obj_list})
 
 
 def login(request):
@@ -36,6 +38,8 @@ def login(request):
         user = User.objects.get(username=username)
         token = cache.get(username)
         request.session["user"] = username
+        request.session["user_id"] = user.id
+        request.session["super"] = user.is_superuser  # 是否是超级管理员
         result = {
             "id": user.id,
             "username": username,
@@ -46,6 +50,9 @@ def login(request):
             token = create_access_token({"sub": username}, expires_delta=access_token_expires)
             cache.set(username, token, ACCESS_TOKEN_EXPIRE_MINUTES * 60)
             result["token"] = token
+        repr = "登录"
+        msg = f"{username} {repr}系统"
+        operation_record(request, user, user.id, repr, "", msg)
         return JsonResponse.OK(data=result)
 
 
@@ -55,6 +62,10 @@ def logout(request):
     cache.delete(username)
     auth.logout(request)  # 退出登录
     response = HttpResponseRedirect('/login/action/')
+    user = User.objects.get(username=username)
+    repr = "退出"
+    msg = f"{username} {repr}系统"
+    operation_record(request, user, user.id, repr, "", msg)
     return response
 
 

@@ -10,18 +10,22 @@ import json
 import time
 from django.core.cache import cache
 from chinese_calendar import is_workday
+from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
+from django.contrib.admin.options import get_content_type_for_model
 
+from nb.models import Poetry, User
 from public.conf import *
+from public.recommend import recommend_handle
 from public.log import logger
 
 
-def delete_cache():
+def delete_cache(user_id):
     """
     清除redis缓存
     """
-    cache.delete(YearChart)
-    cache.delete(FiveChart)
-    cache.delete(TenChart)
+    cache.delete(YearChart.format(user_id=user_id))
+    cache.delete(FiveChart.format(user_id=user_id))
+    cache.delete(TenChart.format(user_id=user_id))
 
 
 def etc_time():
@@ -75,7 +79,7 @@ def check_stoke_date():
             moment["ap_time"] < moment["now"] < moment["pm_time"]:
         logger.info(f"当前时间 {moment['now']} 未开盘!!!")
         return
-    return True
+    return moment
 
 
 def handle_json(request):
@@ -90,17 +94,46 @@ def handle_json(request):
         return
 
 
+def operation_record(request, model, model_id, repr, action_flag, msg: str = ""):
+    """
+    操作记录
+    删除 action_flag: del
+    添加、编辑 model_id
+    剩余操作 model_id， msg
+    """
+    if not action_flag:
+        action_flag = CHANGE if model_id else ADDITION
+        if not msg:
+            change_message = f"编辑{repr} {model.name}" if model_id else f"添加{repr} {model.name}"
+        else:
+            change_message = msg
+    elif action_flag == "del":
+        action_flag = DELETION
+        change_message = f"删除{repr} {model.name}"
+    user_id = request.session["user_id"] if request.session.get("user_id") else model.id
+    LogEntry.objects.log_action(
+        user_id=user_id,
+        content_type_id=get_content_type_for_model(model).id,
+        object_id=model.id,
+        object_repr=repr,
+        action_flag=action_flag,
+        change_message=change_message,
+    )
+
+
 def format_obj(obj: object):
     if hasattr(obj, "end_time"):
         obj.end_time = str(obj.end_time).split(" ")[0]
-    if obj.update_date:
+    if hasattr(obj, "update_date"):
         obj.update_date = obj.update_date.strftime("%Y-%m-%d %H:%M:%S")
-    if obj.create_date:
+    if hasattr(obj, "create_date"):
         obj.create_date = obj.create_date.strftime("%Y-%m-%d %H:%M:%S")
     if hasattr(obj, "is_delete"):
         obj.is_delete = "false"
     if hasattr(obj, "id"):
         obj.id = str(obj.id)
+    if hasattr(obj, "action_time"):
+        obj.action_time = obj.action_time.strftime("%Y-%m-%d %H:%M:%S")
     return obj
 
 
@@ -123,12 +156,58 @@ def handle_model(model_obj):
                     obj["is_delete"] = "false"
                 if "id" in obj.keys():
                     obj["id"] = str(obj["id"])
+                if "action_time" in obj.keys():
+                    obj["action_time"] = obj["action_time"].strftime("%Y-%m-%d %H:%M:%S")
             else:
                 obj = format_obj(obj)
             model_obj.append(obj)
-    else:
+    elif isinstance(model_obj, object):
         model_obj = format_obj(model_obj)
     return model_obj
+
+
+def home_poetry(user_id):
+    """
+    诗词推荐列表
+    """
+    obj_list = cache.get(RECOMMEND.format(user_id=user_id))
+    if not obj_list:
+        poetry_type = recommend_handle()
+        # 随机返回一条数据 filter 等于  exclude 不等于
+        poetry_list = Poetry.objects.filter(type=poetry_type).exclude(phrase="").order_by('?')[:5]
+        obj_list = list()
+        for poetry in poetry_list:
+            result = {
+                "id": str(poetry.id),
+                "poetry_name": poetry.name,
+                "type": poetry.type,
+                "phrase": poetry.phrase,
+            }
+            if poetry.author:
+                result.update({
+                    "author": poetry.author.name,
+                    "dynasty": poetry.author.dynasty,
+                })
+            else:
+                result.update({
+                    "author": "",
+                })
+            obj_list.append(result)
+        cache.set(RECOMMEND.format(user_id=user_id), obj_list, surplus_second())
+    return obj_list
+
+
+def model_superuser(request, model):
+    """
+    用户权限
+    超级管理员可以看所有，普通用户只能看自己的数据
+    """
+    is_super = request.session.get("super")
+    if is_super:
+        return model.objects
+    else:
+        user_id = request.session.get("user_id")
+        return model.objects.filter(user_id=user_id)
 
 
 def request_get_search(request) -> dict:

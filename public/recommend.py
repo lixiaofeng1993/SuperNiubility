@@ -6,12 +6,10 @@
 # @Version：V 0.1
 # @desc :
 import requests
-import time
-from datetime import date
 from jsonpath import jsonpath
 from random import randint
 
-from public.conf import CALENDAR_KEY, POETRY_TYPE, WEATHER_KEY, CITY_NAME
+from public.conf import *
 from public.log import logger
 
 
@@ -136,6 +134,80 @@ def recommend_handle():
         type_list.append(now_season())
         poetry_type = type_list[randint(0, len(type_list) - 1)]
     return poetry_type
+
+
+def idiom_solitaire(text: str):
+    url = "http://apis.juhe.cn/idiomJie/query"
+    params = {
+        "key": IDIOM_KEY,
+        "wd": text,
+        "size": 10,
+        "is_rand": 1,  # 是否随机返回结果，1:是 2:否。默认2
+    }
+    res = requests.get(url, params=params, verify=False).json()
+    if res["error_code"] == 10012:
+        logger.error(f"成语接龙api ===>>> {res['reason']} ===>>> {res['error_code']}")
+        content = "emmm，api每天只能请求50次，明天再来吧！"
+        return content
+    elif res["error_code"] != 0:
+        logger.error(f"成语接龙api ===>>> {res['reason']} ===>>> {res['error_code']}")
+        content = f"emmm，成语接龙出现异常了嘿，我跑着去看看因为啥 >>> {res['error_code']}"
+        return content
+    data_list = res["result"]["data"]
+    last_word = res["result"]["last_word"]
+    content = "成语接龙开始咯！\n"
+    more_text = f"<a href='weixin://bizmsgmenu?msgmenucontent=IDIOM-INFO-{text}&msgmenuid={text}'>{text}</a>"
+    if not data_list:
+        content += f"emmm，结束了嘿，么有找到 {last_word} 开头的成语。\n了解更多点击 {more_text}"
+        return content
+    content += f'最后一个字：{last_word}\n'
+    for data in res["result"]["data"]:
+        content += f"<a href='weixin://bizmsgmenu?msgmenucontent={data}&msgmenuid=9523'>{data}</a>\n"
+    content += f">>> 点击成语 或者查看 {more_text}"
+    return content
+
+
+def idiom_info(text: str):
+    url = "http://apis.juhe.cn/idioms/query"
+    params = {
+        "key": IDIOM_INFO,
+        "wd": text,
+    }
+    res = requests.get(url, params=params, verify=False).json()
+    if res["error_code"] == 2015702:
+        content = f"emmm，么有查询到 【{text}】 的信息，要不试试 #{text} ？"
+        return content
+    elif res["error_code"] == 10012:
+        logger.error(f"成语大全api ===>>> {res['reason']} ===>>> {res['error_code']}")
+        content = "emmm，api每天只能请求50次，明天再来吧！"
+        return content
+    elif res["error_code"] != 0:
+        logger.error(f"成语大全api ===>>> {res['reason']} ===>>> {res['error_code']}")
+        content = f"emmm，成语大全出现异常了嘿，我跑着去看看因为啥 >>> {res['error_code']}"
+        return content
+    name = res["result"]["name"]  # 成语
+    pinyin = res["result"]["pinyin"]  # 拼音
+    jbsy = res["result"]["jbsy"]  # 基本释义
+    xxsy = res["result"]["xxsy"]  # 详细释义
+    chuchu = res["result"]["chuchu"]  # 出处
+    liju = res["result"]["liju"]  # 例句
+    content = f"成语：{name}\n"
+    if pinyin:
+        content += f"拼音：{pinyin}\n"
+    if xxsy:
+        content += "详细释义：\n"
+        for data in xxsy:
+            content += data + "\n"
+    else:
+        if jbsy:
+            content += "基本释义：\n"
+            for data in jbsy:
+                content += data + "\n"
+        if chuchu:
+            content += f"出处：\n{chuchu}\n"
+        if liju:
+            content += f"例句：\n{liju}"
+    return content
 
 
 if __name__ == '__main__':

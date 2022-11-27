@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'simpleui',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'nb',
+    'wx',
 ]
 
 MIDDLEWARE = [
@@ -168,14 +170,12 @@ CELERYBEAT_SCHEDULE = {
     'make_overdue_todo': {
         # 任务路径
         'task': 'nb.tasks.make_overdue_todo',
-        'schedule': crontab(minute=59, hour=23),
-        # 'schedule': 5,
+        'schedule': crontab(minute=35, hour=14),
         'args': (),
     },
     'stock_today': {
         # 任务路径
         'task': 'nb.tasks.stock_today',
-        # 'schedule': crontab(minute=10, hour=15),
         'schedule': 5 * 60,
         'args': (),
     }

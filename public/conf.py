@@ -21,13 +21,18 @@ NumberOfPages = 10
 
 # redis缓存key
 # 诗词推荐
-RECOMMEND = "RECOMMEND"
+RECOMMEND = "RECOMMEND{user_id}"
 # 股票年k线
-YearChart = "YearChart"
+YearChart = "YearChart{user_id}"
 # 5天k线
-FiveChart = "FiveChart"
+FiveChart = "FiveChart{user_id}"
 # 10天k线
-TenChart = "TenChart"
+TenChart = "TenChart{user_id}"
+# 导入股票end time
+StockEndTime = "StockEndTime{user_id}"
+
+# 股票数据过滤规则
+StockRule = ["00", "15", "30", "45"]
 
 # 万年历KEY
 CALENDAR_KEY = "197557d5fc1f3a26fa772bc694ea4c2d"
@@ -71,3 +76,29 @@ POETRY_TYPE = {
     "写景": 95, "咏物": 96, "写花": 97, "写山": 98, "写水": 99, "儿童": 100, "写马": 101, "地名": 102, "怀古": 103, "抒情": 104,
     "送别": 105, "闺怨": 106, "悼亡": 107, "写人": 108, "战争": 109, "惜时": 110, "忧民": 111, "婉约": 112, "豪放": 113, "民谣": 114,
 }
+
+# 朝代
+DYNASTY = {
+    "先秦": 1, "两汉": 2, "魏晋": 3, "南北朝": 4, "隋代": 5, "唐代": 6, "五代": 7, "宋代": 8, "金朝": 9, "元代": 10,
+    "明代": 11, "清代": 12
+}
+
+# 微信公众号
+TOKEN = "lixiaofeng"
+AppID = "wx99e27a845c7d8c52"
+AppSecret = "fff1120327c7297e536c44979a6273d3"
+
+# 敏感词
+SensitiveList = [
+    "贱比",
+]
+
+# 所有文章
+ArticleUrl = "<a href='https://mp.weixin.qq.com/mp/appmsgalbum?__biz=Mzg3NDg2Njc3MQ==&action=getalbum&album_id=" \
+             "2622547569440768001#wechat_redirect'>点击查看所有文章</a>"
+
+# 关注公众号发送文案
+FOLLOW = "这世界怎么那么多人，蹉跎回首，已不再年轻。\n这世界怎么那么多人，兜兜转转，浑噩半生。\n这世界怎么那么多人......\n\n" \
+         "回复 <a href='weixin://bizmsgmenu?msgmenucontent=唐寅&msgmenuid=唐寅'>诗人</a> >>> 诗人简介\n" \
+         "回复 <a href='weixin://bizmsgmenu?msgmenucontent=桃花庵歌&msgmenuid=桃花庵歌'>诗名</a> >>> 古诗信息\n" \
+         "回复 <a href='weixin://bizmsgmenu?msgmenucontent=成语接龙&msgmenuid=成语接龙'>接龙</a> >>> 成语接龙\n"

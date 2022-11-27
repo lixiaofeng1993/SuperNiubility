@@ -8,3 +8,5 @@ redis==4.3.5
 eventlet==0.33.2
 django-celery-beat==2.4.0
 chinesecalendar==1.7.2
+django-simpleui==2022.11.30
+starlette==0.22.0

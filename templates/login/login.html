@@ -45,7 +45,7 @@
                     </h1>
                 </div>
 
-                <div class="buttons mt-lg-0 mt-3 ml-auto">
+                <div class="buttons mt-lg-0 mt-3 ml-auto" style="z-index: 999;">
                     <div class="copy-w3layouts-inf" id="poetry-random">
 
                     </div>
@@ -112,19 +112,24 @@
         $("#poetry-random").find("p").remove();
         let ale = $("#alert");
         $.ajax({
-            type: "get",
+            type: "post",
             url: "{% url 'poetry_random' %}",
             async: false,
             success: function (result) {
                 console.log(result);
-                if (result.code === 200) {
+                let code = result.code;
+                let data = result.data[0];
+                let message = result.message;
+                if (code === 200) {
                     let content;
-                    if (result.data.hasOwnProperty("author")) {
-                        content = `<p id="phrase">${result.data.phrase}</p><br><p id="author">--出自${result.data.dynasty}${result.data.author}的《${result.data.poetry_name}》</p>`;
+                    if (data.hasOwnProperty("author")) {
+                        content = `<p id="phrase">${data.phrase}</p><br><p id="author">--出自${data.dynasty}${data.author}的《${data.poetry_name}》</p>`;
                     } else {
-                        content = `<p id="phrase">${result.data.phrase}</p><br><p id="author">--摘自《${result.data.poetry_name}》</p>`;
+                        content = `<p id="phrase">${data.phrase}</p><br><p id="author">--摘自《${data.poetry_name}》</p>`;
                     }
                     $("#poetry-random").append(content)
+                } else {
+                    ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                 }
             }, error: function () {
                 ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();

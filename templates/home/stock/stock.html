@@ -374,11 +374,14 @@
                     console.log(result);
                     let code = result.code;
                     let message = result.message;
+                    let data = result.data;
                     if (code === 200) {
                         let chart_obj = $("#five-days").get(0).getContext("2d");
-                        let labels = result.data.labels;
-                        let data = result.data;
-                        let days = result.data.days;
+                        let labels = data.labels;
+                        let days = 0;
+                        if (data.days) {
+                            days = data.days
+                        }
                         let datasets = new List();
                         fiveDay.text(`${days}日走势`)
                         for (const key in data) {
@@ -430,11 +433,14 @@
                     console.log(result);
                     let code = result.code;
                     let message = result.message;
+                    let data = result.data;
                     if (code === 200) {
                         let chart_obj = $("#ten-days").get(0).getContext("2d");
-                        let labels = result.data.labels;
-                        let data = result.data;
-                        let days = result.data.days;
+                        let labels = data.labels;
+                        let days = 0;
+                        if (data.days) {
+                            days = data.days
+                        }
                         let datasets = new List();
                         tenDay.text(`${days}日走势`)
                         for (const key in data) {
@@ -486,11 +492,14 @@
                     console.log(result);
                     let code = result.code;
                     let message = result.message;
+                    let data = result.data;
                     if (code === 200) {
                         let chart_obj = $("#all-days").get(0).getContext("2d");
-                        let labels = result.data.labels;
-                        let data = result.data;
-                        let days = result.data.days;
+                        let labels = data.labels;
+                        let days = 0;
+                        if (data.days) {
+                            days = data.days
+                        }
                         let datasets = new List();
                         allDay.text(`${days}日走势`)
                         for (const key in data) {

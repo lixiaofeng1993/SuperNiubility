@@ -56,9 +56,11 @@ class SharesHold(models.Model):
     last_close_price = models.FloatField(default=0.00, null=True, help_text="上一天收盘价")
     today_price = models.FloatField(default=0.00, null=True, help_text="当天盈亏")
     color = models.CharField(max_length=20, default="green", null=True, help_text="折线颜色")
+    is_profit = models.BooleanField(default=False, help_text="盈转亏、亏转盈")
     is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
     create_date = models.DateTimeField("保存时间", default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default="", null=True, help_text="用户id")
 
     class Meta:
         db_table = "shares_hold"

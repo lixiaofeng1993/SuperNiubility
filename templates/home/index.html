@@ -9,55 +9,6 @@
         <div class="row g-4">
             <div class="col-sm-12 col-md-6 col-xl-4">
                 <div class="h-100 bg-light rounded p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h6 class="mb-0">Messages</h6>
-                        <a href="">Show All</a>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-3">
-                        <img class="rounded-circle flex-shrink-0" src="{% static 'images/user.jpg' %}" alt=""
-                             style="width: 40px; height: 40px;">
-                        <div class="w-100 ms-3">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-0">Jhon Doe</h6>
-                                <small>15 minutes ago</small>
-                            </div>
-                            <span>Short message goes here...</span>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-3">
-                        <img class="rounded-circle flex-shrink-0" src="{% static 'images/user.jpg' %}" alt=""
-                             style="width: 40px; height: 40px;">
-                        <div class="w-100 ms-3">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-0">Jhon Doe</h6>
-                                <small>15 minutes ago</small>
-                            </div>
-                            <span>Short message goes here...</span>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-3">
-                        <img class="rounded-circle flex-shrink-0" src="{% static 'images/user.jpg' %}" alt=""
-                             style="width: 40px; height: 40px;">
-                        <div class="w-100 ms-3">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-0">Jhon Doe</h6>
-                                <small>15 minutes ago</small>
-                            </div>
-                            <span>Short message goes here...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-12 col-md-6 col-xl-4">
-                <div class="h-100 bg-light rounded p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h6 class="mb-0">日历</h6>
-                    </div>
-                    <div id="calender"></div>
-                </div>
-            </div>
-            <div class="col-sm-12 col-md-6 col-xl-4">
-                <div class="h-100 bg-light rounded p-4">
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <h6 class="mb-0">今日待办</h6>
                         <a href="{% url 'todo' %}"><i class="fa fa-angle-double-right"></i></a>
@@ -71,31 +22,50 @@
                     </div>
                 </div>
             </div>
-            <div class="col-sm-12 col-xl-6">
-                <div class="bg-light rounded h-100 p-4">
-                    <h6 class="mb-4">Testimonial</h6>
-                    <div class="owl-carousel testimonial-carousel">
-                        <div class="testimonial-item text-center">
-                            <img class="img-fluid rounded-circle mx-auto mb-4" src="{% static 'images/user.jpg' %}"
-                                 style="width: 100px; height: 100px;">
-                            <h5 class="mb-1">Client Name</h5>
-                            <p>Profession</p>
-                            <p class="mb-0">Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet
-                                eirmod eos labore diam</p>
-                        </div>
-                        <div class="testimonial-item text-center">
-                            <img class="img-fluid rounded-circle mx-auto mb-4" src="{% static 'images/user.jpg' %}"
-                                 style="width: 100px; height: 100px;">
-                            <h5 class="mb-1">Client Name</h5>
-                            <p>Profession</p>
-                            <p class="mb-0">Dolor et eos labore, stet justo sed est sed. Diam sed sed dolor stet amet
-                                eirmod eos labore diam</p>
-                        </div>
+            <div class="col-sm-12 col-md-6 col-xl-4">
+                <div class="h-100 bg-light rounded p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="mb-0">日历</h6>
+                    </div>
+                    <div id="calender"></div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6 col-xl-4">
+                <div class="h-100 bg-light rounded p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="mb-0">操作记录</h6>
+                        <a href="{% url 'record' %}"><i class="fa fa-angle-double-right"></i></a>
+                    </div>
+                    <div id="record">
+
                     </div>
                 </div>
             </div>
             <div class="col-sm-12 col-xl-6">
                 <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">诗词推荐</h6>
+                    <div class="owl-carousel testimonial-carousel">
+                        {% for foo in obj %}
+                            <div class="testimonial-item text-center">
+                                <h5 class="mb-1">《{{ foo.poetry_name }}》</h5>
+                                {% if foo.author %}
+                                    <p>{{ foo.dynasty }}·{{ foo.author }}</p>
+                                {% else %}
+                                    <p>-佚名</p>
+                                {% endif %}
+
+                                <p class="mb-0">{{ foo.phrase }}
+                                    <a href="javascript:void(0);" onclick="poetry_detail('{{ foo.id }}');"><i
+                                            class="fa fa-angle-double-right"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4" id="poetry-detail">
 
                 </div>
             </div>
@@ -157,7 +127,6 @@
             })
         }
 
-        todo_number();
 
         function todo_done(todo_id, flag) {
             let text = "";
@@ -292,5 +261,118 @@
                 return false;//取消
             }
         }
+
+        function poetry_detail(poetry_id) {
+            let ale = $("#alert");
+            let poetry_detail = $("#poetry-detail");
+            poetry_detail.find("div").remove();
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: `/nb/poetry/detail/${poetry_id}/`,
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log(result)
+                    let code = result.code;
+                    let message = result.message;
+                    let data = result.data;
+                    if (code === 200) {
+                        let content = `<div><h5>${data.phrase}</h5>`;
+                        if (data.author && data.dynasty) {
+                            content += `<p>出自${data.dynasty}·${data.author}的《${data.name}》</p><br>`;
+                        } else {
+                            content += "<p>摘自《${data.name}》</p><br>"
+                        }
+                        if (data.explain) {
+                            content += `<p>解释：${data.explain}</p><br>`
+                        }
+                        if (data.appreciation) {
+                            content += `<p>赏析：${data.appreciation}</p><br>`
+                        }
+                        if (data.original) {
+                            content += `<h6>原文</h6><p>${data.original}</p><br>`
+                        }
+                        if (data.translation) {
+                            content += `<h6>译文</h6><p>${data.translation}</p><br>`
+                        }
+                        if (data.background) {
+                            content += `<h6>创作背景</h6><p>${data.background}</p><br>`
+                        }
+                        if (data.author && data.introduce) {
+                            content += `<h6>${data.author}</h6><p>${data.introduce}</p>`
+                        }
+                        content += "</div>"
+                        poetry_detail.append(content)
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
+
+        function record() {
+            let ale = $("#alert");
+            let record_obj = $("#record");
+            record_obj.find("div").remove();
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: `{% url 'record_five' %}`,
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log(result)
+                    let code = result.code;
+                    let message = result.message;
+                    let data = result.data;
+                    if (code === 200) {
+                        let content = "";
+                        for (let i = 0; i < data.length; i++) {
+                            let action_time = "";
+                            console.log(data[i].format_time)
+                            if (data[i].format_time){
+                                action_time = data[i].format_time
+                            }else {
+                                action_time = data[i].action_time
+                            }
+                            content += `<div class="d-flex align-items-center border-bottom py-3">` +
+                                `<div class="w-100 ms-3">` +
+                                `<div class="d-flex w-100 justify-content-between">` +
+                                `<span class="mb-0" id="cen">${data[i].change_message}</span>` +
+                                `<small>${action_time}</small>` +
+                                `</div></div></div>`
+                        }
+                        record_obj.append(content)
+
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
+
+        record();
+        todo_number();
     </script>
 {% endblock %}
