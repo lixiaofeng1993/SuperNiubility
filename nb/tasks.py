@@ -110,15 +110,15 @@ def stock_today():
     stock_dict = dict()
     for hold in hold_list:
         stock_list.append(hold.code)
-        stock_dict.update({hold.name: hold.id})
+        stock_dict.update({hold.code: hold.id})
     freq = 1
-    df = ef.stock.get_quote_history(["宝鹰股份"], klt=freq)
+    df = ef.stock.get_quote_history(stock_list, klt=freq)
     if not df:
         logger.error(f"持仓股票 {stock_list} 查询数据为空.")
         return
     for key, value in df.items():
         shares = Shares.objects.filter(
-            Q(name=key) & Q(shares_hold_id=stock_dict[key])).order_by("-date_time").first()
+            Q(code=key) & Q(shares_hold_id=stock_dict[key])).order_by("-date_time").first()
         base_date_time = shares.date_time
         df_list = value.to_dict(orient="records")
         shares_list = []
@@ -129,7 +129,7 @@ def stock_today():
             if date_time <= base_date_time:  # 避免重复写入
                 continue
             obj = Shares(
-                name=key, code=data["股票代码"], date_time=data["日期"], open_price=data["开盘"],
+                name=data["股票名称"], code=key, date_time=data["日期"], open_price=data["开盘"],
                 new_price=data["收盘"], top_price=data["最高"], down_price=data["最低"], turnover=data["成交量"],
                 business_volume=data["成交额"], amplitude=data["振幅"], rise_and_fall=data["涨跌幅"],
                 rise_and_price=data["涨跌额"], turnover_rate=data["换手率"], shares_hold_id=stock_dict[key]
@@ -144,6 +144,7 @@ def stock_today():
                 hold.is_profit = True if hold.profit_and_loss > 0 else False
                 if moment["now"] >= moment["end_time"]:
                     hold.last_close_price = new_price
+                    hold.last_day = moment["today"]
                 hold.save()
                 if is_profit != hold.is_profit:
                     if hold.is_profit:
@@ -168,7 +169,7 @@ def stock_today():
         except Exception as error:
             logger.error(f"更新持仓盈亏出现错误. ===>>> {error}")
             return
-        share = Shares.objects.filter(Q(name=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
+        share = Shares.objects.filter(Q(code=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
         if not share:
             Shares.objects.bulk_create(objs=shares_list)
             logger.info(f"保存成功===>>>{len(shares_list)} 条")

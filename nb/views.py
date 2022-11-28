@@ -4,6 +4,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import ListView
 from django.db.models import Q  # 与或非 查询
 from django.contrib.auth.decorators import login_required
+from django_pandas.io import read_frame
 
 from nb.models import ToDo, SharesHold, Shares
 from public.auth_token import auth_token
@@ -220,6 +221,55 @@ def stock_edit(request, stock_id):
         data = handle_model(hold)
         info.update({"obj": data})
         return render(request, "home/stock/edit_stock.html", info)
+
+
+@login_required
+def stock_look(request, stock_id):
+    info = request_get_search(request)
+    model = model_superuser(request, SharesHold)
+    hold = model.get(id=stock_id)
+    last_day = str(hold.last_day).split(" ")[0]
+    share_list = Shares.objects.filter(
+        Q(shares_hold_id=hold.id) &
+        Q(is_delete=False) & Q(date_time__contains=last_day)).order_by("-date_time")
+    data = handle_model(hold)
+    share_df = read_frame(share_list)
+    # 最新
+    new_price = share_df["new_price"][0]
+    # 开盘
+    open_price = share_df["open_price"].values[-1]
+    # 平均
+    average = round(share_df["new_price"].mean(), 2)
+    # 涨幅
+    rise_and_fall = round(share_df["rise_and_fall"].sum(), 2)
+    # 涨跌
+    rise_and_price = round(share_df["rise_and_price"].sum(), 2)
+    # 换手
+    turnover_rate = round(share_df["turnover_rate"].sum(), 2)
+    # 成交量
+    turnover = round(share_df["turnover"].sum(), 2)
+    # 成交额
+    business_volume = round(share_df["business_volume"].sum(), 2)
+    # 最低
+    down_price = round(share_df["down_price"].min(), 2)
+    # 最高
+    top_price = round(share_df["top_price"].max(), 2)
+    # 最高
+    amplitude = round((top_price - down_price) / hold.last_close_price * 100, 2)
+    info.update({"obj": data, "share": {
+        "new_price": new_price,
+        "open_price": open_price,
+        "average": average,
+        "rise_and_fall": rise_and_fall,
+        "rise_and_price": rise_and_price,
+        "turnover_rate": turnover_rate,
+        "turnover": turnover,
+        "business_volume": business_volume,
+        "down_price": down_price,
+        "top_price": top_price,
+        "amplitude": amplitude,
+    }})
+    return render(request, "home/stock/look_stock.html", info)
 
 
 @auth_token()

@@ -21,6 +21,7 @@ urlpatterns = [
     path("stock/", views.StockIndex.as_view(), name="stock"),
     path("stock/add/", views.stock_add, name="stock_add"),
     path("stock/edit/<uuid:stock_id>/", views.stock_edit, name="stock_edit"),
+    path("stock/look/<uuid:stock_id>/", views.stock_look, name="stock_look"),
     path("stock/del/<uuid:stock_id>/", views.stock_del, name="stock_del"),
     path("stock/import/<uuid:hold_id>/", views_api.stock_import, name="stock_import"),
     path("stock/year/chart/", views_api.half_year_chart, name="half_year_chart"),

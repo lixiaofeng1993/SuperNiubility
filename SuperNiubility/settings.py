@@ -135,7 +135,10 @@ USE_L10N = True
 
 USE_TZ = False
 
+# 未登录跳转url
 LOGIN_URL = '/login/action/'
+SESSION_COOKIE_AGE = 60 * 60 * 24  # 一天
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # 关闭浏览器，则COOKIE失效
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -165,7 +168,6 @@ CELERY_TASK_RESULT_EXPIRES = 60 * 60 * 24
 
 # 时区配置
 CELERY_TIMEZONE = 'Asia/Shanghai'
-CELERY_ENABLE_UTC = False
 
 CELERYBEAT_SCHEDULE = {
     'make_overdue_todo': {

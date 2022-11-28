@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+
+{% block body %}
+    <div role="alert" id="alert">
+
+    </div>
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="nav-item mb-4">股票分析</h6>
+                    <form>
+                        <div class="bg-light rounded h-100 p-4">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">持仓股票</span>
+                                <input type="text" class="form-control" value="{{ obj.name }}" readonly>
+                                <span class="input-group-text">持仓代码</span>
+                                <input type="text" class="form-control" value="{{ obj.code }}" readonly>
+                                <span class="input-group-text">持仓数量</span>
+                                <input type="text" class="form-control" value="{{ obj.number }}" readonly>
+                                <span class="input-group-text">持仓成功</span>
+                                <input type="text" class="form-control" value="{{ obj.cost_price }}" readonly>
+                                <span class="input-group-text">昨收</span>
+                                <input type="text" class="form-control" value="{{ obj.last_close_price }} 元/股" readonly>
+                            </div>
+                        </div>
+
+                        <div class="bg-light rounded h-100 p-4">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">最新</span>
+                                <input type="text" class="form-control" value="{{ share.new_price }} 元/股" readonly>
+                                <span class="input-group-text">均价</span>
+                                <input type="text" class="form-control" value="{{ share.average }} 元/股" readonly>
+                                <span class="input-group-text">涨幅</span>
+                                <input type="text" class="form-control" value="{{ share.rise_and_fall }} %" readonly>
+                                <span class="input-group-text">涨跌</span>
+                                <input type="text" class="form-control" value="{{ share.rise_and_price }} 元" readonly>
+                                <span class="input-group-text">总手</span>
+                                <input type="text" class="form-control" value="{{ share.turnover }} 手" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">换手</span>
+                                <input type="text" class="form-control" value="{{ share.turnover_rate }} %" readonly>
+                                <span class="input-group-text">最高</span>
+                                <input type="text" class="form-control" value="{{ share.top_price }} 元/股" readonly>
+                                <span class="input-group-text">最低</span>
+                                <input type="text" class="form-control" value="{{ share.down_price }} 元/股" readonly>
+                                <span class="input-group-text">今开</span>
+                                <input type="text" class="form-control" value="{{ share.open_price }} 元/股" readonly>
+                                <span class="input-group-text">振幅</span>
+                                <input type="text" class="form-control" value="{{ share.amplitude }} %" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+
+                            </div>
+                        </div>
+
+                        <a href="{% url 'stock' %}?page={{ page }}" type="button" class="btn btn-primary">返回</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

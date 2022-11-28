@@ -154,16 +154,17 @@ def day_chart(request):
                     Q(shares_hold_id=hold.id) & Q(is_delete=False) &
                     Q(date_time__contains=str(moment["today"]))).order_by("date_time")
             else:
-                share_first = Shares.objects.filter(
-                    Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-date_time").first()
-                if not share_first:
-                    continue
-                last_day = share_first.date_time.split(" ")[0]
+                if hold.last_day:
+                    last_day = str(hold.last_day).split(" ")[0]
+                else:
+                    share_first = Shares.objects.filter(
+                        Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-date_time").first()
+                    if not share_first:
+                        continue
+                    last_day = share_first.date_time.split(" ")[0]
                 share_list = Shares.objects.filter(
                     Q(shares_hold_id=hold.id) & Q(is_delete=False) &
                     Q(date_time__contains=last_day)).order_by("date_time")
-            if len(share_list) != 240:
-                continue
             share_list = handle_model(list(share_list))
             labels = list()
             data_list = list()
