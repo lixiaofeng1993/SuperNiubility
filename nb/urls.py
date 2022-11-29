@@ -7,7 +7,7 @@
 # @desc :
 from django.urls import path
 
-from nb import views, views_api
+from nb import views, views_api, views_api_v1
 
 urlpatterns = [
     path("do/", views.ToDOIndex.as_view(), name="todo"),
@@ -37,4 +37,6 @@ urlpatterns = [
 
     path("poetry/random/", views_api.recommend_poetry, name="poetry_random"),
     path("poetry/detail/<uuid:poetry_id>/", views_api.poetry_detail, name="poetry_detail"),
+
+    path("faker/<int:number>/", views_api_v1.get_faker, name="get_faker"),
 ]
