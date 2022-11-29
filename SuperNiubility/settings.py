@@ -83,7 +83,7 @@ DATABASES = {
         # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'nb',
-        'USER': 'root',
+        'USER': "root" if platform.system() == 'Windows' else "nb",
         'PASSWORD': '123456',
         'PORT': '3306',
     }
