@@ -21,21 +21,23 @@ NumberOfPages = 10
 
 # redis缓存key
 # 诗词推荐
-RECOMMEND = "RECOMMEND{user_id}"
-# 股票年k线
-YearChart = "YearChart{user_id}"
-# 5天k线
-FiveChart = "FiveChart{user_id}"
-# 10天k线
-TenChart = "TenChart{user_id}"
-# 20天k线
-TwentyChart = "TwentyChart{user_id}"
-# 导入股票end time
-StockEndTime = "StockEndTime{user_id}"
-# 当天k线
-TodayChart = "TodayChart{user_id}"
+RECOMMEND = "RECOMMEND-{user_id}"
 # 当天买入卖出托单
-TodayBuySellChart = "TodayBuySellChart{user_id}"
+PoetryDetail = "PoetryDetail-{user_id}-{poetry_id}"
+# 股票年k线
+YearChart = "YearChart-{user_id}"
+# 5天k线
+FiveChart = "FiveChart-{user_id}"
+# 10天k线
+TenChart = "TenChart-{user_id}"
+# 20天k线
+TwentyChart = "TwentyChart-{user_id}"
+# 导入股票end time
+StockEndTime = "StockEndTime-{user_id}"
+# 当天k线
+TodayChart = "TodayChart-{user_id}"
+# 当天买入卖出托单
+TodayBuySellChart = "TodayBuySellChart-{user_id}"
 
 # 股票数据过滤规则
 StockRule = ["00", "15", "30", "45"]

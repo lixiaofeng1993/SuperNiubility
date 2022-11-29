@@ -26,6 +26,10 @@ def recommend_poetry(request):
 @auth_token()
 def poetry_detail(request, poetry_id):
     if request.method == POST:
+        user_id = request.session.get("user_id")
+        result = cache.get(PoetryDetail.format(user_id=user_id, poetry_id=poetry_id))
+        if result:
+            return JsonResponse.OK(data=result)
         poetry = Poetry.objects.get(id=poetry_id)
         result = model_to_dict(handle_model(poetry))
         introduce = poetry.author.introduce.split("►")[0] if poetry.author.introduce else ""
@@ -34,6 +38,7 @@ def poetry_detail(request, poetry_id):
             "dynasty": poetry.author.dynasty,
             "introduce": introduce,
         })
+        cache.set(PoetryDetail.format(user_id=user_id, poetry_id=poetry_id), result, surplus_second())
         repr = "诗词"
         msg = f"查看{repr}《{poetry.name}》"
         operation_record(request, poetry, poetry.id, repr, "", msg)
@@ -238,8 +243,6 @@ def five_chart(request):
 @auth_token()
 def ten_chart(request):
     if request.method == POST:
-        from .tasks import stock_today
-        stock_today.delay()
         user_id = request.session.get("user_id")
         datasets = cache.get(TenChart.format(user_id=user_id))
         if datasets:
