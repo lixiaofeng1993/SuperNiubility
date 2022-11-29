@@ -150,9 +150,7 @@ def day_chart(request):
         moment = etc_time()
         for hold in hold_list:
             if check_stoke_day():  # 休市日展示最后一天的数据
-                share_list = Shares.objects.filter(
-                    Q(shares_hold_id=hold.id) & Q(is_delete=False) &
-                    Q(date_time__contains=str(moment["today"]))).order_by("date_time")
+                last_day = str(moment["today"])
             else:
                 if hold.last_day:
                     last_day = str(hold.last_day).split(" ")[0]
@@ -162,9 +160,11 @@ def day_chart(request):
                     if not share_first:
                         continue
                     last_day = share_first.date_time.split(" ")[0]
-                share_list = Shares.objects.filter(
-                    Q(shares_hold_id=hold.id) & Q(is_delete=False) &
-                    Q(date_time__contains=last_day)).order_by("date_time")
+            share_list = Shares.objects.filter(
+                Q(shares_hold_id=hold.id) & Q(is_delete=False) &
+                Q(date_time__contains=last_day)).order_by("date_time")
+            if not share_list:
+                continue
             share_list = handle_model(list(share_list))
             labels = list()
             data_list = list()
@@ -324,20 +324,10 @@ def half_year_chart(request):
 def record(request):
     if request.method == POST:
         log_list = LogEntry.objects.all().order_by("-action_time")[:5]
-        now = etc_time()["now"]
         data_list = list()
         for log in log_list:
             log_dict = model_to_dict(log)
-            total_seconds = round((now - log.action_time).total_seconds())
-            total_seconds = total_seconds if total_seconds else 1
-            if total_seconds < 60:
-                log_dict["format_time"] = f"{total_seconds}秒前"
-            elif 60 <= total_seconds < 3600:
-                log_dict["format_time"] = f"{round(total_seconds / 60)}分钟前"
-            elif 3600 <= total_seconds < 86400:
-                log_dict["format_time"] = f"{round(total_seconds / 3600)}小时前"
-            elif 86400 <= total_seconds < 172800:
-                log_dict["format_time"] = f"{round(total_seconds / 86400)}天前"
+            log_dict["format_time"] = format_time(log.action_time)
             data_list.append(log_dict)
         log_list = handle_model(data_list)
         return JsonResponse.OK(data=log_list)

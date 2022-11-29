@@ -49,6 +49,9 @@ WEATHER_KEY = "4dd0557f59831bd698f8bb4a830145c4"
 # 高德地图KEY
 GAO_KEY = "b5b15bbd3252eb0cbb01877ae53a34d7"
 
+# 股票KEY
+STOCK_KEY = "c75a1cc261925a54b91d61ac6c9c7dcc"
+
 # 北京 110000
 # 顺义 110113
 # 屯留 140405

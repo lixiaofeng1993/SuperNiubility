@@ -6,7 +6,7 @@ from django.db.models import Q  # 与或非 查询
 from django.contrib.auth.decorators import login_required
 from django_pandas.io import read_frame
 
-from nb.models import ToDo, SharesHold, Shares
+from nb.models import ToDo, SharesHold, Shares, StockDetail
 from public.auth_token import auth_token
 from public.common import *
 from public.response import JsonResponse
@@ -171,6 +171,7 @@ def stock_add(request):
         number = body.get("number")
         cost_price = body.get("cost_price")
         color = body.get("color")
+        is_detail = body.get("is_detail")
         model = model_superuser(request, SharesHold)
         if stock_id:
             if model.filter(Q(code=code) & Q(is_delete=False)).exclude(id=stock_id).exists():
@@ -192,7 +193,8 @@ def stock_add(request):
             user_id = request.session.get("user_id")
             if stock_id:
                 model.filter(Q(id=stock_id) & Q(is_delete=False)).update(
-                    name=name, code=code, number=number, cost_price=cost_price, color=color, user_id=user_id
+                    name=name, code=code, number=number, cost_price=cost_price, color=color, user_id=user_id,
+                    is_detail=is_detail
                 )
             else:
                 hold = SharesHold()
@@ -228,12 +230,41 @@ def stock_look(request, stock_id):
     info = request_get_search(request)
     model = model_superuser(request, SharesHold)
     hold = model.get(id=stock_id)
-    last_day = str(hold.last_day).split(" ")[0]
+    repr = "股票"
+    operation_record(request, hold, hold.name, repr, "change")
+    if hold.is_detail:
+        detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
+        update_time = format_time(detail.time)
+        # 当前
+        now_color = "#FF0000" if detail.rate > 0 else "#00FF00"
+        # 全部
+        color = "#FF0000" if detail.increPer > 0 else "#00FF00"
+
+        info.update({"obj": hold, "share": detail, "flag": True, "now_color": now_color, "color": color,
+                     "update_time": update_time})
+        return render(request, "home/stock/look_stock.html", info)
+    moment = check_stoke_day()
+    info = info | {"flag": False} | {"obj": hold}
+    if moment:
+        last_day = str(moment["today"])
+    else:
+        if hold.last_day:
+            last_day = str(hold.last_day).split(" ")[0]
+        else:
+            share_first = Shares.objects.filter(
+                Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-date_time").first()
+            if not share_first:
+                info.update({"obj": hold})
+                return render(request, "home/stock/look_stock.html", info)
+            last_day = share_first.date_time.split(" ")[0]
     share_list = Shares.objects.filter(
         Q(shares_hold_id=hold.id) &
         Q(is_delete=False) & Q(date_time__contains=last_day)).order_by("-date_time")
-    data = handle_model(hold)
+    if not share_list:
+        return render(request, "home/stock/look_stock.html", info)
     share_df = read_frame(share_list)
+    # 更新时间
+    update_time = format_time(datetime.strptime(share_df["date_time"].values[0], "%Y-%m-%d %H:%M"))
     # 最新
     new_price = share_df["new_price"][0]
     # 开盘
@@ -249,14 +280,15 @@ def stock_look(request, stock_id):
     # 成交量
     turnover = round(share_df["turnover"].sum(), 2)
     # 成交额
-    business_volume = round(share_df["business_volume"].sum(), 2)
+    business_volume = round(share_df["business_volume"].sum(), 2) / 10000
     # 最低
     down_price = round(share_df["down_price"].min(), 2)
     # 最高
     top_price = round(share_df["top_price"].max(), 2)
     # 最高
-    amplitude = round((top_price - down_price) / hold.last_close_price * 100, 2)
-    info.update({"obj": data, "share": {
+    amplitude = round((top_price - down_price) / hold.last_close_price * 100, 2) if hold.last_close_price else ""
+    color = "#FF0000" if rise_and_fall > 0 else "#00FF00"
+    info.update({"obj": hold, "share": {
         "new_price": new_price,
         "open_price": open_price,
         "average": average,
@@ -268,7 +300,7 @@ def stock_look(request, stock_id):
         "down_price": down_price,
         "top_price": top_price,
         "amplitude": amplitude,
-    }})
+    }, "color": color, "update_time": update_time})
     return render(request, "home/stock/look_stock.html", info)
 
 
@@ -333,4 +365,6 @@ def record_look(request, record_id):
     info = request_get_search(request)
     log = LogEntry.objects.get(id=record_id)
     info.update({"obj": log})
+    repr = "记录"
+    operation_record(request, log, log.change_message, repr, "change")
     return render(request, "home/record/look_record.html", info)

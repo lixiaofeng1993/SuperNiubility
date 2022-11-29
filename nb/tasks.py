@@ -9,9 +9,10 @@ import efinance as ef
 from celery import Task, shared_task
 from django.db.models import Q  # 与或非 查询
 
-from nb.models import ToDo, Shares, SharesHold
-from public.common import delete_cache, check_stoke_date, etc_time, cache, StockEndTime
+from nb.models import ToDo, Shares, SharesHold, StockDetail
+from public.common import delete_cache, check_stoke_date, etc_time, cache, StockEndTime, difference_stock, datetime
 from public.send_ding import send_ding
+from public.stock_api import stock_api
 from public.log import logger
 
 
@@ -169,7 +170,92 @@ def stock_today():
         except Exception as error:
             logger.error(f"更新持仓盈亏出现错误. ===>>> {error}")
             return
-        share = Shares.objects.filter(Q(code=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
+        share = Shares.objects.filter(
+            Q(code=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
         if not share:
             Shares.objects.bulk_create(objs=shares_list)
             logger.info(f"保存成功===>>>{len(shares_list)} 条")
+
+
+@shared_task()
+def stock_detail():
+    moment = check_stoke_date()
+    if not moment:  # 判断股市开关时间
+        return
+    hold = SharesHold.objects.filter(Q(is_delete=False) & Q(is_detail=True)).first()
+    code = difference_stock(code=hold.code)
+    result = stock_api(code=code)
+    if not result:
+        return
+    data = result["data"]
+    dapandata = result["dapandata"]
+    gopicture = result["gopicture"]
+    change = {
+        'traAmount': 'nowTraAmount',
+        'traNumber': 'nowTraNumber'
+    }
+    date_time = f'{data["date"]} {data["time"]}'
+    check_time = datetime.strptime(date_time, "%Y-%m-%d %H:%M:%S")
+    detail = StockDetail.objects.filter(Q(is_delete=False) &
+                                        Q(code=code) & Q(shares_hold_id=hold.id)).order_by("-time").first()
+    if detail and check_time <= detail.time:  # 判重
+        logger.info(f"股票详情表数据重复.===>>>{check_time} {detail.time}")
+        return
+    dapandata_dict = dict()
+    for key, value in dapandata.items():
+        if key in change.keys():
+            dapandata_dict.update({change[key]: value})
+        else:
+            dapandata_dict.update({key: value})
+    response = dapandata_dict | data | gopicture
+    detail_obj = StockDetail(name=response["name"],
+                             code=code,
+                             increPer=response["increPer"],
+                             increase=response["increase"],
+                             todayStartPri=response["todayStartPri"],
+                             yestodEndPri=response["yestodEndPri"],
+                             nowPri=response["nowPri"],
+                             todayMax=response["todayMax"],
+                             todayMin=response["todayMin"],
+                             competitivePri=response["competitivePri"],
+                             reservePri=response["reservePri"],
+                             traNumber=response["traNumber"],
+                             traAmount=response["traAmount"],
+                             buyOne=response["buyOne"],
+                             buyOnePri=response["buyOnePri"],
+                             buyTwo=response["buyTwo"],
+                             buyTwoPri=response["buyTwoPri"],
+                             buyThree=response["buyThree"],
+                             buyThreePri=response["buyThreePri"],
+                             buyFour=response["buyFour"],
+                             buyFourPri=response["buyFourPri"],
+                             buyFive=response["buyFive"],
+                             buyFivePri=response["buyFivePri"],
+                             sellOne=response["sellOne"],
+                             sellOnePri=response["sellOnePri"],
+                             sellTwo=response["sellTwo"],
+                             sellTwoPri=response["sellTwoPri"],
+                             sellThree=response["sellThree"],
+                             sellThreePri=response["sellThreePri"],
+                             sellFour=response["sellFour"],
+                             sellFourPri=response["sellFourPri"],
+                             sellFive=response["sellFive"],
+                             sellFivePri=response["sellFivePri"],
+                             date=response["date"],
+                             time=date_time,
+                             dot=response["dot"],
+                             nowPic=response["nowPic"],
+                             rate=response["rate"],
+                             nowTraAmount=response["nowTraAmount"],
+                             nowTraNumber=response["nowTraNumber"],
+                             minurl=response["minurl"],
+                             dayurl=response["dayurl"],
+                             weekurl=response["weekurl"],
+                             monthurl=response["monthurl"],
+                             shares_hold_id=hold.id,
+                             )
+    try:
+        detail_obj.save()
+        logger.info("股票详情保存成功.")
+    except Exception as error:
+        logger.error(f"股票详情保存失败 ===>>> {error}")

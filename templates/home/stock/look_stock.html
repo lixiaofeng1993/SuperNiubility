@@ -1,5 +1,37 @@
 {% extends 'base.html' %}
 
+{% block css %}
+    <style>
+
+        /* 弹窗的位置和背景颜色 */
+        .modal {
+            display: none;
+            position: fixed; /* 绝对定位 */
+            z-index: 1; /* 元素置前 */
+            padding-top: 50px;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* 溢出出现滚动条 */
+        }
+
+        /* 弹窗图片的大小 */
+        .myContent {
+            margin: auto;
+            display: block;
+            min-height: 500px;
+            max-height: 600px;
+            background-color: #F3F6F9;
+        }
+
+        #text {
+            margin-left: 5%;
+        }
+
+        #text-style {
+            font-weight: 900;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
     <div role="alert" id="alert">
@@ -11,51 +43,181 @@
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="nav-item mb-4">股票分析</h6>
                     <form>
-                        <div class="bg-light rounded h-100 p-4">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">持仓股票</span>
-                                <input type="text" class="form-control" value="{{ obj.name }}" readonly>
-                                <span class="input-group-text">持仓代码</span>
-                                <input type="text" class="form-control" value="{{ obj.code }}" readonly>
-                                <span class="input-group-text">持仓数量</span>
-                                <input type="text" class="form-control" value="{{ obj.number }}" readonly>
-                                <span class="input-group-text">持仓成功</span>
-                                <input type="text" class="form-control" value="{{ obj.cost_price }}" readonly>
-                                <span class="input-group-text">昨收</span>
-                                <input type="text" class="form-control" value="{{ obj.last_close_price }} 元/股" readonly>
+                        <span style="font-size: 12px;">{{ update_time }}更新</span>
+                        {% if flag %}
+                            <div class="bg-light rounded h-100 p-4">
+                                <div class="input-group mb-3">
+                                    <span id="text">持仓股票：</span><span id="text-style">{{ obj.name }}</span>
+                                    <span id="text">持仓代码：</span><span id="text-style">{{ obj.code }}</span>
+                                    <span id="text">持仓数量：</span><span id="text-style">{{ obj.number }} 股</span>
+                                    <span id="text">持仓成本：</span><span id="text-style">{{ obj.cost_price }} 元</span>
+                                    <span id="text">持仓盈亏：</span>
+                                    {% if obj.profit_and_loss > 0 %}
+                                        <span id="text-style" style="color: red">{{ obj.profit_and_loss }}</span>
+                                    {% elif obj.profit_and_loss < 0 %}
+                                        <span id="text-style" style="color: green">{{ obj.profit_and_loss }}</span>
+                                    {% else %}
+                                        <span id="text-style">{{ obj.profit_and_loss }}</span>
+                                    {% endif %}
+                                    <i>元</i>
+                                    <span id="text">当日盈亏：</span>
+                                    {% if obj.today_price > 0 %}
+                                        <span id="text-style" style="color: red">{{ obj.today_price }}</span>
+                                    {% elif obj.today_price < 0 %}
+                                        <span id="text-style" style="color: green">{{ obj.today_price }}</span>
+                                    {% else %}
+                                        <span id="text-style">{{ obj.today_price }}</span>
+                                    {% endif %}
+                                    <i>元</i>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="bg-light rounded h-100 p-4">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">最新</span>
-                                <input type="text" class="form-control" value="{{ share.new_price }} 元/股" readonly>
-                                <span class="input-group-text">均价</span>
-                                <input type="text" class="form-control" value="{{ share.average }} 元/股" readonly>
-                                <span class="input-group-text">涨幅</span>
-                                <input type="text" class="form-control" value="{{ share.rise_and_fall }} %" readonly>
-                                <span class="input-group-text">涨跌</span>
-                                <input type="text" class="form-control" value="{{ share.rise_and_price }} 元" readonly>
-                                <span class="input-group-text">总手</span>
-                                <input type="text" class="form-control" value="{{ share.turnover }} 手" readonly>
+                            <div class="bg-light rounded h-100 p-4">
+                                <div class="input-group mb-3">
+                                    <span id="text">当前价格：</span>
+                                    <span id="text-style"
+                                          style="color: {{ now_color }}">{{ share.dot }}</span><i>元/股</i>
+                                    <span id="text">当前涨额：</span>
+                                    <span id="text-style"
+                                          style="color: {{ now_color }}">{{ share.nowPic }}</span><i>元</i>
+                                    <span id="text">当前涨幅：</span>
+                                    <span id="text-style" style="color: {{ now_color }}">{{ share.rate }}</span><i>
+                                    %</i>
+                                    <span id="text">当前成交额：</span><span
+                                        id="text-style">{{ share.nowTraAmount }} 万元</span>
+                                    <span id="text">当前成交量：</span><span id="text-style">{{ share.nowTraNumber }} 手</span>
+                                </div>
                             </div>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">换手</span>
-                                <input type="text" class="form-control" value="{{ share.turnover_rate }} %" readonly>
-                                <span class="input-group-text">最高</span>
-                                <input type="text" class="form-control" value="{{ share.top_price }} 元/股" readonly>
-                                <span class="input-group-text">最低</span>
-                                <input type="text" class="form-control" value="{{ share.down_price }} 元/股" readonly>
-                                <span class="input-group-text">今开</span>
-                                <input type="text" class="form-control" value="{{ share.open_price }} 元/股" readonly>
-                                <span class="input-group-text">振幅</span>
-                                <input type="text" class="form-control" value="{{ share.amplitude }} %" readonly>
+                            <div class="bg-light rounded h-100 p-4">
+                                <div class="input-group mb-3">
+                                    <span id="text">今日开盘价：</span>
+                                    <span id="text-style">{{ share.todayStartPri }} </span><i>元/股</i>
+                                    <span id="text">昨日收盘价：</span>
+                                    <span id="text-style">{{ share.yestodEndPri }}</span><i>元/股</i>
+                                    <span id="text">今日最高价：</span>
+                                    <span id="text-style">{{ share.todayMax }}</span><i> 元/股</i>
+                                    <span id="text">今日最低价：</span>
+                                    <span id="text-style">{{ share.todayMin }}</span><i>元/股</i>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span id="text">涨跌百分比：</span>
+                                    <span id="text-style" style="color: {{ color }}">{{ share.increPer }}</span>
+                                    <i>%</i>
+                                    <span id="text">涨跌额：</span>
+                                    <span id="text-style" style="color: {{ color }}">{{ share.increase }}</span>
+                                    <i>元</i>
+                                    <span id="text">竞买价：</span><span
+                                        id="text-style">{{ share.competitivePri }} 元/股</span>
+                                    <span id="text">竞卖价：</span><span id="text-style">{{ share.reservePri }} 元/股</span>
+                                    <span id="text">成交量：</span><span id="text-style">{{ share.traNumber }} 手</span>
+                                    <span id="text">成交金额：</span><span id="text-style">{{ share.traAmount }} 元</span>
+                                </div>
                             </div>
-                            <div class="input-group mb-3">
-
+                            <div class="bg-light rounded h-100 p-4">
+                                <div class="input-group mb-3">
+                                    <span id="text">买一：</span><span id="text-style">{{ share.buyOne }} 手</span>
+                                    <span id="text">买一报价：</span><span id="text-style">{{ share.buyOnePri }} 元/股</span>
+                                    <span id="text">买二：</span><span id="text-style">{{ share.buyTwo }} 手</span>
+                                    <span id="text">买二报价：</span><span id="text-style">{{ share.buyTwoPri }} 元/股</span>
+                                    <span id="text">买三：</span><span id="text-style">{{ share.buyThree }} 手</span>
+                                    <span id="text">买三报价：</span><span id="text-style">{{ share.buyThreePri }} 元/股</span>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span id="text">买四：</span><span id="text-style">{{ share.buyFour }} 手</span>
+                                    <span id="text">买四报价：</span><span id="text-style">{{ share.buyFourPri }} 元/股</span>
+                                    <span id="text">买五：</span><span id="text-style">{{ share.buyFive }} 手</span>
+                                    <span id="text">买五报价：</span><span id="text-style">{{ share.buyFivePri }} 元/股</span>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span id="text">卖一：</span><span id="text-style">{{ share.sellOne }} 手</span>
+                                    <span id="text">卖一报价：</span><span id="text-style">{{ share.sellOnePri }} 元/股</span>
+                                    <span id="text">卖二：</span><span id="text-style">{{ share.sellTwo }} 手</span>
+                                    <span id="text">卖二报价：</span><span id="text-style">{{ share.sellTwoPri }} 元/股</span>
+                                    <span id="text">卖三：</span><span id="text-style">{{ share.sellThree }} 手</span>
+                                    <span id="text">卖三报价：</span><span
+                                        id="text-style">{{ share.sellThreePri }} 元/股</span>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span id="text">卖四：</span><span id="text-style">{{ share.sellFour }} 手</span>
+                                    <span id="text">卖四报价：</span><span id="text-style">{{ share.sellFourPri }} 元/股</span>
+                                    <span id="text">卖五：</span><span id="text-style">{{ share.sellFive }} 手</span>
+                                    <span id="text">卖五报价：</span><span id="text-style">{{ share.sellFivePri }} 元/股</span>
+                                </div>
                             </div>
-                        </div>
-
+                            <div class="bg-light rounded h-100 p-4" style="margin-left: 5%">
+                                <div class="input-group mb-3">
+                                    <img id="Img1" src="{{ share.minurl }}" onclick="enlarge('Img1')">
+                                    <img id="Img2" src="{{ share.dayurl }}" onclick="enlarge('Img2')">
+                                </div>
+                                <div class="input-group mb-3">
+                                    <img id="Img3" src="{{ share.weekurl }}" onclick="enlarge('Img3')">
+                                    <img id="Img4" src="{{ share.monthurl }}" onclick="enlarge('Img4')">
+                                </div>
+                                <div id="myImg" class="modal"
+                                     onclick="document.getElementById('myImg').style.display='none'">
+                                    <!-- 弹窗内容 -->
+                                    <img class="myContent" id="img01">
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="bg-light rounded h-100 p-4">
+                                <div class="input-group mb-3">
+                                    <span id="text">持仓股票：</span><span id="text-style">{{ obj.name }}</span>
+                                    <span id="text">持仓代码：</span><span id="text-style">{{ obj.code }}</span>
+                                    <span id="text">持仓数量：</span><span id="text-style">{{ obj.number }} 股</span>
+                                    <span id="text">持仓成本：</span><span id="text-style">{{ obj.cost_price }} 元</span>
+                                    <span id="text">持仓盈亏：</span>
+                                    {% if obj.profit_and_loss > 0 %}
+                                        <span id="text-style" style="color: red">{{ obj.profit_and_loss }}</span>
+                                    {% elif obj.profit_and_loss < 0 %}
+                                        <span id="text-style" style="color: green">{{ obj.profit_and_loss }}</span>
+                                    {% else %}
+                                        <span id="text-style">{{ obj.profit_and_loss }}</span>
+                                    {% endif %}
+                                    <i>元</i>
+                                    <span id="text">当日盈亏：</span>
+                                    {% if obj.today_price > 0 %}
+                                        <span id="text-style" style="color: red">{{ obj.today_price }}</span>
+                                    {% elif obj.today_price < 0 %}
+                                        <span id="text-style" style="color: green">{{ obj.today_price }}</span>
+                                    {% else %}
+                                        <span id="text-style">{{ obj.today_price }}</span>
+                                    {% endif %}
+                                    <i>元</i>
+                                </div>
+                            </div>
+                            <div class="bg-light rounded h-100 p-4">
+                                <div class="input-group mb-3">
+                                    <span id="text">最新：</span>
+                                    <span id="text-style" style="color: {{ color }}">{{ share.new_price }}</span>
+                                    <i>元/股</i>
+                                    <span id="text">均价：</span>
+                                    <span id="text-style">{{ share.average }}</span>
+                                    <i>元/股</i>
+                                    <span id="text">最高：</span>
+                                    <span id="text-style">{{ share.top_price }}</span>
+                                    <i>元/股</i>
+                                    <span id="text">最低：</span>
+                                    <span id="text-style">{{ share.down_price }}</span>
+                                    <i>元/股</i>
+                                    <span id="text">今开：</span>
+                                    <span id="text-style">{{ share.open_price }}</span>
+                                    <i>元/股</i>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <span id="text">涨幅：</span>
+                                    <span id="text-style" style="color: {{ color }}">{{ share.rise_and_fall }}</span>
+                                    <i>%</i>
+                                    <span id="text">涨跌：</span>
+                                    <span id="text-style" style="color: {{ color }}">{{ share.rise_and_price }}</span>
+                                    <i>元</i>
+                                    <span id="text">总手：</span><span id="text-style">{{ share.turnover }} 手</span>
+                                    <span id="text">金额：</span><span
+                                        id="text-style">{{ share.business_volume }} 万元</span>
+                                    <span id="text">换手：</span><span id="text-style">{{ share.turnover_rate }} %</span>
+                                    <span id="text">振幅：</span><span id="text-style">{{ share.amplitude }} %</span>
+                                </div>
+                            </div>
+                        {% endif %}
                         <a href="{% url 'stock' %}?page={{ page }}" type="button" class="btn btn-primary">返回</a>
                     </form>
                 </div>
@@ -63,3 +225,13 @@
         </div>
     </div>
 {% endblock %}
+
+{% block js %}
+    <script>
+        function enlarge(imgId) {
+            document.getElementById('myImg').style.display = "block";
+            document.getElementById("img01").src = document.getElementById(imgId).src;
+        }
+    </script>
+{% endblock %}
+

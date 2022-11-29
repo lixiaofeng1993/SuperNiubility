@@ -19,6 +19,15 @@ from public.recommend import recommend_handle
 from public.log import logger
 
 
+def difference_stock(code: str):
+    # 沪市股票包含上证主板和科创板和B股：沪市主板股票代码是60开头、科创板股票代码是688开头、B股代码900开头
+    if code.startswith("60") or code.startswith("688") or code.startswith("900"):
+        return f"sh{code}"
+    # 深市股票包含主板、中小板、创业板和B股：深市主板股票代码是000开头、中小板股票代码002开头、创业板300开头、B股代码200开头
+    elif code.startswith("000") or code.startswith("002") or code.startswith("300") or code.startswith("200"):
+        return f"sz{code}"
+
+
 def delete_cache(user_id):
     """
     清除redis缓存
@@ -26,6 +35,24 @@ def delete_cache(user_id):
     cache.delete(YearChart.format(user_id=user_id))
     cache.delete(FiveChart.format(user_id=user_id))
     cache.delete(TenChart.format(user_id=user_id))
+
+
+def format_time(date_time: datetime):
+    """格式化时间天，小时，分钟，秒"""
+    now = etc_time()["now"]
+    total_seconds = round((now - date_time).total_seconds())
+    total_seconds = total_seconds if total_seconds > 0 else 1
+    if total_seconds < 60:
+        _time = f"{total_seconds}秒前"
+    elif 60 <= total_seconds < 3600:
+        _time = f"{round(total_seconds / 60)}分钟前"
+    elif 3600 <= total_seconds < 86400:
+        _time = f"{round(total_seconds / 3600)}小时前"
+    elif 86400 <= total_seconds < 172800:
+        _time = f"{round(total_seconds / 86400)}天前"
+    else:
+        _time = date_time
+    return _time
 
 
 def etc_time():
@@ -110,6 +137,9 @@ def operation_record(request, model, model_id, repr, action_flag, msg: str = "")
     elif action_flag == "del":
         action_flag = DELETION
         change_message = f"删除{repr} {model.name}"
+    elif action_flag == "change":
+        action_flag = CHANGE
+        change_message = f"查看{repr} {model_id}"
     user_id = request.session["user_id"] if request.session.get("user_id") else model.id
     LogEntry.objects.log_action(
         user_id=user_id,

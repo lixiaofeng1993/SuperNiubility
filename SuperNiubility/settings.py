@@ -182,5 +182,11 @@ CELERYBEAT_SCHEDULE = {
         'task': 'nb.tasks.stock_today',
         'schedule': 5 * 60,
         'args': (),
-    }
+    },
+    'stock_detail': {
+        # 任务路径
+        'task': 'nb.tasks.stock_detail',
+        'schedule': 6 * 60,
+        'args': (),
+    },
 }

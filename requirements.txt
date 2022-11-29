@@ -11,3 +11,8 @@ chinesecalendar==1.7.2
 django-simpleui==2022.11.30
 starlette==0.22.0
 django_pandas==0.6.6
+
+python-dateutil~=2.8.2
+requests~=2.28.1
+jsonpath~=0.82
+urllib3~=1.26.12
