@@ -133,9 +133,6 @@ class StockIndex(ListView):
     def get_queryset(self):
         model = model_superuser(self.request, self.model)
         obj_list = model.filter(is_delete=False).order_by("-create_date")
-        moment = etc_time()
-        for obj in obj_list:
-            setattr(obj, "days", (moment["now"] - obj.create_date).days + 1)  # 持仓天数
         obj_list = handle_model(list(obj_list))
         return obj_list
 
@@ -171,7 +168,8 @@ def stock_add(request):
         number = body.get("number")
         cost_price = body.get("cost_price")
         color = body.get("color")
-        is_detail = body.get("is_detail")
+        days = body["days"] if body.get("days") else 1
+        is_detail = body["is_detail"] if body.get("is_detail") else False
         model = model_superuser(request, SharesHold)
         if stock_id:
             if model.filter(Q(code=code) & Q(is_delete=False)).exclude(id=stock_id).exists():
@@ -192,9 +190,14 @@ def stock_add(request):
         try:
             user_id = request.session.get("user_id")
             if stock_id:
+                if is_detail:
+                    hold = model.filter(Q(is_detail=True) & Q(is_delete=False)).first()
+                    if hold:
+                        hold.is_detail = False
+                        hold.save()
                 model.filter(Q(id=stock_id) & Q(is_delete=False)).update(
                     name=name, code=code, number=number, cost_price=cost_price, color=color, user_id=user_id,
-                    is_detail=is_detail
+                    is_detail=is_detail, days=days
                 )
             else:
                 hold = SharesHold()
@@ -234,12 +237,13 @@ def stock_look(request, stock_id):
     operation_record(request, hold, hold.name, repr, "change")
     if hold.is_detail:
         detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
+        if not detail:
+            return render(request, "home/stock/look_stock.html", info)
         update_time = format_time(detail.time)
         # 当前
         now_color = "#FF0000" if detail.rate > 0 else "#00FF00"
         # 全部
         color = "#FF0000" if detail.increPer > 0 else "#00FF00"
-
         info.update({"obj": hold, "share": detail, "flag": True, "now_color": now_color, "color": color,
                      "update_time": update_time})
         return render(request, "home/stock/look_stock.html", info)

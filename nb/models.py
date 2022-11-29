@@ -51,6 +51,7 @@ class SharesHold(models.Model):
     name = models.CharField(max_length=20, null=False, help_text="持仓股票名称")
     code = models.CharField(max_length=20, null=False, help_text="持仓股票代码")
     number = models.IntegerField(default=0, null=False, help_text="持仓数量")
+    days = models.IntegerField(default=0, null=False, help_text="持仓天数")
     cost_price = models.FloatField(default=0.00, null=False, help_text="成本价")
     profit_and_loss = models.FloatField(default=0.00, null=True, help_text="持仓盈亏")
     last_close_price = models.FloatField(default=0.00, null=True, help_text="上一天收盘价")

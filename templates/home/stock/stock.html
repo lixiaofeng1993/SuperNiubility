@@ -154,6 +154,12 @@
             </div>
             <div class="col-sm-12 col-xl-6">
                 <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4">买入卖出托单</h6>
+                    <canvas id="buy-sell"></canvas>
+                </div>
+            </div>
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
                     <h6 class="mb-4" id="five-day"></h6>
                     <canvas id="five-days"></canvas>
                 </div>
@@ -162,6 +168,12 @@
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="mb-4" id="ten-day"></h6>
                     <canvas id="ten-days"></canvas>
+                </div>
+            </div>
+            <div class="col-sm-12 col-xl-6">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="mb-4" id="twenty-day"></h6>
+                    <canvas id="twenty-days"></canvas>
                 </div>
             </div>
             <div class="col-sm-12 col-xl-6">
@@ -307,10 +319,6 @@
             }
         }
 
-        window.onload = function () {
-
-        }
-
         function TodayChart() {
             let ale = $("#alert");
             let username = "{{ user.username }}";
@@ -359,6 +367,7 @@
                             top.location.href = "{% url 'login' %}";
                         }, 1500);
                     } else {
+                        $("#today").text(`<span>${message}</span>`);
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                     }
                 }
@@ -419,6 +428,7 @@
                             top.location.href = "{% url 'login' %}";
                         }, 1500);
                     } else {
+                        $("#five-days").text(`<span>${message}</span>`);
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                     }
                 }
@@ -478,6 +488,67 @@
                             top.location.href = "{% url 'login' %}";
                         }, 1500);
                     } else {
+                        $("#ten-days").text(`<span>${message}</span>`);
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }
+            })
+        }
+
+        function twentyDayChart() {
+            let ale = $("#alert");
+            let tenDay = $("#twenty-day");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "{% url 'twenty_chart' %}",
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let message = result.message;
+                    let data = result.data;
+                    if (code === 200) {
+                        let chart_obj = $("#twenty-days").get(0).getContext("2d");
+                        let labels = data.labels;
+                        let days = 0;
+                        if (data.days) {
+                            days = data.days
+                        }
+                        let datasets = new List();
+                        tenDay.text(`${days}日走势`)
+                        for (const key in data) {
+                            if (key !== "labels" && key !== "days") {
+                                let borderColor = data[key].color;
+                                datasets.append({
+                                    label: key,
+                                    data: data[key].data,
+                                    fill: true,
+                                    tension: 0.1,
+                                    borderColor: borderColor
+                                })
+                            }
+                        }
+                        let data_dict = {
+                            labels: labels,
+                            datasets: datasets.dataStore
+                        }
+                        let config = {
+                            type: 'line', // 设置图表类型
+                            data: data_dict,
+                        };
+                        new Chart(chart_obj, config);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        $("#twenty-days").text(`<span>${message}</span>`);
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                     }
                 }
@@ -537,22 +608,56 @@
                             top.location.href = "{% url 'login' %}";
                         }, 1500);
                     } else {
+                        $("#all-days").text(`<span>${message}</span>`);
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                     }
                 }
             })
         }
 
-        //window.onload = function () {
-          //  setTimeout(function () {
-            //    location.reload()
-            //}, 5 * 1000 * 60)
-        //};
+        function buySell() {
+            let ale = $("#alert");
+            let buy = $("#buy-sell");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: "{% url 'buy_sell' %}",
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log("=========buySell=======>>>", result);
+                    let code = result.code;
+                    let message = result.message;
+                    let data = result.data;
+                    if (code === 200) {
+                        let buy_obj = buy.get(0).getContext("2d");
+                        let config = {
+                            type: 'bar', // 设置图表类型
+                            data: data,
+                        };
+                        new Chart(buy_obj, config);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        buy.text(`<span>${message}</span>`);
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }
+            })
+        }
 
         TodayChart();
         FiveDayChart();
         TenDayChart();
+        twentyDayChart();
         AllDayChart();
+        buySell();
 
     </script>
 {% endblock %}

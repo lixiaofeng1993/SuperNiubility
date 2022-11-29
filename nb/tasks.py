@@ -143,9 +143,10 @@ def stock_today():
                 hold.today_price = round((float(new_price) - hold.last_close_price) * hold.number, 2)
                 is_profit = hold.is_profit
                 hold.is_profit = True if hold.profit_and_loss > 0 else False
-                if moment["now"] >= moment["end_time"]:
+                if moment["now"] >= moment["stock_time"]:
                     hold.last_close_price = new_price
                     hold.last_day = moment["today"]
+                    hold.days += 1
                 hold.save()
                 if is_profit != hold.is_profit:
                     if hold.is_profit:
@@ -183,6 +184,9 @@ def stock_detail():
     if not moment:  # 判断股市开关时间
         return
     hold = SharesHold.objects.filter(Q(is_delete=False) & Q(is_detail=True)).first()
+    if not hold:
+        logger.error("未设置 is_detail 字段.")
+        return
     code = difference_stock(code=hold.code)
     result = stock_api(code=code)
     if not result:
@@ -255,6 +259,11 @@ def stock_detail():
                              shares_hold_id=hold.id,
                              )
     try:
+        if hold.number and hold.cost_price:
+            hold.profit_and_loss = round(hold.number * float(response["dot"]) - hold.number * hold.cost_price, 2)
+            if hold.last_close_price:
+                hold.today_price = round((float(response["dot"]) - hold.last_close_price) * hold.number, 2)
+        hold.save()
         detail_obj.save()
         logger.info("股票详情保存成功.")
     except Exception as error:

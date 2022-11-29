@@ -28,6 +28,8 @@ urlpatterns = [
     path("stock/day/chart/", views_api.day_chart, name="day_chart"),
     path("stock/five/chart/", views_api.five_chart, name="five_chart"),
     path("stock/ten/chart/", views_api.ten_chart, name="ten_chart"),
+    path("stock/twenty/chart/", views_api.twenty_chart, name="twenty_chart"),
+    path("stock/buy/sell/", views_api.buy_sell_chart, name="buy_sell"),
 
     path("record/", views.RecordIndex.as_view(), name="record"),
     path("record/five/", views_api.record, name="record_five"),

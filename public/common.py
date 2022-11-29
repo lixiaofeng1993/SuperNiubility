@@ -35,6 +35,9 @@ def delete_cache(user_id):
     cache.delete(YearChart.format(user_id=user_id))
     cache.delete(FiveChart.format(user_id=user_id))
     cache.delete(TenChart.format(user_id=user_id))
+    cache.delete(TodayChart.format(user_id=user_id))
+    cache.delete(TodayBuySellChart.format(user_id=user_id))
+    cache.delete(TwentyChart.format(user_id=user_id))
 
 
 def format_time(date_time: datetime):
@@ -71,9 +74,10 @@ def etc_time():
         "day": today.day,
         "no_time": datetime(year, month, day, 9, 0, 0),
         "start_time": datetime(year, month, day, 9, 25, 0),
-        "end_time": datetime(year, month, day, 15, 5, 0),
+        "end_time": datetime(year, month, day, 15, 10, 0),
+        "stock_time": datetime(year, month, day, 15, 0, 0),
         "ap_time": datetime(year, month, day, 11, 35, 0),
-        "pm_time": datetime(year, month, day, 13, 00, 0),
+        "pm_time": datetime(year, month, day, 13, 0, 0),
     }
     return moment
 
@@ -164,6 +168,8 @@ def format_obj(obj: object):
         obj.id = str(obj.id)
     if hasattr(obj, "action_time"):
         obj.action_time = obj.action_time.strftime("%Y-%m-%d %H:%M:%S")
+    if hasattr(obj, "time"):
+        obj.time = obj.time.strftime("%Y-%m-%d %H:%M:%S")
     return obj
 
 
@@ -188,6 +194,8 @@ def handle_model(model_obj):
                     obj["id"] = str(obj["id"])
                 if "action_time" in obj.keys():
                     obj["action_time"] = obj["action_time"].strftime("%Y-%m-%d %H:%M:%S")
+                if "time" in obj.keys():
+                    obj["time"] = obj["time"].strftime("%Y-%m-%d %H:%M:%S")
             else:
                 obj = format_obj(obj)
             model_obj.append(obj)

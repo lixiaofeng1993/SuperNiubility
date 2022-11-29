@@ -71,3 +71,7 @@ class JsonResponse(HttpResponse):
     @staticmethod
     def TimeException(message="时间错误.", data=None):
         return JsonResponse(1008, message, data)
+
+    @staticmethod
+    def Emptyeption(message="查询数据为空异常.", data=None):
+        return JsonResponse(1009, message, data)

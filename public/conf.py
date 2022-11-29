@@ -28,8 +28,14 @@ YearChart = "YearChart{user_id}"
 FiveChart = "FiveChart{user_id}"
 # 10天k线
 TenChart = "TenChart{user_id}"
+# 20天k线
+TwentyChart = "TwentyChart{user_id}"
 # 导入股票end time
 StockEndTime = "StockEndTime{user_id}"
+# 当天k线
+TodayChart = "TodayChart{user_id}"
+# 当天买入卖出托单
+TodayBuySellChart = "TodayBuySellChart{user_id}"
 
 # 股票数据过滤规则
 StockRule = ["00", "15", "30", "45"]

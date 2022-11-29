@@ -10,7 +10,7 @@ from django.db.models import Q  # 与或非 查询
 from dateutil.relativedelta import relativedelta
 
 from .tasks import stock_history, last_day_stock_history
-from nb.models import ToDo, SharesHold, Shares
+from nb.models import ToDo, SharesHold, Shares, StockDetail
 from public.auth_token import auth_token
 from public.common import *
 from public.response import JsonResponse
@@ -144,6 +144,10 @@ def stock_import(request, hold_id):
 @auth_token()
 def day_chart(request):
     if request.method == POST:
+        user_id = request.session.get("user_id")
+        datasets = cache.get(TodayChart.format(user_id=user_id))
+        if datasets:
+            return JsonResponse.OK(data=datasets)
         model = model_superuser(request, SharesHold)
         hold_list = model.filter(is_delete=False)
         datasets = dict()
@@ -179,6 +183,7 @@ def day_chart(request):
                 "labels": labels
 
             })
+        cache.set(TodayChart.format(user_id=user_id), datasets, 3 * 60)
         return JsonResponse.OK(data=datasets)
 
 
@@ -233,6 +238,8 @@ def five_chart(request):
 @auth_token()
 def ten_chart(request):
     if request.method == POST:
+        from .tasks import stock_today
+        stock_today.delay()
         user_id = request.session.get("user_id")
         datasets = cache.get(TenChart.format(user_id=user_id))
         if datasets:
@@ -279,6 +286,54 @@ def ten_chart(request):
 
 
 @auth_token()
+def twenty_chart(request):
+    if request.method == POST:
+        user_id = request.session.get("user_id")
+        datasets = cache.get(TwentyChart.format(user_id=user_id))
+        if datasets:
+            return JsonResponse.OK(data=datasets)
+        model = model_superuser(request, SharesHold)
+        hold_list = model.filter(is_delete=False)
+        datasets = dict()
+        moment = etc_time()
+        for hold in hold_list:
+            share_list = Shares.objects.filter(
+                Q(shares_hold_id=hold.id) &
+                Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("-date_time")
+            if not share_list:
+                continue
+            share_list = handle_model(list(share_list))
+            labels = list()
+            data_list = list()
+            day_list = list()
+            for share in share_list:
+                if len((set(day_list))) > 20:
+                    labels.pop()
+                    data_list.pop()
+                    break
+                date_time = share.date_time
+                day_flag = date_time.split(" ")[0]
+                day_list.append(day_flag)
+                flag = date_time.split(":")[-1]
+                if flag in StockRule:
+                    labels.append(share.date_time)
+                    data_list.append(share.new_price)
+            data_list = list(reversed(data_list))
+            labels = list(reversed(labels))
+            datasets.update({
+                hold.name: {
+                    "data": data_list,
+                    "color": hold.color,
+                },
+                "labels": labels,
+                "days": len((set(day_list))) - 1
+
+            })
+        cache.set(TwentyChart.format(user_id=user_id), datasets, surplus_second())
+        return JsonResponse.OK(data=datasets)
+
+
+@auth_token()
 def half_year_chart(request):
     if request.method == POST:
         user_id = request.session.get("user_id")
@@ -317,6 +372,128 @@ def half_year_chart(request):
 
             })
         cache.set(YearChart.format(user_id=user_id), datasets, surplus_second())
+        return JsonResponse.OK(data=datasets)
+
+
+@auth_token()
+def buy_sell_chart(request):
+    if request.method == POST:
+        user_id = request.session.get("user_id")
+        datasets = cache.get(TodayBuySellChart.format(user_id=user_id))
+        if datasets:
+            return JsonResponse.OK(data=datasets)
+        model = model_superuser(request, SharesHold)
+        hold = model.filter(Q(is_delete=False) & Q(is_detail=True)).first()
+        if not hold:
+            return JsonResponse.Emptyeption()
+        moment = etc_time()
+        if check_stoke_day():  # 休市日展示最后一天的数据
+            last_day = moment["today"]
+        else:
+            if hold.last_day:
+                last_day = hold.last_day
+            else:
+                share_first = StockDetail.objects.filter(
+                    Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
+                if not share_first:
+                    return JsonResponse.Emptyeption()
+                last_day = share_first.date
+        detail_list = StockDetail.objects.filter(
+            Q(shares_hold_id=hold.id) & Q(is_delete=False) & Q(date=last_day)).order_by("time")
+        if not detail_list:
+            return JsonResponse.Emptyeption()
+        detail_list = handle_model(list(detail_list))
+        labels = list()
+        buy_one_list = list()
+        buy_two_list = list()
+        buy_three_list = list()
+        buy_four_list = list()
+        buy_five_list = list()
+        sell_one_list = list()
+        sell_two_list = list()
+        sell_three_list = list()
+        sell_four_list = list()
+        sell_five_list = list()
+        for detail in detail_list:
+            buy_one_list.append(detail.buyOne)
+            buy_two_list.append(detail.buyTwo)
+            buy_three_list.append(detail.buyThree)
+            buy_four_list.append(detail.buyFour)
+            buy_five_list.append(detail.buyFive)
+            sell_one_list.append(detail.sellOne)
+            sell_two_list.append(detail.sellTwo)
+            sell_three_list.append(detail.sellThree)
+            sell_four_list.append(detail.sellFour)
+            sell_five_list.append(detail.sellFive)
+            labels.append(detail.time)
+        datasets = {
+            "labels": labels,
+            "datasets": [
+                {
+                    "label": "买一",
+                    "data": buy_one_list,
+                    "borderColor": "red",
+                    "backgroundColor": "red",
+                    "stack": "1",
+                }, {
+                    "label": "买二",
+                    "data": buy_two_list,
+                    "borderColor": 'red',
+                    "backgroundColor": 'red',
+                    "stack": "1",
+                }, {
+                    "label": "买三",
+                    "data": buy_three_list,
+                    "borderColor": 'red',
+                    "backgroundColor": 'red',
+                    "stack": "1",
+                }, {
+                    "label": "买四",
+                    "data": buy_four_list,
+                    "borderColor": 'red',
+                    "backgroundColor": 'red',
+                    "stack": "1",
+                }, {
+                    "label": "买五",
+                    "data": buy_five_list,
+                    "borderColor": 'red',
+                    "backgroundColor": 'red',
+                    "stack": "1",
+                }, {
+                    "label": "卖一",
+                    "data": sell_one_list,
+                    "borderColor": 'green',
+                    "backgroundColor": 'green',
+                    "stack": "2",
+                },
+                {
+                    "label": "卖二",
+                    "data": sell_two_list,
+                    "borderColor": 'green',
+                    "backgroundColor": 'green',
+                    "stack": "2",
+                }, {
+                    "label": "卖三",
+                    "data": sell_three_list,
+                    "borderColor": 'green',
+                    "backgroundColor": 'green',
+                    "stack": "2",
+                }, {
+                    "label": "卖四",
+                    "data": sell_four_list,
+                    "borderColor": 'green',
+                    "backgroundColor": 'green',
+                    "stack": "2",
+                }, {
+                    "label": "卖五",
+                    "data": sell_five_list,
+                    "borderColor": 'green',
+                    "backgroundColor": 'green',
+                    "stack": "2",
+                },
+            ]
+        }
+        cache.set(TodayBuySellChart.format(user_id=user_id), datasets, 3 * 60)
         return JsonResponse.OK(data=datasets)
 
 
