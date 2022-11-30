@@ -25,6 +25,7 @@ class WechatServe(View):
         token = wx_login()
         try:
             rec_msg = parse_xml(request.body())
+            logger.info(f"======rec_msg========={rec_msg}")
             if not rec_msg:
                 return HTMLResponse('success')
             to_user = rec_msg.FromUserName
@@ -36,7 +37,8 @@ class WechatServe(View):
                 if text == "推荐":
                     content = cache.get("recommended-today")
                 elif text and (
-                        "DYNASTY" in text or "POETRY_TYPE" in text or "AUTHOR" in text or "RECOMMEND" in text):
+                        "DYNASTY" in text or "POETRY_TYPE" in text or "AUTHOR" in text or "RECOMMEND" in text
+                ):
                     skip = cache.get(text)
                     if not skip:
                         content = "会话只有30分钟，想了解更多，请重新发起~"
@@ -50,6 +52,7 @@ class WechatServe(View):
                     content = "See you later..."
             if not content:
                 content, media_id = send_wx_msg(rec_msg, token, skip, idiom)
+            logger.info(f"======content========={content}")
             if rec_msg.MsgType == 'text' and not media_id:
                 if "</a>" in content and len(content) >= 2000:
                     content = "..." + content[len(content) - 2000:]
