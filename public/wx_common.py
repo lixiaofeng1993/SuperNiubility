@@ -98,7 +98,7 @@ def poetry_by_author_id(author_id: str, skip: int, flag: bool = False):
         content += ">>> 点击古诗名字 "
         more_text = f"<a href='weixin://bizmsgmenu?msgmenucontent=AUTHOR-{author_id}&msgmenuid=9527'>更多</a>"
         content += "或者查看 " + more_text if len(data_list) == 5 else ""
-        cache.set(f"AUTHOR={author_id}", str(skip), 30 * 60)
+        cache.set(f"AUTHOR@{author_id}", str(skip), 30 * 60)
     return content
 
 
@@ -113,7 +113,7 @@ def poetry_by_type(text: str, skip: int, val):
         content += ">>> 点击古诗名字 "
         more_text = f"<a href='weixin://bizmsgmenu?msgmenucontent=POETRY_TYPE-{val}&msgmenuid=9529'>更多</a> "
         content += "或者查看 " + more_text if len(data_list) == 10 else ""
-        cache.set(f"POETRY_TYPE={val}", str(skip), 30 * 60)
+        cache.set(f"POETRY_TYPE@{val}", str(skip), 30 * 60)
         return content
 
 
@@ -128,7 +128,7 @@ def author_by_dynasty(text: str, skip: int, val):
         content += ">>> 点击诗人名字 "
         more_text = f"<a href='weixin://bizmsgmenu?msgmenucontent=DYNASTY-{val}&msgmenuid=9526'>更多</a> "
         content += "或者查看 " + more_text if len(data_list) == 10 else ""
-        cache.set(f"DYNASTY={val}", str(skip), 30 * 60)
+        cache.set(f"DYNASTY@{val}", str(skip), 30 * 60)
         return content
 
 
@@ -166,9 +166,12 @@ def send_poetry(data):
 
 
 def send_more(text: str, skip: str, content: str = ""):
-    if "DYNASTY=" in text or "POETRY_TYPE=" in text or "AUTHOR=" in text or "RECOMMEND=" in text:
-        skip = int(skip) if str(skip).isdigit() else skip
-        val = text.split("=")[-1]
+    if "DYNASTY@" in text or "POETRY_TYPE@" in text or "AUTHOR@" in text or "RECOMMEND@" in text:
+        if str(skip).isdigit():
+            skip = int(skip)
+            val = text.split("@")[-1]
+        else:
+            val = str(skip)
         if "RECOMMEND" in text:
             data = Poetry.objects.get(id=val)
             if data.original:
@@ -225,7 +228,7 @@ def poetry_content(text: str, skip: str):
                 content += "\n>>> 点击查看 " \
                            f"<a href='weixin://bizmsgmenu?msgmenucontent=RECOMMEND-{poetry.id}&msgmenuid=9525'>更多</a>"
                 seconds = surplus_second()  # 返回今天剩余秒数
-                cache.set(f"RECOMMEND={poetry.id}", str(poetry.id), seconds)
+                cache.set(f"RECOMMEND_POETRY", str(poetry.id), seconds)
                 cache.set(f"recommended-today", content, seconds)
                 return content
         for key, value in DYNASTY.items():  # 诗人朝代

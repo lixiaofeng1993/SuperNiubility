@@ -46,7 +46,7 @@ class WechatServe(View):
                     if not skip:
                         content = "会话只有30分钟，想了解更多，请重新发起~"
                 elif not idiom and text in ["成语接龙", "接龙"]:
-                    cache.set(key=f"IDIOM", value=text, seconds=30 * 60)
+                    cache.set("IDIOM", text, 30 * 60)
                     content = "进入时效30分钟的成语接龙时刻，输入成语开始吧~"
                 elif not idiom and "IDIOM-INFO" in text:
                     content = "成语接龙会话时效只有30分钟，想了解更多，请重新发起~"
