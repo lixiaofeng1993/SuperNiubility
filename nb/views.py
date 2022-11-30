@@ -233,6 +233,10 @@ def stock_look(request, stock_id):
     info = request_get_search(request)
     model = model_superuser(request, SharesHold)
     hold = model.get(id=stock_id)
+    info.update({
+        "flag": False,
+        "obj": hold,
+    })
     repr = "股票"
     operation_record(request, hold, hold.name, repr, "change")
     if hold.is_detail:
@@ -244,11 +248,10 @@ def stock_look(request, stock_id):
         now_color = "red" if detail.rate > 0 else "green"
         # 全部
         color = "red" if detail.increPer > 0 else "green"
-        info.update({"obj": hold, "share": detail, "flag": True, "now_color": now_color, "color": color,
+        info.update({"share": detail, "flag": True, "now_color": now_color, "color": color,
                      "update_time": update_time})
         return render(request, "home/stock/look_stock.html", info)
     moment = check_stoke_day()
-    info = info | {"flag": False} | {"obj": hold}
     if moment:
         last_day = str(moment["today"])
     else:
@@ -258,7 +261,6 @@ def stock_look(request, stock_id):
             share_first = Shares.objects.filter(
                 Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-date_time").first()
             if not share_first:
-                info.update({"obj": hold})
                 return render(request, "home/stock/look_stock.html", info)
             last_day = share_first.date_time.split(" ")[0]
     share_list = Shares.objects.filter(
@@ -292,7 +294,7 @@ def stock_look(request, stock_id):
     # 最高
     amplitude = round((top_price - down_price) / hold.last_close_price * 100, 2) if hold.last_close_price else ""
     color = "#FF0000" if rise_and_fall > 0 else "#00FF00"
-    info.update({"obj": hold, "share": {
+    info.update({"share": {
         "new_price": new_price,
         "open_price": open_price,
         "average": average,

@@ -191,14 +191,15 @@ def stock_detail():
     result = stock_api(code=code)
     if not result:
         return
-    data = result["data"]
+    response = result["data"]
     dapandata = result["dapandata"]
     gopicture = result["gopicture"]
     change = {
         'traAmount': 'nowTraAmount',
         'traNumber': 'nowTraNumber'
     }
-    date_time = f'{data["date"]} {data["time"]}'
+    response.update(gopicture)
+    date_time = f'{response["date"]} {response["time"]}'
     check_time = datetime.strptime(date_time, "%Y-%m-%d %H:%M:%S")
     detail = StockDetail.objects.filter(Q(is_delete=False) &
                                         Q(code=code) & Q(shares_hold_id=hold.id)).order_by("-time").first()
@@ -211,7 +212,7 @@ def stock_detail():
             dapandata_dict.update({change[key]: value})
         else:
             dapandata_dict.update({key: value})
-    response = dapandata_dict | data | gopicture
+    response.update(dapandata_dict)
     detail_obj = StockDetail(name=response["name"],
                              code=code,
                              increPer=response["increPer"],
