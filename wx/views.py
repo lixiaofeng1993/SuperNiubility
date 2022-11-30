@@ -1,4 +1,4 @@
-from starlette.responses import HTMLResponse, Response
+from django.http import HttpResponse
 from django.views import View
 
 from public.wx_common import *
@@ -27,7 +27,7 @@ class WechatServe(View):
             rec_msg = parse_xml(request.body())
             logger.info(f"======rec_msg========={rec_msg}")
             if not rec_msg:
-                return HTMLResponse('success')
+                return HttpResponse('success')
             to_user = rec_msg.FromUserName
             from_user = rec_msg.ToUserName
             text = rec_msg.Content
@@ -58,16 +58,16 @@ class WechatServe(View):
                     content = "..." + content[len(content) - 2000:]
                 elif len(content) >= 710 and "</a>" not in content:
                     content = content[:710] + "..."
-                return Response(
+                return HttpResponse(
                     Message(to_user, from_user, content=content).send(),
                     media_type="application/xml")
             elif rec_msg.MsgType == 'event' and content:
-                return Response(
+                return HttpResponse(
                     Message(to_user, from_user, content=content).send(), media_type="application/xml")
             elif rec_msg.MsgType == "image" or media_id:
-                return Response(
+                return HttpResponse(
                     Message(to_user, from_user, media_id=media_id, msg_type="image").send(),
                     media_type="application/xml")
         except Exception as error:
             logger.error(f"微信回复信息报错：{error}")
-            return HTMLResponse('success')
+            return HttpResponse('success')

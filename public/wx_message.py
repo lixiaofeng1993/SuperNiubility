@@ -12,6 +12,7 @@ from public.log import logger
 
 
 def parse_xml(web_data):
+    logger.info(f"========web_data===========>>>{web_data}")
     xml_data = Et.fromstring(web_data)
     try:
         msg_type = xml_data.find('MsgType').text
