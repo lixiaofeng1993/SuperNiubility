@@ -158,39 +158,23 @@ MEDIA_URL = "/media/"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 定时任务
-# Broker配置，使用Redis作为消息中间件
-BROKER_URL = 'redis://:123456@127.0.0.1:6379/0'
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://:123456@127.0.0.1:6379/0')
+# 存储结果后端
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://:123456@127.0.0.1:6379/7')
 
-# BACKEND配置，这里使用redis
-CELERY_RESULT_BACKEND = 'redis://:123456@127.0.0.1:6379/0'
-
+# 时区
+CELERY_TIMEZONE = 'Asia/Shanghai'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
 # 结果序列化方案
 CELERY_RESULT_SERIALIZER = 'json'
 
 # 任务结果过期时间，秒
 CELERY_TASK_RESULT_EXPIRES = 60 * 60 * 24
-
-# 时区配置
-CELERY_TIMEZONE = 'Asia/Shanghai'
-
-CELERYBEAT_SCHEDULE = {
-    'make_overdue_todo': {
-        # 任务路径
-        'task': 'nb.tasks.make_overdue_todo',
-        'schedule': crontab(minute=59, hour=23),
-        # 'schedule': 5,
-        'args': (),
-    },
-    'stock_today': {
-        # 任务路径
-        'task': 'nb.tasks.stock_today',
-        'schedule': 5 * 60,
-        'args': (),
-    },
-    'stock_detail': {
-        # 任务路径
-        'task': 'nb.tasks.stock_detail',
-        'schedule': 6 * 60,
-        'args': (),
-    },
-}
+# redis  相关配置信息
+REDIS_HOST = "127.0.0.1"
+REDIS_PORT = 6379  # 端口
+REDIS_PASSWORD = ""
+REDIS_SSL_STATUS = False  # 是否需要SSL
+REDIS_BASE_URL = "redis://:123456@127.0.0.1:6379/"  # 基础连接-用于连接池

@@ -11,18 +11,36 @@ from django.conf import settings
 from celery.schedules import crontab
 import os
 
-platforms.C_FORCE_ROOT = True
 # 设置环境变量
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SuperNiubility.settings')
 
 # 注册Celery的APP
-app = Celery('SuperNiubility', backend='redis://:123456@localhost:6379/1', broker='redis://:123456@localhost:6379/0')
+app = Celery('SuperNiubility')
 # 绑定配置文件
-app.config_from_object('django.conf:settings')
-app.conf.broker_url = 'redis://:123456@localhost:6379'
-app.conf.broker_transport_options = {'visibility_timeout': 43200}
-app.conf.timezone = 'Asia/Shanghai'
+app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # 自动发现各个app下的tasks.py文件
 # app.autodiscover_tasks(['page'], force=True)
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
+app.conf.beat_schedule = {
+    'make_overdue_todo': {
+        # 任务路径
+        'task': 'nb.tasks.make_overdue_todo',
+        'schedule': crontab(minute=59, hour=23),
+        # 'schedule': 5,
+        'args': (),
+    },
+    'stock_today': {
+        # 任务路径
+        'task': 'nb.tasks.stock_today',
+        'schedule': 5 * 60,
+        'args': (),
+    },
+    'stock_detail': {
+        # 任务路径
+        'task': 'nb.tasks.stock_detail',
+        'schedule': 6 * 60,
+        'args': (),
+    },
+}
