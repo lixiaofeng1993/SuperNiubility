@@ -230,7 +230,7 @@ def home_poetry(user_id):
             })
         obj_list.append(result)
     logger.info("查询诗词推荐列表 ===>>> 成功.")
-    cache.set(RECOMMEND.format(user_id=user_id), obj_list, surplus_second())
+    cache.set(RECOMMEND, obj_list, surplus_second())
     return obj_list
 
 

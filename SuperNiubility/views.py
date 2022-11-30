@@ -17,7 +17,7 @@ from public.log import logger
 @login_required
 def index(request):
     user_id = request.session.get("user_id")
-    obj_list = cache.get(RECOMMEND.format(user_id=user_id))
+    obj_list = cache.get(RECOMMEND)
     if not obj_list:
         obj_list = home_poetry(user_id)
     return render(request, "home/index.html", {"obj": obj_list})

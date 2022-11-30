@@ -21,7 +21,7 @@ NumberOfPages = 10
 
 # redis缓存key
 # 诗词推荐
-RECOMMEND = "RECOMMEND-{user_id}"
+RECOMMEND = "RECOMMEND"
 # 当天买入卖出托单
 PoetryDetail = "PoetryDetail-{user_id}-{poetry_id}"
 # 股票年k线

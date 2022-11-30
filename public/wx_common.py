@@ -226,7 +226,7 @@ def poetry_content(text: str, skip: str = "0"):
                            f"<a href='weixin://bizmsgmenu?msgmenucontent=RECOMMEND-{poetry.id}&msgmenuid=9525'>更多</a>"
                 seconds = surplus_second()  # 返回今天剩余秒数
                 cache.set(f"RECOMMEND-{poetry.id}", poetry.id, seconds)
-                cache.set(f"recommended-today", poetry.id, seconds)
+                cache.set(f"recommended-today", content, seconds)
                 return content
         for key, value in DYNASTY.items():  # 诗人朝代
             if text == key:
