@@ -27,6 +27,7 @@ def wx_login():
         url = f" https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={AppID}&secret={AppSecret}"
         try:
             res = requests.get(url=url).json()
+            logger.info(f"===================>>>{res}")
             access_token = res["access_token"] if "access_token" in res.keys() else None
             if access_token:
                 cache.set(key="wx_token", value=access_token, seconds=res["expires_in"])
