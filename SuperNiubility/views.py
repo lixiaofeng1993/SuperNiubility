@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 from public.jwt_sign import create_access_token
-from public.conf import ACCESS_TOKEN_EXPIRE_MINUTES, GET, POST
+from public.conf import ACCESS_TOKEN_EXPIRE_MINUTES, GET, POST, RECOMMEND
 from public.response import JsonResponse
 from public.common import handle_json, home_poetry, operation_record
 from public.log import logger
@@ -17,7 +17,9 @@ from public.log import logger
 @login_required
 def index(request):
     user_id = request.session.get("user_id")
-    obj_list = home_poetry(user_id)
+    obj_list = cache.get(RECOMMEND.format(user_id=user_id))
+    if not obj_list:
+        obj_list = home_poetry(user_id)
     return render(request, "home/index.html", {"obj": obj_list})
 
 

@@ -208,30 +208,29 @@ def home_poetry(user_id):
     """
     诗词推荐列表
     """
-    obj_list = cache.get(RECOMMEND.format(user_id=user_id))
-    if not obj_list:
-        poetry_type = recommend_handle()
-        # 随机返回一条数据 filter 等于  exclude 不等于
-        poetry_list = Poetry.objects.filter(type=poetry_type).exclude(phrase="").order_by('?')[:5]
-        obj_list = list()
-        for poetry in poetry_list:
-            result = {
-                "id": str(poetry.id),
-                "poetry_name": poetry.name,
-                "type": poetry.type,
-                "phrase": poetry.phrase,
-            }
-            if poetry.author:
-                result.update({
-                    "author": poetry.author.name,
-                    "dynasty": poetry.author.dynasty,
-                })
-            else:
-                result.update({
-                    "author": "",
-                })
-            obj_list.append(result)
-        cache.set(RECOMMEND.format(user_id=user_id), obj_list, surplus_second())
+    poetry_type = recommend_handle()
+    # 随机返回一条数据 filter 等于  exclude 不等于
+    poetry_list = Poetry.objects.filter(type=poetry_type).exclude(phrase="").order_by('?')[:5]
+    obj_list = list()
+    for poetry in poetry_list:
+        result = {
+            "id": str(poetry.id),
+            "poetry_name": poetry.name,
+            "type": poetry.type,
+            "phrase": poetry.phrase,
+        }
+        if poetry.author:
+            result.update({
+                "author": poetry.author.name,
+                "dynasty": poetry.author.dynasty,
+            })
+        else:
+            result.update({
+                "author": "",
+            })
+        obj_list.append(result)
+    logger.info("查询诗词推荐列表 ===>>> 成功.")
+    cache.set(RECOMMEND.format(user_id=user_id), obj_list, surplus_second())
     return obj_list
 
 
