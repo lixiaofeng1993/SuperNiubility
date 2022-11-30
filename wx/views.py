@@ -40,7 +40,6 @@ class WechatServe(View):
                         "DYNASTY" in text or "POETRY_TYPE" in text or "AUTHOR" in text or "POETRY_RECOMMEND" in text
                 ):
                     skip = cache.get(text)
-                    logger.info(f"===text====={text}=========skip======{skip}")
                     if not skip:
                         content = "会话只有30分钟，想了解更多，请重新发起~"
                 elif not idiom and text in ["成语接龙", "接龙"]:

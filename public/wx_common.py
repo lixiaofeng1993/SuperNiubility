@@ -200,7 +200,7 @@ def poetry_content(text: str, skip: str):
     if skip:
         content = send_more(text, skip)
         return content
-    elif len(text) == 32:
+    elif len(text) == 36:
         author = Poetry.objects.filter(author_id=text).first()
         if author:
             content = send_author(author)
@@ -228,7 +228,7 @@ def poetry_content(text: str, skip: str):
                 content += "\n>>> 点击查看 " \
                            f"<a href='weixin://bizmsgmenu?msgmenucontent=POETRY_RECOMMEND@{poetry.id}&msgmenuid=9525'>更多</a>"
                 seconds = surplus_second()  # 返回今天剩余秒数
-                cache.set(f"POETRY_RECOMMEND@{poetry.id}", "POETRY_RECOMMEND", seconds)
+                cache.set(f"POETRY_RECOMMEND@{poetry.id}", poetry.id, seconds)
                 cache.set(f"recommended-today", content, seconds)
                 return content
         for key, value in DYNASTY.items():  # 诗人朝代
