@@ -384,11 +384,11 @@ def buy_sell_chart(request):
         user_id = request.session.get("user_id")
         datasets = cache.get(TodayBuySellChart.format(user_id=user_id))
         if datasets:
-            return JsonResponse.OK()
+            return JsonResponse.OK(data=datasets)
         model = model_superuser(request, SharesHold)
         hold = model.filter(Q(is_delete=False) & Q(is_detail=True)).first()
         if not hold:
-            return JsonResponse.Emptyeption()
+            return JsonResponse.OK()
         moment = etc_time()
         if check_stoke_day():  # 休市日展示最后一天的数据
             last_day = moment["today"]
