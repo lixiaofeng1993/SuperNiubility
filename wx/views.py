@@ -35,11 +35,9 @@ class WechatServe(View):
             idiom = cache.get("IDIOM")
             if text:
                 if text == "推荐":
-                    logger.info(f"========text==={text}")
                     content = cache.get("recommended-today")
-                    logger.info(f"========content==={content}")
                 elif text and (
-                        "DYNASTY" in text or "POETRY_TYPE" in text or "AUTHOR" in text or "RECOMMEND" in text
+                        "DYNASTY" in text or "POETRY_TYPE" in text or "AUTHOR" in text or "POETRY_RECOMMEND" in text
                 ):
                     skip = cache.get(text)
                     logger.info(f"===text====={text}=========skip======{skip}")
