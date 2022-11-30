@@ -241,9 +241,9 @@ def stock_look(request, stock_id):
             return render(request, "home/stock/look_stock.html", info)
         update_time = format_time(detail.time)
         # 当前
-        now_color = "#FF0000" if detail.rate > 0 else "#00FF00"
+        now_color = "red" if detail.rate > 0 else "green"
         # 全部
-        color = "#FF0000" if detail.increPer > 0 else "#00FF00"
+        color = "red" if detail.increPer > 0 else "green"
         info.update({"obj": hold, "share": detail, "flag": True, "now_color": now_color, "color": color,
                      "update_time": update_time})
         return render(request, "home/stock/look_stock.html", info)

@@ -399,12 +399,12 @@ def buy_sell_chart(request):
                 share_first = StockDetail.objects.filter(
                     Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
                 if not share_first:
-                    return JsonResponse.Emptyeption()
+                    return JsonResponse.OK()
                 last_day = share_first.date
         detail_list = StockDetail.objects.filter(
             Q(shares_hold_id=hold.id) & Q(is_delete=False) & Q(date=last_day)).order_by("time")
         if not detail_list:
-            return JsonResponse.Emptyeption()
+            return JsonResponse.OK()
         detail_list = handle_model(list(detail_list))
         labels = list()
         buy_one_list = list()
