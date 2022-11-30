@@ -1,5 +1,4 @@
 Django==3.2.16
-mysqlclient==1.4.6
 efinance==0.4.9
 python-jose==3.3.0
 django-redis==5.2.0
@@ -11,7 +10,6 @@ chinesecalendar==1.7.2
 django-simpleui==2022.11.30
 starlette==0.22.0
 django_pandas==0.6.6
-
 python-dateutil~=2.8.2
 requests~=2.28.1
 jsonpath~=0.82
