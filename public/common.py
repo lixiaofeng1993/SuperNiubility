@@ -208,7 +208,7 @@ def home_poetry(user_id):
     """
     诗词推荐列表
     """
-    obj_list = cache.get(RECOMMEND)
+    obj_list = cache.get(RECOMMEND.format(user_id=user_id))
     if not obj_list:
         poetry_type = recommend_handle()
         # 随机返回一条数据 filter 等于  exclude 不等于
@@ -231,7 +231,7 @@ def home_poetry(user_id):
                     "author": "",
                 })
             obj_list.append(result)
-        cache.set(RECOMMEND, obj_list, surplus_second())
+        cache.set(RECOMMEND.format(user_id=user_id), obj_list, surplus_second())
     return obj_list
 
 
