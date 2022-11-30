@@ -204,7 +204,7 @@ def handle_model(model_obj):
     return model_obj
 
 
-def home_poetry(user_id):
+def home_poetry():
     """
     诗词推荐列表
     """
