@@ -14,9 +14,9 @@ import os
 platforms.C_FORCE_ROOT = True
 # 设置环境变量
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SuperNiubility.settings')
-
+url = "amqp://guest:guest@127.0.0.1:5672//"
 # 注册Celery的APP
-app = Celery('SuperNiubility')
+app = Celery('SuperNiubility', backend=url, broker=url)
 # 绑定配置文件
 app.config_from_object('django.conf:settings')
 
