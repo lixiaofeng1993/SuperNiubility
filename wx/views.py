@@ -25,7 +25,7 @@ class WechatServe(View):
     def post(self, request, *args, **kwargs):
         token = wx_login()
         # try:
-        analysisObj = Analysis(smart_str(request.body()))
+        analysisObj = Analysis(smart_str(request.body))
         toWxData = analysisObj.prase(smart_str(request.body))
         return HttpResponse(smart_str(toWxData))
         #     logger.info(f"======rec_msg========={rec_msg}")
