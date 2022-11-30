@@ -167,12 +167,8 @@ def send_poetry(data):
 
 def send_more(text: str, skip: str, content: str = ""):
     if "DYNASTY=" in text or "POETRY_TYPE=" in text or "AUTHOR=" in text or "RECOMMEND=" in text:
-        if str(skip).isdigit():
-            skip = int(skip)
-            val = text.split("=")[-1]
-        else:
-            val = str(skip)
-            skip = 0
+        skip = int(skip) if str(skip).isdigit() else skip
+        val = text.split("=")[-1]
         if "RECOMMEND" in text:
             data = Poetry.objects.get(id=val)
             if data.original:
