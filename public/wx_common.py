@@ -239,7 +239,7 @@ def poetry_content(text: str, skip: str):
             if text == key:
                 content = poetry_by_type(text, 0, value)
                 return content
-        data = Poetry.objects.filter(author__name=text).first()
+        data = Author.objects.filter(name=text).first()
         if data:
             content = send_author(data)
         else:

@@ -56,7 +56,7 @@ class WechatServe(View):
                 if "</a>" in content and len(content) >= 2000:
                     content = "..." + content[len(content) - 2000:]
                 elif len(content) >= 710 and "</a>" not in content:
-                    content = content[:710] + "..."
+                    content = content[:707] + "..."
                 return HttpResponse(
                     smart_str(Message(to_user, from_user, content=content).send())
                     )
