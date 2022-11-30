@@ -30,7 +30,7 @@ def wx_login():
             logger.info(f"===================>>>{res}")
             access_token = res["access_token"] if "access_token" in res.keys() else None
             if access_token:
-                cache.set(key="wx_token", value=access_token, seconds=res["expires_in"])
+                cache.set("wx_token", access_token, res["expires_in"])
             return access_token
         except Exception as error:
             logger.error(f"微信登录失败. ===>>> {error}")
