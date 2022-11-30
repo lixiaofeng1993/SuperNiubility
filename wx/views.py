@@ -26,7 +26,6 @@ class WechatServe(View):
         token = wx_login()
         try:
             rec_msg = parse_xml(smart_str(request.body))
-            logger.info(f"======rec_msg========={rec_msg}")
             if not rec_msg:
                 return HttpResponse('success')
             to_user = rec_msg.FromUserName
@@ -53,22 +52,18 @@ class WechatServe(View):
                     content = "See you later..."
             if not content:
                 content, media_id = send_wx_msg(rec_msg, token, skip, idiom)
-            logger.info(f"======content========={content}")
             if rec_msg.MsgType == 'text' and not media_id:
                 if "</a>" in content and len(content) >= 2000:
                     content = "..." + content[len(content) - 2000:]
                 elif len(content) >= 710 and "</a>" not in content:
                     content = content[:710] + "..."
                 return HttpResponse(
-                    Message(to_user, from_user, content=content).send(),
-                    media_type="application/xml")
+                    smart_str(Message(to_user, from_user, content=content).send())
+                    )
             elif rec_msg.MsgType == 'event' and content:
-                return HttpResponse(
-                    Message(to_user, from_user, content=content).send(), media_type="application/xml")
+                return HttpResponse(smart_str(Message(to_user, from_user, content=content).send()))
             elif rec_msg.MsgType == "image" or media_id:
-                return HttpResponse(
-                    Message(to_user, from_user, media_id=media_id, msg_type="image").send(),
-                    media_type="application/xml")
+                return HttpResponse(smart_str(Message(to_user, from_user, media_id=media_id, msg_type="image").send()))
         except Exception as error:
             logger.error(f"微信回复信息报错：{error}")
             return HttpResponse('success')
