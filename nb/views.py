@@ -293,7 +293,7 @@ def stock_look(request, stock_id):
     top_price = round(share_df["top_price"].max(), 2)
     # 最高
     amplitude = round((top_price - down_price) / hold.last_close_price * 100, 2) if hold.last_close_price else ""
-    color = "#FF0000" if rise_and_fall > 0 else "#00FF00"
+    color = "red" if rise_and_fall > 0 else "green"
     info.update({"share": {
         "new_price": new_price,
         "open_price": open_price,
