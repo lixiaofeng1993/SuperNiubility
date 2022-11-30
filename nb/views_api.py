@@ -384,7 +384,7 @@ def buy_sell_chart(request):
         user_id = request.session.get("user_id")
         datasets = cache.get(TodayBuySellChart.format(user_id=user_id))
         if datasets:
-            return JsonResponse.OK(data=datasets)
+            return JsonResponse.OK()
         model = model_superuser(request, SharesHold)
         hold = model.filter(Q(is_delete=False) & Q(is_detail=True)).first()
         if not hold:
