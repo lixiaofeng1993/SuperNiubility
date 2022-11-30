@@ -19,6 +19,23 @@ from public.sensitive import sensitive_words
 from public.log import logger
 
 
+def wx_login():
+    wx_token = cache.get("wx_token")
+    if wx_token:
+        return wx_token
+    else:
+        url = f" https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={AppID}&secret={AppSecret}"
+        try:
+            res = requests.get(url=url).json()
+            access_token = res["access_token"] if "access_token" in res.keys() else None
+            if access_token:
+                cache.set(key="wx_token", value=access_token, seconds=res["expires_in"])
+            return access_token
+        except Exception as error:
+            logger.error(f"微信登录失败. ===>>> {error}")
+            return
+
+
 def wx_media(token: str):
     """
     返回素材media_id

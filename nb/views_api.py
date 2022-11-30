@@ -31,7 +31,7 @@ def poetry_detail(request, poetry_id):
         user_id = request.session.get("user_id")
         result = cache.get(PoetryDetail.format(user_id=user_id, poetry_id=poetry_id))
         if result:
-            logger.info("诗词详情从缓存中获取数据 ===>>> 成功.")
+            # logger.info("诗词详情从缓存中获取数据 ===>>> 成功.")
             return JsonResponse.OK(data=result)
         poetry = Poetry.objects.get(id=poetry_id)
         result = model_to_dict(handle_model(poetry))
@@ -155,7 +155,7 @@ def day_chart(request):
         user_id = request.session.get("user_id")
         datasets = cache.get(TodayChart.format(user_id=user_id))
         if datasets:
-            logger.info("当天k线从缓存中获取数据 ===>>> 成功.")
+            # logger.info("当天k线从缓存中获取数据 ===>>> 成功.")
             return JsonResponse.OK(data=datasets)
         model = model_superuser(request, SharesHold)
         hold_list = model.filter(is_delete=False)
@@ -202,7 +202,7 @@ def five_chart(request):
         user_id = request.session.get("user_id")
         datasets = cache.get(FiveChart.format(user_id=user_id))
         if datasets:
-            logger.info("5天k线从缓存中获取数据 ===>>> 成功.")
+            # logger.info("5天k线从缓存中获取数据 ===>>> 成功.")
             return JsonResponse.OK(data=datasets)
         model = model_superuser(request, SharesHold)
         hold_list = model.filter(is_delete=False)
@@ -251,7 +251,7 @@ def ten_chart(request):
         user_id = request.session.get("user_id")
         datasets = cache.get(TenChart.format(user_id=user_id))
         if datasets:
-            logger.info("10天k线从缓存中获取数据 ===>>> 成功.")
+            # logger.info("10天k线从缓存中获取数据 ===>>> 成功.")
             return JsonResponse.OK(data=datasets)
         model = model_superuser(request, SharesHold)
         hold_list = model.filter(is_delete=False)
@@ -300,7 +300,7 @@ def twenty_chart(request):
         user_id = request.session.get("user_id")
         datasets = cache.get(TwentyChart.format(user_id=user_id))
         if datasets:
-            logger.info("20天k线从缓存中获取数据 ===>>> 成功.")
+            # logger.info("20天k线从缓存中获取数据 ===>>> 成功.")
             return JsonResponse.OK(data=datasets)
         model = model_superuser(request, SharesHold)
         hold_list = model.filter(is_delete=False)
@@ -349,7 +349,7 @@ def half_year_chart(request):
         user_id = request.session.get("user_id")
         datasets = cache.get(YearChart.format(user_id=user_id))
         if datasets:
-            logger.info("股票半年k线从缓存中获取数据 ===>>> 成功.")
+            # logger.info("股票半年k线从缓存中获取数据 ===>>> 成功.")
             return JsonResponse.OK(data=datasets)
         model = model_superuser(request, SharesHold)
         hold_list = model.filter(is_delete=False)
@@ -392,7 +392,7 @@ def buy_sell_chart(request):
         user_id = request.session.get("user_id")
         datasets = cache.get(TodayBuySellChart.format(user_id=user_id))
         if datasets:
-            logger.info("实时买入卖出托单从缓存中获取数据 ===>>> 成功.")
+            # logger.info("实时买入卖出托单从缓存中获取数据 ===>>> 成功.")
             return JsonResponse.OK(data=datasets)
         model = model_superuser(request, SharesHold)
         hold = model.filter(Q(is_delete=False) & Q(is_detail=True)).first()

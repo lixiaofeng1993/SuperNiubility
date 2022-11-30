@@ -74,9 +74,9 @@ def etc_time():
         "day": today.day,
         "no_time": datetime(year, month, day, 9, 0, 0),
         "start_time": datetime(year, month, day, 9, 25, 0),
-        "end_time": datetime(year, month, day, 15, 10, 0),
+        "end_time": datetime(year, month, day, 15, 6, 30),
         "stock_time": datetime(year, month, day, 15, 0, 0),
-        "ap_time": datetime(year, month, day, 11, 35, 0),
+        "ap_time": datetime(year, month, day, 11, 36, 30),
         "pm_time": datetime(year, month, day, 13, 0, 0),
     }
     return moment

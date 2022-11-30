@@ -22,12 +22,7 @@ class WechatServe(View):
             return f"微信服务器配置验证出现异常:{error}"
 
     def post(self, request, *args, **kwargs):
-        try:
-            res = requests.get("http://121.41.54.234/wx/login").json()
-            token = res["result"]["access_token"]
-        except Exception as error:
-            logger.error(f"获取微信登录token出现异常：{error}")
-            token = ""
+        token = wx_login()
         try:
             rec_msg = parse_xml(request.body())
             if not rec_msg:

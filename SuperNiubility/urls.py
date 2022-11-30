@@ -27,7 +27,7 @@ urlpatterns = [
     path('logout/', views.logout, name="logout"),
 
     path("nb/", include("nb.urls")),
-    path("wx/", include("wx.urls")),
+    path("wx", include("wx.urls")),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -10,5 +10,6 @@ from django.urls import path
 from wx import views
 
 urlpatterns = [
-    path("", views.WechatServe.as_view(), name="wx"),
+    path("/", views.WechatServe.as_view(), name="wx"),
+    path("/login/", views.wx_login, name="wx_login"),
 ]
