@@ -208,6 +208,9 @@
                             '</a>' +
                             `<hr class="dropdown-divider">`;
                     }
+                    if (number === 5) {
+                        content += `<a href="{% url 'stock' %}" style="margin-left: 40%;"><i class="fa fa-angle-double-right"></i></a>`;
+                    }
                     message_obj.append(content);
                 } else if (code === 401) {
                     ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();

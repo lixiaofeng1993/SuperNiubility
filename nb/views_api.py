@@ -524,7 +524,9 @@ def record(request):
 def message_remind(request):
     if request.method == POST:
         moment = etc_time()
-        message_list = Message.objects.filter(Q(is_delete=False) & Q(is_look=False) & Q(date=moment["today"]))
+        message_list = Message.objects.filter(Q(is_delete=False) &
+                                              Q(is_look=False) &
+                                              Q(date=moment["today"])).order_by("-create_date")[:5]
         result = {
             "number": len(message_list),
             "data": [],
