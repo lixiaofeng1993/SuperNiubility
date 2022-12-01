@@ -113,3 +113,7 @@ FOLLOW = "这世界怎么那么多人，蹉跎回首，已不再年轻。\n这�
          "回复 <a href='weixin://bizmsgmenu?msgmenucontent=唐寅&msgmenuid=唐寅'>诗人</a> >>> 诗人简介\n" \
          "回复 <a href='weixin://bizmsgmenu?msgmenucontent=桃花庵歌&msgmenuid=桃花庵歌'>诗名</a> >>> 古诗信息\n" \
          "回复 <a href='weixin://bizmsgmenu?msgmenucontent=成语接龙&msgmenuid=成语接龙'>接龙</a> >>> 成语接龙\n"
+
+# 消息提醒类型
+MessageBuySell = "买入卖出托单数据更新"
+MessageToday = "今日走势K线数据更新"

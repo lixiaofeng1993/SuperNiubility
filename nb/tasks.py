@@ -10,7 +10,8 @@ from celery import Task, shared_task
 from django.db.models import Q  # 与或非 查询
 
 from nb.models import ToDo, Shares, SharesHold, StockDetail
-from public.common import delete_cache, check_stoke_date, etc_time, cache, StockEndTime, difference_stock, datetime
+from public.common import delete_cache, check_stoke_date, etc_time, cache, StockEndTime, difference_stock, datetime, \
+    message_writing, MessageBuySell, MessageToday
 from public.send_ding import send_ding
 from public.stock_api import stock_api
 from public.log import logger
@@ -175,6 +176,7 @@ def stock_today():
             Q(code=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
         if not share:
             Shares.objects.bulk_create(objs=shares_list)
+            message_writing(MessageToday)
             logger.info(f"保存成功===>>>{len(shares_list)} 条")
 
 
@@ -266,6 +268,7 @@ def stock_detail():
                 hold.today_price = round((float(response["dot"]) - hold.last_close_price) * hold.number, 2)
         hold.save()
         detail_obj.save()
+        message_writing(MessageBuySell)
         logger.info("股票详情保存成功.")
     except Exception as error:
         logger.error(f"股票详情保存失败 ===>>> {error}")

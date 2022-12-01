@@ -181,3 +181,20 @@ class ToDo(models.Model):
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True
         self.save()
+
+
+class Message(models.Model):
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, null=False, help_text="消息内容")
+    date = models.DateTimeField("写入时间", null=True, help_text="写入时间")
+    is_look = models.BooleanField(default=False, help_text="是否已读")
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    class Meta:
+        db_table = "message"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()

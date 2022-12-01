@@ -38,5 +38,7 @@ urlpatterns = [
     path("poetry/random/", views_api.recommend_poetry, name="poetry_random"),
     path("poetry/detail/<uuid:poetry_id>/", views_api.poetry_detail, name="poetry_detail"),
 
+    path("message/", views_api.message_remind, name="message"),
+
     path("faker/<int:number>/", views_api_v1.get_faker, name="get_faker"),
 ]

@@ -13,7 +13,7 @@ from chinese_calendar import is_workday
 from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
 from django.contrib.admin.options import get_content_type_for_model
 
-from nb.models import Poetry, User
+from nb.models import Poetry, User, Message
 from public.conf import *
 from public.recommend import recommend_handle
 from public.log import logger
@@ -232,6 +232,21 @@ def home_poetry():
     logger.info("查询诗词推荐列表 ===>>> 成功.")
     cache.set(RECOMMEND, obj_list, surplus_second())
     return obj_list
+
+
+def message_writing(name: str):
+    """
+    写入消息提醒
+    """
+    try:
+        moment = etc_time()
+        message = Message()
+        message.name = name
+        message.date = moment["today"]
+        message.save()
+        logger.info("写入消息提醒成功.")
+    except Exception as error:
+        logger.error(f"写入消息提醒出现异常===>>>{error}")
 
 
 def model_superuser(request, model):

@@ -47,7 +47,7 @@
             </a>
             <div class="d-flex align-items-center ms-4 mb-4">
                 <div class="position-relative">
-{#                    <img class="rounded-circle" src="{% static 'images/user.jpg' %}" alt=""#}
+                    {#                    <img class="rounded-circle" src="{% static 'images/user.jpg' %}" alt=""#}
                     <img class="rounded-circle" src="http://121.41.54.234/user.jpg" alt=""
                          style="width: 40px; height: 40px;">
                     <div class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1"></div>
@@ -99,6 +99,15 @@
                 <i class="fa fa-bars"></i>
             </a>
             <div class="navbar-nav align-items-center ms-auto">
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fa fa-bell me-lg-2"></i><i style="width: 16px;" id="corner"></i>
+                        <span class="d-none d-lg-inline-flex">消息提醒</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0"
+                         id="message">
+                    </div>
+                </div>
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                         <img class="rounded-circle me-lg-2" src="http://121.41.54.234/user.jpg" alt=""
@@ -164,6 +173,57 @@
         }
     });
 
+    function message() {
+        let ale = $("#alert");
+        let username = "{{ user.username }}";
+        let token = sessionStorage.getItem(username);
+        $.ajax({
+            type: "post",
+            url: "{% url 'message' %}",
+            headers: {
+                "Authorization": token
+            },
+            async: false,
+            success: function (result) {
+                console.log(result);
+                let code = result.code;
+                let message = result.message;
+                let data = result.data;
+                let corner_obj = $("#corner");
+                let message_obj = $("#message");
+                if (code === 200) {
+                    message_obj.find("a").remove();
+                    let number = data.number;
+                    if (number === 0) {
+                        corner_obj.remove();
+                    } else {
+                        corner_obj.text(number);
+                    }
+                    let data_list = data.data;
+                    let content = "";
+                    for (let i = 0; i < data_list.length; i++) {
+                        content += `<a href="{% url 'stock' %}" class="dropdown-item">` +
+                            `<h6 class="fw-normal mb-0">` + data_list[i].name + `</h6>` +
+                            `<small>` + data_list[i].now_time + `</small>` +
+                            '</a>' +
+                            `<hr class="dropdown-divider">`;
+                    }
+                    message_obj.append(content);
+                } else if (code === 401) {
+                    ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    setTimeout(function () {
+                        top.location.href = "{% url 'login' %}";
+                    }, 1500);
+                } else {
+                    ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                }
+            }, error: function () {
+                ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+            }
+        })
+    }
+
+    message();
 </script>
 {% block js %} {% endblock %}
 </body>

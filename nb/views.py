@@ -134,6 +134,7 @@ class StockIndex(ListView):
         model = model_superuser(self.request, self.model)
         obj_list = model.filter(is_delete=False).order_by("-create_date")
         obj_list = handle_model(list(obj_list))
+        Message.objects.filter(Q(is_delete=False) & Q(is_look=False)).update(is_look=True)
         return obj_list
 
     def get_context_data(self, **kwargs):

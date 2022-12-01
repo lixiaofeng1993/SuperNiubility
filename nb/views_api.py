@@ -518,3 +518,22 @@ def record(request):
             data_list.append(log_dict)
         log_list = handle_model(data_list)
         return JsonResponse.OK(data=log_list)
+
+
+@auth_token()
+def message_remind(request):
+    if request.method == POST:
+        moment = etc_time()
+        message_list = Message.objects.filter(Q(is_delete=False) & Q(is_look=False) & Q(date=moment["today"]))
+        result = {
+            "number": len(message_list),
+            "data": [],
+        }
+        if not message_list:
+            return JsonResponse.OK(data=result)
+        for message in message_list:
+            result["data"].append({
+                "now_time": format_time(message.create_date),
+                "name": message.name
+            })
+        return JsonResponse.OK(data=result)
