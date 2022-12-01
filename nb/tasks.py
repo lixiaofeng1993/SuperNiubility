@@ -139,36 +139,36 @@ def stock_today():
             shares_list.append(obj)
         try:
             hold = SharesHold.objects.get(id=stock_dict[key])
-            if hold.number and hold.cost_price:
+            is_profit = hold.is_profit
+            hold.is_profit = True if hold.profit_and_loss > 0 else False
+            if hold.number and hold.cost_price and moment["stock_time"] > hold.update_date:
                 hold.profit_and_loss = round(hold.number * float(new_price) - hold.number * hold.cost_price, 2)
                 hold.today_price = round((float(new_price) - hold.last_close_price) * hold.number, 2)
-                is_profit = hold.is_profit
-                hold.is_profit = True if hold.profit_and_loss > 0 else False
                 if moment["now"] >= moment["stock_time"]:
                     hold.last_close_price = new_price
                     hold.last_day = moment["today"]
                     hold.days += 1
                 hold.save()
-                if is_profit != hold.is_profit:
-                    if hold.is_profit:
-                        profit_text = "亏转盈"
-                        color = "#FF0000"
-                    else:
-                        profit_text = "盈转亏"
-                        color = "#00FF00"
-                    body = {
-                        "msgtype": "markdown",
-                        "markdown": {
-                            "title": hold.name,
-                            "text": f"### {hold.name}\n\n"
-                                    f"> **{profit_text}** <font color={color}>{hold.profit_and_loss}</font> 元\n\n"
-                                    f"> **点击查看** [股票分析](http://121.41.54.234/nb/stock/)@15235514553"
-                        },
-                        "at": {
-                            "atMobiles": ["15235514553"],
-                            "isAtAll": False,
-                        }}
-                    send_ding(body)
+            if is_profit != hold.is_profit:
+                if hold.is_profit:
+                    profit_text = "亏转盈"
+                    color = "#FF0000"
+                else:
+                    profit_text = "盈转亏"
+                    color = "#00FF00"
+                body = {
+                    "msgtype": "markdown",
+                    "markdown": {
+                        "title": hold.name,
+                        "text": f"### {hold.name}\n\n"
+                                f"> **{profit_text}** <font color={color}>{hold.profit_and_loss}</font> 元\n\n"
+                                f"> **点击查看** [股票分析](http://121.41.54.234/nb/stock/)@15235514553"
+                    },
+                    "at": {
+                        "atMobiles": ["15235514553"],
+                        "isAtAll": False,
+                    }}
+                send_ding(body)
         except Exception as error:
             logger.error(f"更新持仓盈亏出现错误. ===>>> {error}")
             return
@@ -215,58 +215,32 @@ def stock_detail():
         else:
             dapandata_dict.update({key: value})
     response.update(dapandata_dict)
-    detail_obj = StockDetail(name=response["name"],
-                             code=code,
-                             increPer=response["increPer"],
-                             increase=response["increase"],
-                             todayStartPri=response["todayStartPri"],
-                             yestodEndPri=response["yestodEndPri"],
-                             nowPri=response["nowPri"],
-                             todayMax=response["todayMax"],
-                             todayMin=response["todayMin"],
-                             competitivePri=response["competitivePri"],
-                             reservePri=response["reservePri"],
-                             traNumber=response["traNumber"],
-                             traAmount=response["traAmount"],
-                             buyOne=response["buyOne"],
-                             buyOnePri=response["buyOnePri"],
-                             buyTwo=response["buyTwo"],
-                             buyTwoPri=response["buyTwoPri"],
-                             buyThree=response["buyThree"],
-                             buyThreePri=response["buyThreePri"],
-                             buyFour=response["buyFour"],
-                             buyFourPri=response["buyFourPri"],
-                             buyFive=response["buyFive"],
-                             buyFivePri=response["buyFivePri"],
-                             sellOne=response["sellOne"],
-                             sellOnePri=response["sellOnePri"],
-                             sellTwo=response["sellTwo"],
-                             sellTwoPri=response["sellTwoPri"],
-                             sellThree=response["sellThree"],
-                             sellThreePri=response["sellThreePri"],
-                             sellFour=response["sellFour"],
-                             sellFourPri=response["sellFourPri"],
-                             sellFive=response["sellFive"],
-                             sellFivePri=response["sellFivePri"],
-                             date=response["date"],
-                             time=date_time,
-                             dot=response["dot"],
-                             nowPic=response["nowPic"],
-                             rate=response["rate"],
-                             nowTraAmount=response["nowTraAmount"],
-                             nowTraNumber=response["nowTraNumber"],
-                             minurl=response["minurl"],
-                             dayurl=response["dayurl"],
-                             weekurl=response["weekurl"],
-                             monthurl=response["monthurl"],
-                             shares_hold_id=hold.id,
-                             )
+    detail_obj = StockDetail(
+        name=response["name"], code=code, increPer=response["increPer"], increase=response["increase"],
+        todayStartPri=response["todayStartPri"], yestodEndPri=response["yestodEndPri"], nowPri=response["nowPri"],
+        todayMax=response["todayMax"], todayMin=response["todayMin"], competitivePri=response["competitivePri"],
+        reservePri=response["reservePri"], traNumber=response["traNumber"], traAmount=response["traAmount"],
+        buyOne=response["buyOne"], buyOnePri=response["buyOnePri"], buyTwo=response["buyTwo"],
+        buyTwoPri=response["buyTwoPri"], buyThree=response["buyThree"], buyThreePri=response["buyThreePri"],
+        buyFour=response["buyFour"], buyFourPri=response["buyFourPri"],  buyFive=response["buyFive"],
+        buyFivePri=response["buyFivePri"], sellOne=response["sellOne"], sellOnePri=response["sellOnePri"],
+        sellTwo=response["sellTwo"], sellTwoPri=response["sellTwoPri"],  sellThree=response["sellThree"],
+        sellThreePri=response["sellThreePri"], sellFour=response["sellFour"], sellFourPri=response["sellFourPri"],
+        sellFive=response["sellFive"], sellFivePri=response["sellFivePri"], date=response["date"],
+        time=date_time, dot=response["dot"], nowPic=response["nowPic"], rate=response["rate"],
+        nowTraAmount=response["nowTraAmount"], nowTraNumber=response["nowTraNumber"],  minurl=response["minurl"],
+        dayurl=response["dayurl"], weekurl=response["weekurl"], monthurl=response["monthurl"],
+        shares_hold_id=hold.id,
+    )
     try:
-        if hold.number and hold.cost_price:
+        if hold.number and hold.cost_price and moment["stock_time"] > hold.update_date:
             hold.profit_and_loss = round(hold.number * float(response["dot"]) - hold.number * hold.cost_price, 2)
-            if hold.last_close_price:
-                hold.today_price = round((float(response["dot"]) - hold.last_close_price) * hold.number, 2)
-        hold.save()
+            hold.today_price = round((float(response["dot"]) - hold.last_close_price) * hold.number, 2)
+            if moment["now"] >= moment["stock_time"]:
+                hold.last_close_price = response["dot"]
+                hold.last_day = moment["today"]
+                hold.days += 1
+            hold.save()
         detail_obj.save()
         message_writing(MessageBuySell)
         logger.info("股票详情保存成功.")
