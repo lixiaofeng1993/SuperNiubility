@@ -100,8 +100,9 @@
             </a>
             <div class="navbar-nav align-items-center ms-auto">
                 <div class="nav-item dropdown">
-                    <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fa fa-bell me-lg-2"></i><i style="width: 16px;" id="corner"></i>
+                    <a href="javascript:void(0);" id="click" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+                       onclick="message(true);">
+                        <i class="fa fa-bell me-lg-2"></i><span id="corner-span"><i id="corner"></i></span>
                         <span class="d-none d-lg-inline-flex">消息提醒</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0"
@@ -148,7 +149,8 @@
 
 
     <!-- Back to Top -->
-    <a href="javascript:void(0);" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="fa fa-arrow-up"></i></a>
+    <a href="javascript:void(0);" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i
+            class="fa fa-arrow-up"></i></a>
 </div>
 
 <!-- JavaScript Libraries -->
@@ -173,7 +175,13 @@
         }
     });
 
-    function message() {
+    function message(flag) {
+        if (flag) {
+            let show = $("#click").attr("class");
+            if (show.search("show") !== -1) {
+                return
+            }
+        }
         let ale = $("#alert");
         let username = "{{ user.username }}";
         let token = sessionStorage.getItem(username);
@@ -190,13 +198,17 @@
                 let message = result.message;
                 let data = result.data;
                 let corner_obj = $("#corner");
+                let corner_span_obj = $("#corner-span");
                 let message_obj = $("#message");
                 if (code === 200) {
                     message_obj.find("a").remove();
+                    message_obj.find("hr").remove();
                     let number = data.number;
                     if (number === 0) {
-                        corner_obj.remove();
+                        corner_span_obj.find("i").attr("style", "display: none")
+                        return
                     } else {
+                        corner_span_obj.find("i").attr("style", "width: 16px;")
                         corner_obj.text(number);
                     }
                     let data_list = data.data;
@@ -226,7 +238,7 @@
         })
     }
 
-    message();
+    message(false);
 </script>
 {% block js %} {% endblock %}
 </body>
