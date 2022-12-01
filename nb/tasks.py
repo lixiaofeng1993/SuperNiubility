@@ -181,9 +181,9 @@ def stock_today():
 
 
 @shared_task()
-def stock_detail():
+def stock_detail(flag=True):
     moment = check_stoke_date()
-    if not moment:  # 判断股市开关时间
+    if not moment and flag:  # 判断股市开关时间
         return
     hold = SharesHold.objects.filter(Q(is_delete=False) & Q(is_detail=True)).first()
     if not hold:
@@ -222,13 +222,13 @@ def stock_detail():
         reservePri=response["reservePri"], traNumber=response["traNumber"], traAmount=response["traAmount"],
         buyOne=response["buyOne"], buyOnePri=response["buyOnePri"], buyTwo=response["buyTwo"],
         buyTwoPri=response["buyTwoPri"], buyThree=response["buyThree"], buyThreePri=response["buyThreePri"],
-        buyFour=response["buyFour"], buyFourPri=response["buyFourPri"],  buyFive=response["buyFive"],
+        buyFour=response["buyFour"], buyFourPri=response["buyFourPri"], buyFive=response["buyFive"],
         buyFivePri=response["buyFivePri"], sellOne=response["sellOne"], sellOnePri=response["sellOnePri"],
-        sellTwo=response["sellTwo"], sellTwoPri=response["sellTwoPri"],  sellThree=response["sellThree"],
+        sellTwo=response["sellTwo"], sellTwoPri=response["sellTwoPri"], sellThree=response["sellThree"],
         sellThreePri=response["sellThreePri"], sellFour=response["sellFour"], sellFourPri=response["sellFourPri"],
         sellFive=response["sellFive"], sellFivePri=response["sellFivePri"], date=response["date"],
         time=date_time, dot=response["dot"], nowPic=response["nowPic"], rate=response["rate"],
-        nowTraAmount=response["nowTraAmount"], nowTraNumber=response["nowTraNumber"],  minurl=response["minurl"],
+        nowTraAmount=response["nowTraAmount"], nowTraNumber=response["nowTraNumber"], minurl=response["minurl"],
         dayurl=response["dayurl"], weekurl=response["weekurl"], monthurl=response["monthurl"],
         shares_hold_id=hold.id,
     )

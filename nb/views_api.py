@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from django.db.models import Q  # 与或非 查询
 from dateutil.relativedelta import relativedelta
 
-from .tasks import stock_history, last_day_stock_history
+from .tasks import stock_history, last_day_stock_history, stock_detail
 from nb.models import ToDo, SharesHold, Shares, StockDetail
 from public.auth_token import auth_token
 from public.common import *
@@ -123,6 +123,8 @@ def stock_import(request, hold_id):
         share = Shares.objects.filter(Q(code=code) & Q(shares_hold_id=hold_id)).exists()
         if share:
             return JsonResponse.RepeatException()
+        if hold.is_detail:
+            stock_detail.delay(flag=False)
         flag = True
         last_day_time = ""
         if not check_stoke_date() or moment["now"] >= moment["end_time"]:

@@ -4,11 +4,12 @@ from django.core.cache import cache
 from django.http import HttpResponseRedirect
 from django.contrib import auth  # django认证系统
 from datetime import timedelta
+from random import randint
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 from public.jwt_sign import create_access_token
-from public.conf import ACCESS_TOKEN_EXPIRE_MINUTES, GET, POST, RECOMMEND
+from public.conf import ACCESS_TOKEN_EXPIRE_MINUTES, GET, POST, RECOMMEND, BackgroundName, BackgroundNumber
 from public.response import JsonResponse
 from public.common import handle_json, home_poetry, operation_record
 from public.log import logger
@@ -24,7 +25,9 @@ def index(request):
 
 def login(request):
     if request.method == GET:
-        return render(request, "login/login.html")
+        num = randint(0, BackgroundNumber)
+        url = BackgroundName.format(num=num)
+        return render(request, "login/login.html", {"url": url})
     elif request.method == POST:
         body = handle_json(request)
         if not body:

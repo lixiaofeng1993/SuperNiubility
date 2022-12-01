@@ -158,9 +158,9 @@ MEDIA_URL = "/media/"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 定时任务
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://:123456@127.0.0.1:6379/0')
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://:123456@127.0.0.1:6379/1')
 # 存储结果后端
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://:123456@127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://:123456@127.0.0.1:6379/2')
 
 # 时区
 CELERY_TIMEZONE = 'Asia/Shanghai'
