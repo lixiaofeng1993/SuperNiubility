@@ -197,7 +197,6 @@
                 let code = result.code;
                 let message = result.message;
                 let data = result.data;
-                let flag_str = result.flag;
                 let corner_obj = $("#corner");
                 let corner_span_obj = $("#corner-span");
                 let message_obj = $("#message");
@@ -205,6 +204,7 @@
                     message_obj.find("a").remove();
                     message_obj.find("hr").remove();
                     let number = data.number;
+                    let flag_str = data.flag;
                     if (number === 0) {
                         corner_span_obj.find("i").attr("style", "display: none")
                         return
@@ -212,6 +212,7 @@
                         if (flag_str) {
                             corner_span_obj.find("i").attr("style", "width: 16px;")
                             corner_obj.text(number);
+                            console.log(number)
                         } else {
                             corner_span_obj.find("i").attr("style", "display: none")
                         }
@@ -225,7 +226,7 @@
                             '</a>' +
                             `<hr class="dropdown-divider">`;
                     }
-                    if (number === 5) {
+                    if (number >= 5) {
                         content += `<a href="{% url 'stock' %}" style="margin-left: 40%;"><i class="fa fa-angle-double-right"></i></a>`;
                     }
                     message_obj.append(content);

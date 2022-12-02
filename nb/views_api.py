@@ -528,13 +528,13 @@ def message_remind(request):
         moment = etc_time()
         message_list = Message.objects.filter(Q(is_delete=False) &
                                               Q(is_look=False) &
-                                              Q(date=moment["today"])).order_by("-create_date")[:5]
+                                              Q(date=moment["today"])).order_by("-create_date")
         flag = True
         if not message_list:
             flag = False
             message_list = Message.objects.filter(Q(is_delete=False) &
                                                   Q(is_look=True) &
-                                                  Q(date=moment["today"])).order_by("-create_date")[:5]
+                                                  Q(date=moment["today"])).order_by("-create_date")
         result = {
             "number": len(message_list),
             "flag": flag,
@@ -542,7 +542,7 @@ def message_remind(request):
         }
         if not message_list:
             return JsonResponse.OK(data=result)
-        for message in message_list:
+        for message in message_list[:5]:
             result["data"].append({
                 "now_time": format_time(message.create_date),
                 "name": message.name
