@@ -234,11 +234,13 @@ def home_poetry():
     return obj_list
 
 
-def message_writing(name: str):
+def message_writing(name: str, user_id: int):
     """
     写入消息提醒
     """
     try:
+        cache.delete(TodayChart.format(user_id=user_id))
+        cache.delete(TodayBuySellChart.format(user_id=user_id))
         moment = etc_time()
         message = Message()
         message.name = name

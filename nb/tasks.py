@@ -176,7 +176,7 @@ def stock_today():
             Q(code=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
         if not share:
             Shares.objects.bulk_create(objs=shares_list)
-            message_writing(MessageToday)
+            message_writing(MessageToday, hold.user_id)
             logger.info(f"保存成功===>>>{len(shares_list)} 条")
 
 
@@ -242,7 +242,7 @@ def stock_detail(flag=True):
                 hold.days += 1
             hold.save()
         detail_obj.save()
-        message_writing(MessageBuySell)
+        message_writing(MessageBuySell, hold.user_id)
         logger.info("股票详情保存成功.")
     except Exception as error:
         logger.error(f"股票详情保存失败 ===>>> {error}")

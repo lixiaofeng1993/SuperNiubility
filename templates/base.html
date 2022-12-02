@@ -197,6 +197,7 @@
                 let code = result.code;
                 let message = result.message;
                 let data = result.data;
+                let flag_str = result.flag;
                 let corner_obj = $("#corner");
                 let corner_span_obj = $("#corner-span");
                 let message_obj = $("#message");
@@ -208,8 +209,12 @@
                         corner_span_obj.find("i").attr("style", "display: none")
                         return
                     } else {
-                        corner_span_obj.find("i").attr("style", "width: 16px;")
-                        corner_obj.text(number);
+                        if (flag_str) {
+                            corner_span_obj.find("i").attr("style", "width: 16px;")
+                            corner_obj.text(number);
+                        } else {
+                            corner_span_obj.find("i").attr("style", "display: none")
+                        }
                     }
                     let data_list = data.data;
                     let content = "";

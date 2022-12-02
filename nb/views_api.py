@@ -192,7 +192,7 @@ def day_chart(request):
 
             })
         logger.info("查询当天股票k线成功.")
-        cache.set(TodayChart.format(user_id=user_id), datasets, 3 * 60)
+        cache.set(TodayChart.format(user_id=user_id), datasets, surplus_second())
         return JsonResponse.OK(data=datasets)
 
 
@@ -505,7 +505,7 @@ def buy_sell_chart(request):
             ]
         }
         logger.info("查询当天买入卖出托单股票数据成功.")
-        cache.set(TodayBuySellChart.format(user_id=user_id), datasets, 3 * 60)
+        cache.set(TodayBuySellChart.format(user_id=user_id), datasets, surplus_second())
         return JsonResponse.OK(data=datasets)
 
 
@@ -529,8 +529,15 @@ def message_remind(request):
         message_list = Message.objects.filter(Q(is_delete=False) &
                                               Q(is_look=False) &
                                               Q(date=moment["today"])).order_by("-create_date")[:5]
+        flag = True
+        if not message_list:
+            flag = False
+            message_list = Message.objects.filter(Q(is_delete=False) &
+                                                  Q(is_look=True) &
+                                                  Q(date=moment["today"])).order_by("-create_date")[:5]
         result = {
             "number": len(message_list),
+            "flag": flag,
             "data": [],
         }
         if not message_list:
