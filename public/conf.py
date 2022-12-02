@@ -5,7 +5,7 @@
 # 创建时间: 2022/11/20 0020 12:47
 # @Version：V 0.1
 # @desc :
-from datetime import date, datetime
+from django.conf import settings
 
 # token
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
@@ -119,5 +119,5 @@ MessageBuySell = "买入卖出托单数据更新"
 MessageToday = "今日走势K线数据更新"
 
 # 登录背景图片
-BackgroundName = "http://127.0.0.1:8000/media/banner{num}.png"
+BackgroundName = "http://127.0.0.1:8000/media/banner{num}.png" if settings.DEBUG else "http://121.41.54.234//banner{num}.png"
 BackgroundNumber = 13
