@@ -39,6 +39,12 @@ StockEndTime = "StockEndTime-{user_id}"
 TodayChart = "TodayChart-{user_id}"
 # 当天买入卖出托单
 TodayBuySellChart = "TodayBuySellChart-{user_id}"
+# 验证码缓存
+VerificationCode = "VerificationCode"
+# 每个邮箱十分钟只能发送一次
+ToEmail = "ToEmail-{email}"
+# 邮箱请求时间间隔
+EmailTimeout = 60 * 60
 
 # 股票数据过滤规则
 StockRule = ["00", "15", "30", "45"]
@@ -122,3 +128,10 @@ MessageToday = "今日走势K线数据更新"
 # 登录背景图片
 BackgroundName = "http://127.0.0.1:8000/media/banner{num}.png" if settings.DEBUG else "http://121.41.54.234//banner{num}.png"
 BackgroundNumber = 13
+
+# 验证码长度
+CodeNumber = 6
+
+# 邮箱
+Email = "15235514553@163.com"
+EmailPassword = "PLSECRVQWUXAADGN"

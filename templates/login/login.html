@@ -1,200 +1,77 @@
+{% extends 'login_base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="zxx">
 
-<head>
+{% block title %}
     <title>Login</title>
-    <!-- Meta tag Keywords -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="keywords"
-          content="Utilizer Login Form template Responsive, Login form web template, Flat Pricing tables, Flat Drop downs Sign up Web Templates, Flat Web Templates, Login sign up Responsive web template, SmartPhone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyEricsson, Motorola web design"/>
-    <!-- Favicon -->
-    <link href="{% static 'images/favicon.ico' %}" rel="icon">
+{% endblock %}
 
-    <!-- //Meta tag Keywords -->
-    <!-- Custom-Files -->
-    <!-- Bootstrap-Core-CSS -->
-    <link rel="stylesheet" href="{% static 'css/login/style.css' %}" type="text/css" media="all"/>
-    <link rel="stylesheet" href="{% static 'css/alert.css' %}" type="text/css" media="all"/>
-    <!-- Style-CSS -->
-    <!-- font-awesome-icons -->
-    <link href="{% static 'css/login/font-awesome.css' %}" rel="stylesheet">
-    <!-- //font-awesome-icons -->
-    <!-- /Fonts -->
-    <link href="{% static 'css/login/font.css' %}" rel="stylesheet">
-    {#    <link href="//fonts.googleapis.com/css?family=Raleway:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700"#}
-    {#          rel="stylesheet">#}
-    <!-- Customized Bootstrap Stylesheet -->
-    <!-- //Fonts -->
-    <style>
-        .main-top-intro {
-            background-image: url('{{url}}');
-            /*background-image: url('http://121.41.54.234/banner.jpg');*/
-            background-size: cover;
-            -webkit-background-size: cover;
-            -moz-background-size: cover;
-            background-attachment: fixed;
-            position: relative;
-            min-height: 100vh;
-        }
-    </style>
-</head>
-
-<body>
-<!-- main -->
-<div class="main-top-intro">
-    <div class="bg-layer">
-        <!-- header -->
-        <div class="wrapper">
-            <header>
-                <div class="header-w3layouts">
-                    <h1>
-                        <a class="navbar-brand logo" href="javascript:void(0);">
-                            Super Niubility
-                        </a>
-                    </h1>
-                </div>
-
-                <div class="buttons mt-lg-0 mt-3 ml-auto" style="z-index: 999;">
-                    <div class="copy-w3layouts-inf" id="poetry-random">
-
+{% block body %}
+    <div class="content-inner-info">
+        <h2>Say Hello !!!</h2>
+        <div class="content-w3layouts-main">
+            <div class="form-w3ls-left-info">
+                <form action="javascript:void(0);" method="post">
+                    <input type="text" name="username" id="username" placeholder="账户" required/>
+                    <input type="password" name="password" id="password" placeholder="密码" required/>
+                    <div class="links">
+                        <p><a href="{% url 'register' %}">Register?</a> <a href="javascript:void(0);">&&</a>
+                            <a href="{% url 'change' %}">Forgot Password?</a>
+                        </p>
                     </div>
-                </div>
-                <div class="clear"></div>
-
-
-            </header>
-            <!-- //header -->
-            <div class="content-inner-info">
-                <h2>Say Hello !!!</h2>
-                <div class="content-w3layouts-main">
-
-                    <div class="form-w3ls-left-info">
-                        <form action="javascript:void(0);" method="post">
-
-
-                            <input type="text" name="username" id="username" placeholder="账户" required/>
-
-
-                            <input type="password" name="password" id="password" placeholder="密码" required/>
-
-                            <div class="links">
-                                <p><a href="javascript:void(0);">Forgot Password?</a></p>
-
-                            </div>
-
-                            <div class="bottom">
-                                <button class="btn" type="button" onclick="login()">登录</button>
-                                <button class="btn reg" type="reset">重置</button>
-                            </div>
-                        </form>
+                    <div class="bottom">
+                        <button class="btn" type="button" onclick="login()">登录</button>
+                        <button class="btn reg" type="reset">重置</button>
                     </div>
-                </div>
-                <div role="alert" id="alert">
-
-                </div>
+                </form>
             </div>
-            <!-- copyright -->
-            <div class="copy-w3layouts-inf">
-                <p>© 2022 Super Niubility Login. All rights reserved | Design by
-                    <a href="{% url 'index' %}"> Bruce.</a>
-                </p>
-                <div class="clear"></div>
-            </div>
-            <!-- //copyright -->
+        </div>
+        <div role="alert" id="alert">
         </div>
     </div>
-</div>
-<!-- //main -->
-</body>
-<script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
-<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-<script>
-    addEventListener("load", function () {
-        setTimeout(hideURLbar, 0);
-    }, false);
+{% endblock %}
 
-    function hideURLbar() {
-        window.scrollTo(0, 1);
-    }
-
-    function init() {
-        $("#poetry-random").find("p").remove();
-        let ale = $("#alert");
-        $.ajax({
-            type: "post",
-            url: "{% url 'poetry_random' %}",
-            async: false,
-            success: function (result) {
-                console.log(result);
-                let code = result.code;
-                let data = result.data[0];
-                let message = result.message;
-                if (code === 200) {
-                    let content;
-                    if (data.hasOwnProperty("author")) {
-                        content = `<p id="phrase">${data.phrase}</p><br><p id="author">--出自${data.dynasty}${data.author}的《${data.poetry_name}》</p>`;
-                    } else {
-                        content = `<p id="phrase">${data.phrase}</p><br><p id="author">--摘自《${data.poetry_name}》</p>`;
-                    }
-                    $("#poetry-random").append(content)
-                } else {
-                    ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
-                }
-            }, error: function () {
-                ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+{% block js %}
+    <script>
+        function login() {
+            let username = $("#username").val();
+            let password = $("#password").val();
+            let ale = $("#alert");
+            if (!username || !password) {
+                ale.html("用户名密码不能为空.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
+            } else if (username.length < 6 || password.length < 6) {
+                ale.html("用户名密码不能小于6位.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
             }
-        })
-    }
-
-    init();
-
-    function login() {
-        let username = $("#username").val();
-        let password = $("#password").val();
-        let ale = $("#alert");
-        if (!username || !password) {
-            return
-        } else if (username.length < 6 || password.length < 6) {
-            ale.html("用户名密码不能小于6位.").addClass("alert-warning").show().delay(1500).fadeOut();
-            return
-        }
-        let dataJson = JSON.stringify({
-            "username": username,
-            "password": password,
-        })
-        $.ajax({
-            type: "post",
-            url: "{% url 'login' %}",
-            dataType: "json",
-            data: dataJson,
-            async: false,
-            success: function (result) {
-                console.log(result);
-                let message = result.message;
-                let error = result.data.error;
-                let code = result.code;
-                if (code === 200) {
-                    let token = result.data.token;
-                    sessionStorage.setItem(username, token);
-                    ale.html("登录成功.").addClass("alert-success").show().delay(1500).fadeOut();
-                    top.location.href = "{% url 'index' %}";
-                    setTimeout(function () {
+            let dataJson = JSON.stringify({
+                "username": username,
+                "password": password,
+            })
+            $.ajax({
+                type: "post",
+                url: "{% url 'login' %}",
+                dataType: "json",
+                data: dataJson,
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let message = result.message;
+                    let code = result.code;
+                    if (code === 200) {
+                        let token = result.data.token;
+                        sessionStorage.setItem(username, token);
+                        ale.html("登录成功.").addClass("alert-success").show().delay(1500).fadeOut();
                         top.location.href = "{% url 'index' %}";
-                    }, 1500);
-                } else if (code === 1002) {
-                    ale.html(error).addClass("alert-warning").show().delay(1500).fadeOut();
-                } else if (code === 1003) {
-                    ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
-                } else {
-                    ale.html(message).addClass("alert-danger").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'index' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
                 }
-            }, error: function () {
-                ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
-            }
-        })
-    }
-</script>
-</html>
+            })
+        }
+    </script>
+{% endblock %}

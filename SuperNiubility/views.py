@@ -1,17 +1,17 @@
-import json
+import re
 from django.shortcuts import render
 from django.core.cache import cache
 from django.http import HttpResponseRedirect
 from django.contrib import auth  # django认证系统
 from datetime import timedelta
-from random import randint
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 from public.jwt_sign import create_access_token
-from public.conf import ACCESS_TOKEN_EXPIRE_MINUTES, GET, POST, RECOMMEND, BackgroundName, BackgroundNumber
+from public.conf import *
+from public.send_email import send_email
 from public.response import JsonResponse
-from public.common import handle_json, home_poetry, operation_record
+from public.common import handle_json, home_poetry, operation_record, surplus_second, randint, random_str
 from public.log import logger
 
 
@@ -36,8 +36,7 @@ def login(request):
         password = body.get('password', '')
         user = auth.authenticate(username=username, password=password)
         if user is None:
-            result = {"error": f"用户名密码错误."}
-            return JsonResponse.CheckException(data=result)
+            return JsonResponse.CheckException()
         auth.login(request, user)
         user = User.objects.get(username=username)
         token = cache.get(username)
@@ -55,9 +54,118 @@ def login(request):
             cache.set(username, token, ACCESS_TOKEN_EXPIRE_MINUTES * 60)
             result["token"] = token
         repr = "登录"
-        msg = f"{username} {repr}系统"
+        msg = f"用户 {username} {repr}系统"
         operation_record(request, user, user.id, repr, "", msg)
         return JsonResponse.OK(data=result)
+
+
+def change(request):
+    if request.method == GET:
+        num = randint(0, BackgroundNumber)
+        url = BackgroundName.format(num=num)
+        return render(request, "login/change.html", {"url": url})
+    elif request.method == POST:
+        body = handle_json(request)
+        if not body:
+            return JsonResponse.JsonException()
+        username = body.get('username', '')
+        password = body.get('password', '')
+        confirm = body.get('confirm', '')
+        to_email = body.get('email', '')
+        _code = body.get('code', '')
+        if password != confirm:
+            return JsonResponse.EqualException()
+        repeat = cache.get(ToEmail.format(email=to_email))
+        if not repeat:
+            return JsonResponse.AgreementException()
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return JsonResponse.UserException()
+        if user.email != to_email:
+            return JsonResponse.JsonException()
+        cache_code = cache.get(VerificationCode)
+        if _code != cache_code:
+            return JsonResponse.CodeException()
+        check = auth.authenticate(username=username, password=password)
+        if check:
+            return JsonResponse.RepeatException()
+        try:
+            user.set_password(password)
+            user.email = to_email
+            user.save()
+        except Exception as error:
+            return JsonResponse.DatabaseException(data=str(error))
+        repr = "登录"
+        msg = f"用户 {username} 修改密码"
+        operation_record(request, user, user.id, repr, "", msg)
+        return JsonResponse.OK()
+
+
+def register(request):
+    if request.method == GET:
+        num = randint(0, BackgroundNumber)
+        url = BackgroundName.format(num=num)
+        return render(request, "login/register.html", {"url": url})
+    elif request.method == POST:
+        body = handle_json(request)
+        if not body:
+            return JsonResponse.JsonException()
+        username = body.get('username', '')
+        password = body.get('password', '')
+        confirm = body.get('confirm', '')
+        to_email = body.get('email', '')
+        _code = body.get('code', '')
+        if password != confirm:
+            return JsonResponse.EqualException()
+        repeat = cache.get(ToEmail.format(email=to_email))
+        if not repeat:
+            return JsonResponse.AgreementException()
+        cache_code = cache.get(VerificationCode)
+        if _code != cache_code:
+            return JsonResponse.CodeException()
+        user = User.objects.filter(username=username).exists()
+        if user:
+            return JsonResponse.RepeatException()
+        try:
+            user = User.objects.create_user(username=username, password=password, email=to_email)
+        except Exception as error:
+            return JsonResponse.DatabaseException(data=str(error))
+        repr = "登录"
+        msg = f"用户 {username} 注册系统"
+        operation_record(request, user, user.id, repr, "", msg)
+        return JsonResponse.OK()
+
+
+def email(request):
+    if request.method == POST:
+        body = handle_json(request)
+        if not body:
+            return JsonResponse.JsonException()
+        to_email = body.get("email")
+        if not re.match("\w+@\w+\.\w+", to_email):
+            return JsonResponse.CheckException()
+        repeat = cache.get(ToEmail.format(email=to_email))
+        if repeat:
+            return JsonResponse.RepeatException()
+        salt = cache.get(VerificationCode)
+        cache.set(ToEmail.format(email=to_email), True, EmailTimeout)
+        if not salt:
+            salt = random_str()
+            cache.set(VerificationCode, salt, EmailTimeout)
+        msg = send_email(to_email, salt)
+        if not msg:
+            return JsonResponse.BadRequest()
+        return JsonResponse.OK()
+
+
+@login_required
+def code(request):
+    if request.method == GET:
+        salt = cache.get(VerificationCode)
+        if not salt:
+            salt = random_str()
+            cache.set(VerificationCode, salt, EmailTimeout)
+        return JsonResponse.OK(data={"code": salt})
 
 
 @login_required

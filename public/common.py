@@ -10,6 +10,7 @@ import json
 import time
 from django.core.cache import cache
 from chinese_calendar import is_workday
+from random import randint, choice
 from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
 from django.contrib.admin.options import get_content_type_for_model
 
@@ -17,6 +18,15 @@ from nb.models import Poetry, User, Message
 from public.conf import *
 from public.recommend import recommend_handle
 from public.log import logger
+
+
+def random_str():
+    """随机字符串"""
+    H = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    salt = ""
+    for i in range(CodeNumber):
+        salt += choice(H)
+    return salt
 
 
 def difference_stock(code: str):
@@ -54,7 +64,7 @@ def format_time(date_time: datetime):
     elif 86400 <= total_seconds < 172800:
         _time = f"{round(total_seconds / 86400)}天前"
     else:
-        _time = date_time
+        _time = date_time.strftime("%Y-%m-%d %H:%M:%S")
     return _time
 
 
@@ -140,7 +150,7 @@ def operation_record(request, model, model_id, repr, action_flag, msg: str = "")
             change_message = msg
     elif action_flag == "del":
         action_flag = DELETION
-        change_message = f"删除{repr} {model.name}"
+        change_message = f"删除{repr} {model.name}0"
     elif action_flag == "change":
         action_flag = CHANGE
         change_message = f"查看{repr} {model_id}"

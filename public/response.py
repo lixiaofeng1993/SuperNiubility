@@ -73,5 +73,17 @@ class JsonResponse(HttpResponse):
         return JsonResponse(1008, message, data)
 
     @staticmethod
-    def Emptyeption(message="查询数据为空异常.", data=None):
+    def EmptyException(message="查询数据为空.", data=None):
         return JsonResponse(1009, message, data)
+
+    @staticmethod
+    def CodeException(message="验证码错误.", data=None):
+        return JsonResponse(1010, message, data)
+
+    @staticmethod
+    def UserException(message="用户不存在.", data=None):
+        return JsonResponse(1011, message, data)
+
+    @staticmethod
+    def AgreementException(message="数据不一致异常.", data=None):
+        return JsonResponse(1012, message, data)

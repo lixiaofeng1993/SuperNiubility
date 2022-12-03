@@ -25,6 +25,10 @@ urlpatterns = [
     path("", views.index, name="index"),
     path('login/action/', views.login, name="login"),
     path('logout/', views.logout, name="logout"),
+    path('change/', views.change, name="change"),
+    path('register/', views.register, name="register"),
+    path('code/', views.code, name="code"),
+    path('email/', views.email, name="email"),
 
     path("nb/", include("nb.urls")),
     path("wx/", include("wx.urls")),

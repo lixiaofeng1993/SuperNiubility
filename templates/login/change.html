@@ -1,0 +1,132 @@
+{% extends 'login_base.html' %}
+{% load static %}
+
+{% block title %}
+    <title>Change</title>
+{% endblock %}
+
+{% block body %}
+    <div class="content-inner-info">
+        <h2>Say Change !!!</h2>
+        <div class="content-w3layouts-main">
+            <div class="form-w3ls-left-info">
+                <form action="javascript:void(0);" method="post">
+                    <input type="text" name="username" id="username" placeholder="账户" required/>
+                    <input type="password" name="password" id="password" placeholder="密码" required/>
+                    <input type="password" name="password" id="confirm" placeholder="确认密码" required/>
+                    <button type="button" id="code-btn" onclick="send_email()"
+                            style="background: #4cc2c4;color:#FFFFFF;border-color: #4cc2c4;">
+                        点击获取验证码
+                    </button>
+                    <input type="text" name="email" id="email" placeholder="邮箱" required/>
+                    <input type="text" name="code" id="code" placeholder="验证码" required/>
+                    <div class="bottom">
+                        <button class="btn" type="button" onclick="change()">修改</button>
+                        <button class="btn reg" type="reset">重置</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div role="alert" id="alert">
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        function send_email() {
+            let code_btn = $("#code-btn");
+            let color = code_btn.attr("style");
+            if (color.search("#B8B8B8") !== -1) {
+                return
+            }
+            let email = $("#email").val();
+            let ale = $("#alert");
+            if (!email) {
+                ale.html("邮箱字段不能为空.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
+            }
+            let dataJson = JSON.stringify({
+                "email": email,
+            })
+            $.ajax({
+                type: "post",
+                url: "{% url 'email' %}",
+                dataType: "json",
+                data: dataJson,
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let message = result.message;
+                    let code = result.code;
+                    if (code === 200) {
+                        code_btn.attr("style", "color:#FFFFFF;background:#B8B8B8;border-color: #4cc2c4;")
+                        ale.html("发送成功，请在1小时内完成验证.").addClass("alert-success").show().delay(1500).fadeOut();
+                    } else if (code === 1005) {
+                        code_btn.attr("style", "color:#FFFFFF;background:#B8B8B8;border-color: #4cc2c4;")
+                        ale.html("验证码还在有效期内.").addClass("alert-warning").show().delay(1500).fadeOut();
+                    } else if (code === 1002) {
+                        ale.html("邮箱格式错误.").addClass("alert-warning").show().delay(1500).fadeOut();
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
+
+        function change() {
+            let username = $("#username").val();
+            let password = $("#password").val();
+            let confirm = $("#confirm").val();
+            let email = $("#email").val();
+            let code = $("#code").val();
+            let ale = $("#alert");
+            if (!username || !password || !confirm || !code) {
+                ale.html("必填字段不能为空.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
+            } else if (username.length < 6 || password.length < 6 || confirm.length < 6 || password.code < 6) {
+                ale.html("必填字段不能小于6位.").addClass("alert-warning").show().delay(1500).fadeOut();
+                return
+            }
+            let dataJson = JSON.stringify({
+                "username": username,
+                "password": password,
+                "confirm": confirm,
+                "email": email,
+                "code": code,
+            })
+            $.ajax({
+                type: "post",
+                url: "{% url 'change' %}",
+                dataType: "json",
+                data: dataJson,
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let message = result.message;
+                    let code = result.code;
+                    if (code === 200) {
+                        ale.html("修改成功.").addClass("alert-success").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else if (code === 1007) {
+                        ale.html("两次密码输入不相同.").addClass("alert-warning").show().delay(1500).fadeOut();
+                    } else if (code === 1012) {
+                        ale.html("请确认邮箱是否一致.").addClass("alert-warning").show().delay(1500).fadeOut();
+                    } else if (code === 1003) {
+                        ale.html("输入邮箱和预留邮箱不一致.").addClass("alert-warning").show().delay(1500).fadeOut();
+                    } else if (code === 1005) {
+                        ale.html("修改密码和旧密码相同.").addClass("alert-warning").show().delay(1500).fadeOut();
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
+    </script>
+{% endblock %}

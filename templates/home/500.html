@@ -1,16 +1,78 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+    <style>
+        #poetry-random p {
+            font-size: 1.5em;
+            letter-spacing: 1px;
+            line-height: 1.8em;
+        }
+
+        #poetry-random span {
+            margin-left: 30%;
+            display: -webkit-box;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            -webkit-box-orient: vertical;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+            line-height: 1.8em;
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
+    <div role="alert" id="alert">
+
+    </div>
     <div class="container-fluid pt-4 px-4">
         <div class="row vh-100 bg-light rounded align-items-center justify-content-center mx-0">
             <div class="col-md-6 text-center p-4">
                 <i class="bi bi-exclamation-triangle display-1 text-primary"></i>
                 <h1 class="display-1 fw-bold">500</h1>
-                <h1 class="mb-4">系统出现异常.</h1>
-                <p class="mb-4">We’re sorry, the page you have looked for does not exist in our website!
-                    Maybe go to our home page or try to use a search?</p>
-                <a class="btn btn-primary rounded-pill py-3 px-5" href="{% url 'index' %}">Go Back To Home</a>
+                <p class="mb-4">系统出现异常.</p>
+                <div class="buttons mt-lg-0 mt-3 ml-auto" style="z-index: 999;">
+                    <div class="copy-w3layouts-inf" id="poetry-random">
+
+                    </div>
+                </div>
+                <a class="btn btn-primary rounded-pill py-3 px-5" href="{% url 'index' %}">返回首页</a>
             </div>
         </div>
     </div>
+{% endblock %}
+{% block js %}
+    <script>
+        function init() {
+            $("#poetry-random").find("p").remove();
+            let ale = $("#alert");
+            $.ajax({
+                type: "post",
+                url: "{% url 'poetry_random' %}",
+                async: false,
+                success: function (result) {
+                    console.log(result);
+                    let code = result.code;
+                    let data = result.data[2];
+                    let message = result.message;
+                    if (code === 200) {
+                        let content;
+                        if (data.hasOwnProperty("author")) {
+                            content = `<p id="phrase">${data.phrase}</p><br><span id="author">--出自${data.dynasty}${data.author}的《${data.poetry_name}》</span><br>`;
+                        } else {
+                            content = `<p id="phrase">${data.phrase}</p><br><span id="author">--摘自《${data.poetry_name}》</span><br>`;
+                        }
+                        $("#poetry-random").append(content)
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
+
+        init();
+    </script>
 {% endblock %}
