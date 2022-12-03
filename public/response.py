@@ -85,5 +85,5 @@ class JsonResponse(HttpResponse):
         return JsonResponse(1011, message, data)
 
     @staticmethod
-    def AgreementException(message="数据不一致异常.", data=None):
+    def AgreementException(message="数据不匹配异常.", data=None):
         return JsonResponse(1012, message, data)
