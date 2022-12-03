@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.core.cache import cache
 from django.http import HttpResponseRedirect
 from django.contrib import auth  # django认证系统
+from django.db.models import Q  # 与或非 查询
 from datetime import timedelta
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -141,6 +142,9 @@ def email(request):
         body = handle_json(request)
         if not body:
             return JsonResponse.JsonException()
+        user = User.objects.filter(Q(is_superuser=1) & Q(is_active=1) & Q(is_staff=1)).exclude(email="").first()
+        if not user:
+            return JsonResponse.ServerError()
         to_email = body.get("email")
         if not re.match("\w+@\w+\.\w+", to_email):
             return JsonResponse.CheckException()
@@ -152,7 +156,7 @@ def email(request):
         if not salt:
             salt = random_str()
             cache.set(VerificationCode, salt, EmailTimeout)
-        msg = send_email(to_email, salt)
+        msg = send_email(user.email, to_email, salt)
         if not msg:
             return JsonResponse.BadRequest()
         return JsonResponse.OK()

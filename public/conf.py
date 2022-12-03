@@ -133,5 +133,4 @@ BackgroundNumber = 13
 CodeNumber = 6
 
 # 邮箱
-Email = "15235514553@163.com"
 EmailPassword = "PLSECRVQWUXAADGN"

@@ -525,7 +525,7 @@ def record(request):
 @auth_token()
 def message_remind(request):
     if request.method == POST:
-        moment = etc_time()
+        # moment = etc_time()
         # & Q(date=moment["today"])
         message_list = Message.objects.filter(Q(is_delete=False) &
                                               Q(is_look=False)).order_by("-create_date")
