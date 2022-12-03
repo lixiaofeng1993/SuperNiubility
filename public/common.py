@@ -150,7 +150,7 @@ def operation_record(request, model, model_id, repr, action_flag, msg: str = "")
             change_message = msg
     elif action_flag == "del":
         action_flag = DELETION
-        change_message = f"删除{repr} {model.name}0"
+        change_message = f"删除{repr} {model.name}"
     elif action_flag == "change":
         action_flag = CHANGE
         change_message = f"查看{repr} {model_id}"
