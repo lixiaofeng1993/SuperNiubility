@@ -61,7 +61,6 @@
                         let token = result.data.token;
                         sessionStorage.setItem(username, token);
                         ale.html("登录成功.").addClass("alert-success").show().delay(1500).fadeOut();
-                        top.location.href = "{% url 'index' %}";
                         setTimeout(function () {
                             top.location.href = "{% url 'index' %}";
                         }, 1500);
