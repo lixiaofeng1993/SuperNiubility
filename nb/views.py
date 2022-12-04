@@ -99,6 +99,17 @@ def todo_edit(request, todo_id):
         return render(request, "home/to_do/edit_to_do.html", info)
 
 
+@login_required
+def todo_look(request, todo_id):
+    if request.method == GET:
+        info = request_get_search(request)
+        model = model_superuser(request, ToDo)
+        td = model.get(id=todo_id)
+        data = handle_model(td)
+        info.update({"obj": data})
+        return render(request, "home/to_do/look_to_do.html", info)
+
+
 @auth_token()
 def todo_del(request, todo_id):
     if request.method == POST:

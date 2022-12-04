@@ -52,10 +52,17 @@
                                         <td id="cen">-</td>
                                     {% endif %}
                                     <td>
-                                        <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
-                                           href="/nb/do/edit/{{ object.id }}/?page={{ page }}">
-                                            <i class="fa fa-paint-brush"></i>
-                                        </a>
+                                        {% if object.is_done != 2 %}
+                                            <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
+                                               href="/nb/do/edit/{{ object.id }}/?page={{ page }}">
+                                                <i class="fa fa-paint-brush"></i>
+                                            </a>
+                                        {% else %}
+                                            <a class="btn btn-sm btn-sm-square btn-outline-primary m-2"
+                                               href="/nb/do/look/{{ object.id }}/?page={{ page }}">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                        {% endif %}
                                         <button class="btn btn-square btn-outline-danger m-2"
                                                 onclick="return todo_del('{{ object.id }}');">
                                             <i class="fa fa-times"></i>

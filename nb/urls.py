@@ -13,6 +13,7 @@ urlpatterns = [
     path("do/", views.ToDOIndex.as_view(), name="todo"),
     path("do/add/", views.todo_add, name="todo_add"),
     path("do/edit/<uuid:todo_id>/", views.todo_edit, name="todo_edit"),
+    path("do/look/<uuid:todo_id>/", views.todo_look, name="todo_look"),
     path("do/del/<uuid:todo_id>/", views.todo_del, name="todo_del"),
     path("do/done/<uuid:todo_id>/", views_api.todo_done, name="todo_done"),
     path("do/home/<uuid:todo_id>/", views_api.todo_home, name="todo_home"),
