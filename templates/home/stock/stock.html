@@ -339,19 +339,27 @@
                         let labels = result.data.labels;
                         let data = result.data;
                         let datasets = new List();
-                        for (const key in data) {
-                            if (key !== "labels" && key !== "days") {
-                                let borderColor = data[key].color;
-                                datasets.append({
-                                    label: key,
-                                    data: data[key].data,
-                                    fill: true, // 阴影
-                                    tension: 0.1, // 曲线
-                                    showLine: true, // 是否展示线
-                                    borderColor: borderColor // 折线颜色
-                                })
+                        if (JSON.stringify(data) !== "{}") {
+                            for (const key in data) {
+                                if (key !== "labels" && key !== "days") {
+                                    let borderColor = data[key].color;
+                                    datasets.append({
+                                        label: key,
+                                        data: data[key].data,
+                                        fill: true, // 阴影
+                                        tension: 0.1, // 曲线
+                                        showLine: true, // 是否展示线
+                                        borderColor: borderColor // 折线颜色
+                                    })
+                                }
                             }
+                        } else {
+                            datasets.append({
+                                label: "",
+                                data: [],
+                            })
                         }
+                        console.log(datasets.dataStore)
                         let data_dict = {
                             labels: labels,
                             datasets: datasets.dataStore
@@ -633,6 +641,15 @@
                     let message = result.message;
                     let data = result.data;
                     if (code === 200) {
+                        if (!data) {
+                            data = {
+                                "datasets": [{
+                                    "label": "",
+                                    "data": [],
+                                }],
+                                "labels": [],
+                            }
+                        }
                         let buy_obj = buy.get(0).getContext("2d");
                         let config = {
                             type: 'bar', // 设置图表类型
