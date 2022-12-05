@@ -359,7 +359,6 @@
                                 data: [],
                             })
                         }
-                        console.log(datasets.dataStore)
                         let data_dict = {
                             labels: labels,
                             datasets: datasets.dataStore
@@ -409,17 +408,24 @@
                         }
                         let datasets = new List();
                         fiveDay.text(`${days}日走势`)
-                        for (const key in data) {
-                            if (key !== "labels" && key !== "days") {
-                                let borderColor = data[key].color;
-                                datasets.append({
-                                    label: key,
-                                    data: data[key].data,
-                                    fill: true,
-                                    tension: 0.1,
-                                    borderColor: borderColor
-                                })
+                        if (JSON.stringify(data) !== "{}") {
+                            for (const key in data) {
+                                if (key !== "labels" && key !== "days") {
+                                    let borderColor = data[key].color;
+                                    datasets.append({
+                                        label: key,
+                                        data: data[key].data,
+                                        fill: true,
+                                        tension: 0.1,
+                                        borderColor: borderColor
+                                    })
+                                }
                             }
+                        } else {
+                            datasets.append({
+                                label: "",
+                                data: [],
+                            })
                         }
                         let data_dict = {
                             labels: labels,
@@ -469,17 +475,24 @@
                         }
                         let datasets = new List();
                         tenDay.text(`${days}日走势`)
-                        for (const key in data) {
-                            if (key !== "labels" && key !== "days") {
-                                let borderColor = data[key].color;
-                                datasets.append({
-                                    label: key,
-                                    data: data[key].data,
-                                    fill: true,
-                                    tension: 0.1,
-                                    borderColor: borderColor
-                                })
+                        if (JSON.stringify(data) !== "{}") {
+                            for (const key in data) {
+                                if (key !== "labels" && key !== "days") {
+                                    let borderColor = data[key].color;
+                                    datasets.append({
+                                        label: key,
+                                        data: data[key].data,
+                                        fill: true,
+                                        tension: 0.1,
+                                        borderColor: borderColor
+                                    })
+                                }
                             }
+                        } else {
+                            datasets.append({
+                                label: "",
+                                data: [],
+                            })
                         }
                         let data_dict = {
                             labels: labels,
@@ -529,17 +542,24 @@
                         }
                         let datasets = new List();
                         tenDay.text(`${days}日走势`)
-                        for (const key in data) {
-                            if (key !== "labels" && key !== "days") {
-                                let borderColor = data[key].color;
-                                datasets.append({
-                                    label: key,
-                                    data: data[key].data,
-                                    fill: true,
-                                    tension: 0.1,
-                                    borderColor: borderColor
-                                })
+                        if (JSON.stringify(data) !== "{}") {
+                            for (const key in data) {
+                                if (key !== "labels" && key !== "days") {
+                                    let borderColor = data[key].color;
+                                    datasets.append({
+                                        label: key,
+                                        data: data[key].data,
+                                        fill: true,
+                                        tension: 0.1,
+                                        borderColor: borderColor
+                                    })
+                                }
                             }
+                        } else {
+                            datasets.append({
+                                label: "",
+                                data: [],
+                            })
                         }
                         let data_dict = {
                             labels: labels,
@@ -589,17 +609,24 @@
                         }
                         let datasets = new List();
                         allDay.text(`${days}日走势`)
-                        for (const key in data) {
-                            if (key !== "labels" && key !== "days") {
-                                let borderColor = data[key].color;
-                                datasets.append({
-                                    label: key,
-                                    data: data[key].data,
-                                    fill: true,
-                                    tension: 0.1,
-                                    borderColor: borderColor
-                                })
+                        if (JSON.stringify(data) !== "{}") {
+                            for (const key in data) {
+                                if (key !== "labels" && key !== "days") {
+                                    let borderColor = data[key].color;
+                                    datasets.append({
+                                        label: key,
+                                        data: data[key].data,
+                                        fill: true,
+                                        tension: 0.1,
+                                        borderColor: borderColor
+                                    })
+                                }
                             }
+                        } else {
+                            datasets.append({
+                                label: "",
+                                data: [],
+                            })
                         }
                         let data_dict = {
                             labels: labels,
