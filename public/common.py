@@ -50,6 +50,23 @@ def delete_cache(user_id):
     cache.delete(TwentyChart.format(user_id=user_id))
 
 
+def regularly_hold(hold, moment: dict, price: float):
+    """
+    实时更新 持有股票收益
+    """
+    is_profit = hold.is_profit = True if hold.profit_and_loss > 0 else False
+    if hold.number and hold.cost_price and moment["stock_time"] > hold.update_date:
+        hold.profit_and_loss = round(hold.number * float(price) - hold.number * hold.cost_price, 2)
+
+        hold.today_price = round((float(price) - hold.last_close_price) * hold.number, 2)
+        if moment["now"] >= moment["stock_time"]:
+            hold.last_close_price = price
+            hold.last_day = moment["today"]
+            hold.days += 1
+        hold.save()
+    return is_profit
+
+
 def format_time(date_time: datetime):
     """格式化时间天，小时，分钟，秒"""
     now = etc_time()["now"]
@@ -119,7 +136,7 @@ def check_stoke_date():
     if moment["now"] < moment["start_time"] or moment["now"] > moment["end_time"] or \
             moment["ap_time"] < moment["now"] < moment["pm_time"]:
         logger.info(f"当前时间 {moment['now']} 未开盘!!!")
-        return
+        # return
     return moment
 
 

@@ -51,16 +51,55 @@ def send_ding(body: dict):
         logger.error("钉钉通知发送失败！返回值：{}".format(res))
 
 
-def handle_body():
+def profit_and_loss(hold):
+    """
+    盈亏转换发送钉钉文档
+    """
+    if hold.is_profit:
+        profit_text = "亏转盈"
+        color = "#FF0000"
+    else:
+        profit_text = "盈转亏"
+        color = "#00FF00"
     body = {
         "msgtype": "markdown",
         "markdown": {
-            "title": share_name,
-            "text": f"### {share_name}\n\n"
-                    f"> **历史 {so_day} 天最高价** <font color={max_price_color}>{max_price}</font> 元/股\n\n"
-
+            "title": hold.name,
+            "text": f"### {hold.name}\n\n"
+                    f"> **{profit_text}：** <font color={color}>{hold.profit_and_loss}</font> 元\n\n"
+                    f"> **点击查看** [股票分析](http://121.41.54.234/nb/stock/look/{hold.id}/)@15235514553"
         },
         "at": {
             "atMobiles": ["15235514553"],
             "isAtAll": False,
         }}
+    send_ding(body)
+
+
+def profit_and_loss_ratio(hold, price):
+    """
+    盈亏比例
+    """
+    ratio = round((float(price) - hold.cost_price) / hold.cost_price * 100, 3)
+    if -5 < ratio < 5:
+        pass
+    else:
+        if ratio > 0:
+            color = "#FF0000"
+            text = "盈利"
+        else:
+            color = "#00FF00"
+            text = "亏损"
+        body = {
+            "msgtype": "markdown",
+            "markdown": {
+                "title": hold.name,
+                "text": f"### {hold.name}\n\n"
+                        f"> **盈亏比例：** {text} 已经达到 <font color={color}>{ratio}</font> %\n\n"
+                        f"> **点击查看** [股票分析](http://121.41.54.234/nb/stock/look/{hold.id}/)@15235514553"
+            },
+            "at": {
+                "atMobiles": ["15235514553"],
+                "isAtAll": False,
+            }}
+        send_ding(body)

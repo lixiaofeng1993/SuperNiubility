@@ -240,7 +240,7 @@ def stock_edit(request, stock_id):
         return render(request, "home/stock/edit_stock.html", info)
 
 
-@login_required
+# @login_required
 def stock_look(request, stock_id):
     info = request_get_search(request)
     model = model_superuser(request, SharesHold)

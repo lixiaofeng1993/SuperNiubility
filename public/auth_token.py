@@ -26,6 +26,8 @@ def auth_token():
                 if not token or access_token != token:
                     return JsonResponse.Unauthorized()
             response = view_func(request, *args, **kwargs)
+            if response is None:
+                return JsonResponse.MethodNotAllowed()
             return response
 
         return wrap2

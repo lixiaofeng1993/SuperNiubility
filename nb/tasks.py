@@ -11,8 +11,8 @@ from django.db.models import Q  # 与或非 查询
 
 from nb.models import ToDo, Shares, SharesHold, StockDetail
 from public.common import delete_cache, check_stoke_date, etc_time, cache, StockEndTime, difference_stock, datetime, \
-    message_writing, MessageBuySell, MessageToday
-from public.send_ding import send_ding
+    message_writing, MessageBuySell, MessageToday, regularly_hold
+from public.send_ding import profit_and_loss, profit_and_loss_ratio
 from public.stock_api import stock_api
 from public.log import logger
 
@@ -139,36 +139,11 @@ def stock_today():
             shares_list.append(obj)
         try:
             hold = SharesHold.objects.get(id=stock_dict[key])
-            is_profit = hold.is_profit
-            hold.is_profit = True if hold.profit_and_loss > 0 else False
-            if hold.number and hold.cost_price and moment["stock_time"] > hold.update_date:
-                hold.profit_and_loss = round(hold.number * float(new_price) - hold.number * hold.cost_price, 2)
-                hold.today_price = round((float(new_price) - hold.last_close_price) * hold.number, 2)
-                if moment["now"] >= moment["stock_time"]:
-                    hold.last_close_price = new_price
-                    hold.last_day = moment["today"]
-                    hold.days += 1
-                hold.save()
-            if is_profit != hold.is_profit:
-                if hold.is_profit:
-                    profit_text = "亏转盈"
-                    color = "#FF0000"
-                else:
-                    profit_text = "盈转亏"
-                    color = "#00FF00"
-                body = {
-                    "msgtype": "markdown",
-                    "markdown": {
-                        "title": hold.name,
-                        "text": f"### {hold.name}\n\n"
-                                f"> **{profit_text}** <font color={color}>{hold.profit_and_loss}</font> 元\n\n"
-                                f"> **点击查看** [股票分析](http://121.41.54.234/nb/stock/)@15235514553"
-                    },
-                    "at": {
-                        "atMobiles": ["15235514553"],
-                        "isAtAll": False,
-                    }}
-                send_ding(body)
+            is_profit = regularly_hold(hold, moment, new_price)
+            if hold.is_detail:
+                if is_profit != hold.is_profit:
+                    profit_and_loss(hold)  # 钉钉消息提醒
+                profit_and_loss_ratio(hold, new_price)
         except Exception as error:
             logger.error(f"更新持仓盈亏出现错误. ===>>> {error}")
             return
@@ -233,15 +208,9 @@ def stock_detail(flag=True):
         shares_hold_id=hold.id,
     )
     try:
-        if hold.number and hold.cost_price and moment["stock_time"] > hold.update_date:
-            hold.profit_and_loss = round(hold.number * float(response["dot"]) - hold.number * hold.cost_price, 2)
-            hold.today_price = round((float(response["dot"]) - hold.last_close_price) * hold.number, 2)
-            if moment["now"] >= moment["stock_time"]:
-                hold.last_close_price = response["dot"]
-                hold.last_day = moment["today"]
-                hold.days += 1
-            hold.save()
         detail_obj.save()
+        new_price = response["dot"]
+        regularly_hold(hold, moment, new_price)
         message_writing(MessageBuySell, hold.user_id)
         logger.info("股票详情保存成功.")
     except Exception as error:

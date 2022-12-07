@@ -57,7 +57,7 @@ class SharesHold(models.Model):
     last_close_price = models.FloatField(default=0.00, null=True, help_text="上一天收盘价")
     last_day = models.DateTimeField("上一天日期", null=True, help_text="上一天日期")
     today_price = models.FloatField(default=0.00, null=True, help_text="当天盈亏")
-    color = models.CharField(max_length=20, default="green", null=True, help_text="折线颜色")
+    color = models.CharField(max_length=20, default="red", null=True, help_text="折线颜色")
     is_profit = models.BooleanField(default=False, help_text="盈转亏、亏转盈")
     is_detail = models.BooleanField(default=False, help_text="是否查看详情")  # 唯一标识，只能设置一个
     is_delete = models.BooleanField(default=False, help_text="是否删除")
