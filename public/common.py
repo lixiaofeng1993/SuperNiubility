@@ -242,7 +242,7 @@ def home_poetry():
     """
     poetry_type = recommend_handle()
     # 随机返回一条数据 filter 等于  exclude 不等于
-    poetry_list = Poetry.objects.filter(type=poetry_type).exclude(phrase="").order_by('?')[:5]
+    poetry_list = Poetry.objects.filter(type=poetry_type).exclude(phrase="").order_by('?')[:HomeNumber]
     obj_list = list()
     for poetry in poetry_list:
         result = {
@@ -255,10 +255,6 @@ def home_poetry():
             result.update({
                 "author": poetry.author.name,
                 "dynasty": poetry.author.dynasty,
-            })
-        else:
-            result.update({
-                "author": "",
             })
         obj_list.append(result)
     logger.info("查询诗词推荐列表 ===>>> 成功.")
