@@ -345,6 +345,7 @@ def chart_all(request):
             "obj": hold,
             "update_time": format_time(hold.update_date),
         })
+        Message.objects.filter(Q(is_delete=False) & Q(is_look=False)).update(is_look=True)
         return render(request, "home/stock/chart_all.html", info)
 
 

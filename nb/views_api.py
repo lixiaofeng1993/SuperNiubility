@@ -528,14 +528,12 @@ def message_remind(request):
         # moment = etc_time()
         # & Q(date=moment["today"])
         message_list = Message.objects.filter(Q(is_delete=False) &
-                                              Q(is_look=False)
-                                              ).exclude(obj_id="").order_by("-create_date")
+                                              Q(is_look=False)).order_by("-create_date")
         flag = True
         if not message_list:
             flag = False
             message_list = Message.objects.filter(Q(is_delete=False) &
-                                                  Q(is_look=True)
-                                                  ).exclude(obj_id="").order_by("-create_date")
+                                                  Q(is_look=True)).order_by("-create_date")
         result = {
             "number": len(message_list),
             "flag": flag,
