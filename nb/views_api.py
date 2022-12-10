@@ -439,6 +439,7 @@ def buy_sell_chart(request):
             labels.append(detail.time)
         datasets = {
             "labels": labels,
+            "name": hold.name,
             "datasets": [
                 {
                     "label": "买一",
