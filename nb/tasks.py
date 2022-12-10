@@ -182,7 +182,7 @@ def stock_detail(flag=True):
                                         Q(code=code) & Q(shares_hold_id=hold.id)).order_by("-time").first()
     if detail and check_time <= detail.time:  # 判重
         logger.info(f"股票详情表数据重复.===>>>{check_time} {detail.time}")
-        # return
+        return
     dapandata_dict = dict()
     for key, value in dapandata.items():
         if key in change.keys():

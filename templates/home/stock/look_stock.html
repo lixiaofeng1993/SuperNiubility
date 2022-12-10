@@ -165,6 +165,8 @@
                                     <span id="text">持仓代码：</span><span id="text-style">{{ obj.code }}</span>
                                     <span id="text">持仓数量：</span><span id="text-style">{{ obj.number }} 股</span>
                                     <span id="text">持仓成本：</span><span id="text-style">{{ obj.cost_price }} 元</span>
+                                </div>
+                                <div class="input-group mb-3">
                                     <span id="text">持仓盈亏：</span>
                                     {% if obj.profit_and_loss > 0 %}
                                         <span id="text-style" style="color: red">{{ obj.profit_and_loss }}</span>
@@ -199,17 +201,21 @@
                                     <span id="text">最低：</span>
                                     <span id="text-style">{{ share.down_price }}</span>
                                     <i>元/股</i>
+                                </div>
+                                <div class="input-group mb-3">
                                     <span id="text">今开：</span>
                                     <span id="text-style">{{ share.open_price }}</span>
                                     <i>元/股</i>
-                                </div>
-                                <div class="input-group mb-3">
+                                    <span id="text">昨收：</span>
+                                    <span id="text-style">{{ obj.last_close_price }}</span><i>元/股</i>
                                     <span id="text">涨幅：</span>
                                     <span id="text-style" style="color: {{ color }}">{{ share.rise_and_fall }}</span>
                                     <i>%</i>
                                     <span id="text">涨跌：</span>
                                     <span id="text-style" style="color: {{ color }}">{{ share.rise_and_price }}</span>
                                     <i>元</i>
+                                </div>
+                                <div class="input-group mb-3">
                                     <span id="text">总手：</span><span id="text-style">{{ share.turnover }} 手</span>
                                     <span id="text">金额：</span><span
                                         id="text-style">{{ share.business_volume }} 万元</span>

@@ -6,7 +6,7 @@
         <div class="row g-4">
             <div class="col-6">
                 <div class="bg-light rounded h-100 p-4">
-                    <h5 class="nav-item">{{ obj.name }}</h5>
+                    <h5 class="nav-item">图表汇总</h5>
                     <span style="font-size: 12px;">{{ update_time }}更新</span>
                 </div>
             </div>
@@ -22,14 +22,12 @@
                         <canvas id="today"></canvas>
                     </div>
                 </div>
-                {% if obj.is_detail %}
-                    <div class="col-sm-12 col-xl-6">
-                        <div class="bg-light rounded h-100 p-4">
-                            <h6 class="mb-4">买入卖出托单</h6>
-                            <canvas id="buy-sell"></canvas>
-                        </div>
+                <div class="col-sm-12 col-xl-6">
+                    <div class="bg-light rounded h-100 p-4">
+                        <h6 class="mb-4">买入卖出托单</h6>
+                        <canvas id="buy-sell"></canvas>
                     </div>
-                {% endif %}
+                </div>
                 <div class="col-sm-12 col-xl-6">
                     <div class="bg-light rounded h-100 p-4">
                         <h6 class="mb-4" id="five-day"></h6>
@@ -120,9 +118,6 @@
             let ale = $("#alert");
             let username = "{{ user.username }}";
             let token = sessionStorage.getItem(username);
-            let dataJson = JSON.stringify({
-                "stock_id": "{{ obj.id }}",
-            })
             $.ajax({
                 type: "post",
                 url: "{% url 'day_chart' %}",
@@ -130,8 +125,6 @@
                     "Authorization": token
                 },
                 async: false,
-                dataType: "json",
-                data: dataJson,
                 success: function (result) {
                     console.log(result);
                     let code = result.code;
@@ -189,9 +182,6 @@
             let fiveDay = $("#five-day");
             let username = "{{ user.username }}";
             let token = sessionStorage.getItem(username);
-            let dataJson = JSON.stringify({
-                "stock_id": "{{ obj.id }}",
-            })
             $.ajax({
                 type: "post",
                 url: "{% url 'five_chart' %}",
@@ -199,8 +189,6 @@
                     "Authorization": token
                 },
                 async: false,
-                dataType: "json",
-                data: dataJson,
                 success: function (result) {
                     console.log(result);
                     let code = result.code;
@@ -261,9 +249,6 @@
             let tenDay = $("#ten-day");
             let username = "{{ user.username }}";
             let token = sessionStorage.getItem(username);
-            let dataJson = JSON.stringify({
-                "stock_id": "{{ obj.id }}",
-            })
             $.ajax({
                 type: "post",
                 url: "{% url 'ten_chart' %}",
@@ -271,8 +256,6 @@
                     "Authorization": token
                 },
                 async: false,
-                dataType: "json",
-                data: dataJson,
                 success: function (result) {
                     console.log(result);
                     let code = result.code;
@@ -333,9 +316,6 @@
             let tenDay = $("#twenty-day");
             let username = "{{ user.username }}";
             let token = sessionStorage.getItem(username);
-            let dataJson = JSON.stringify({
-                "stock_id": "{{ obj.id }}",
-            })
             $.ajax({
                 type: "post",
                 url: "{% url 'twenty_chart' %}",
@@ -343,8 +323,6 @@
                     "Authorization": token
                 },
                 async: false,
-                dataType: "json",
-                data: dataJson,
                 success: function (result) {
                     console.log(result);
                     let code = result.code;
@@ -405,9 +383,6 @@
             let allDay = $("#all-day");
             let username = "{{ user.username }}";
             let token = sessionStorage.getItem(username);
-            let dataJson = JSON.stringify({
-                "stock_id": "{{ obj.id }}",
-            })
             $.ajax({
                 type: "post",
                 url: "{% url 'half_year_chart' %}",
@@ -415,8 +390,6 @@
                     "Authorization": token
                 },
                 async: false,
-                dataType: "json",
-                data: dataJson,
                 success: function (result) {
                     console.log(result);
                     let code = result.code;
@@ -477,9 +450,6 @@
             let buy = $("#buy-sell");
             let username = "{{ user.username }}";
             let token = sessionStorage.getItem(username);
-            let dataJson = JSON.stringify({
-                "stock_id": "{{ obj.id }}",
-            })
             $.ajax({
                 type: "post",
                 url: "{% url 'buy_sell' %}",
@@ -487,8 +457,6 @@
                     "Authorization": token
                 },
                 async: false,
-                dataType: "json",
-                data: dataJson,
                 success: function (result) {
                     console.log("=========buySell=======>>>", result);
                     let code = result.code;

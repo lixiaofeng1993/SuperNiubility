@@ -329,9 +329,23 @@ def chart_look(request, stock_id):
         hold = model.get(id=stock_id)
         info.update({
             "obj": hold,
+            "update_time": format_time(hold.update_date),
         })
         Message.objects.filter(Q(is_delete=False) & Q(is_look=False) & Q(obj_id=stock_id)).update(is_look=True)
         return render(request, "home/stock/chart_stock.html", info)
+
+
+@login_required
+def chart_all(request):
+    if request.method == GET:
+        info = request_get_search(request)
+        model = model_superuser(request, SharesHold)
+        hold = model.filter(is_delete=False).order_by("-update_date").first()
+        info.update({
+            "obj": hold,
+            "update_time": format_time(hold.update_date),
+        })
+        return render(request, "home/stock/chart_all.html", info)
 
 
 @auth_token()
