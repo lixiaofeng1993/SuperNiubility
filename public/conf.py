@@ -20,23 +20,31 @@ POST = "POST"
 # 分页
 NumberOfPages = 10
 
+# 首页展示数量
+HomeNumber = 5
+
 # redis缓存key
 # 诗词推荐
 RECOMMEND = "RECOMMEND"
 # 当天买入卖出托单
 PoetryDetail = "PoetryDetail-{user_id}-{poetry_id}"
-# 股票年k线
-YearChart = "YearChart-{user_id}"
-# 5天k线
-FiveChart = "FiveChart-{user_id}"
-# 10天k线
-TenChart = "TenChart-{user_id}"
-# 20天k线
-TwentyChart = "TwentyChart-{user_id}"
-# 导入股票end time
-StockEndTime = "StockEndTime-{user_id}"
 # 当天k线
 TodayChart = "TodayChart-{user_id}"
+TodayStockChart = "TodayChart-{stock_id}"
+# 5天k线
+FiveChart = "FiveChart-{user_id}"
+FiveStockChart = "FiveChart-{stock_id}"
+# 10天k线
+TenChart = "TenChart-{user_id}"
+TenStockChart = "TenChart-{stock_id}"
+# 20天k线
+TwentyChart = "TwentyChart-{user_id}"
+TwentyStockChart = "TwentyChart-{stock_id}"
+# 股票年k线
+YearChart = "YearChart-{user_id}"
+YearStockChart = "YearChart-{stock_id}"
+# 导入股票end time
+StockEndTime = "StockEndTime-{user_id}"
 # 当天买入卖出托单
 TodayBuySellChart = "TodayBuySellChart-{user_id}"
 # 验证码缓存
@@ -122,8 +130,8 @@ FOLLOW = "这世界怎么那么多人，蹉跎回首，已不再年轻。\n这�
          "回复 <a href='weixin://bizmsgmenu?msgmenucontent=成语接龙&msgmenuid=成语接龙'>接龙</a> >>> 成语接龙\n"
 
 # 消息提醒类型
-MessageBuySell = "买入卖出托单数据更新"
-MessageToday = "今日走势K线数据更新"
+MessageBuySell = "【{name}】买入卖出托单数据更新"
+MessageToday = "【{name}】今日走势K线数据更新"
 
 # 登录背景图片
 BackgroundName = "http://127.0.0.1:8000/media/banner{num}.png" if settings.DEBUG else "http://121.41.54.234//banner{num}.png"

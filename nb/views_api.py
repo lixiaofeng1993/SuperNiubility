@@ -152,15 +152,12 @@ def stock_import(request, hold_id):
 @auth_token()
 def day_chart(request):
     if request.method == POST:
-        user_id = request.session.get("user_id")
-        datasets = cache.get(TodayChart.format(user_id=user_id))
-        if datasets:
+        datasets, user_id, stock_id = handle_cache(request, "day")
+        if isinstance(datasets, dict):
             return JsonResponse.OK(data=datasets)
-        model = model_superuser(request, SharesHold)
-        hold_list = model.filter(is_delete=False)
-        datasets = dict()
+        dataset = dict()
         moment = etc_time()
-        for hold in hold_list:
+        for hold in datasets:
             if check_stoke_day():  # 休市日展示最后一天的数据
                 last_day = str(moment["today"])
             else:
@@ -183,7 +180,7 @@ def day_chart(request):
             for share in share_list:
                 labels.append(share.date_time)
                 data_list.append(share.new_price)
-            datasets.update({
+            dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
@@ -192,22 +189,22 @@ def day_chart(request):
 
             })
         logger.info("查询当天股票k线成功.")
-        cache.set(TodayChart.format(user_id=user_id), datasets, surplus_second())
-        return JsonResponse.OK(data=datasets)
+        if stock_id:
+            cache.set(TodayStockChart.format(stock_id=stock_id), dataset, surplus_second())
+        else:
+            cache.set(TodayChart.format(user_id=user_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
 
 
 @auth_token()
 def five_chart(request):
     if request.method == POST:
-        user_id = request.session.get("user_id")
-        datasets = cache.get(FiveChart.format(user_id=user_id))
-        if datasets:
+        datasets, user_id, stock_id = handle_cache(request, "five")
+        if isinstance(datasets, dict):
             return JsonResponse.OK(data=datasets)
-        model = model_superuser(request, SharesHold)
-        hold_list = model.filter(is_delete=False)
-        datasets = dict()
+        dataset = dict()
         moment = etc_time()
-        for hold in hold_list:
+        for hold in datasets:
             share_list = Shares.objects.filter(
                 Q(shares_hold_id=hold.id) &
                 Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("-date_time")
@@ -231,7 +228,7 @@ def five_chart(request):
                     data_list.append(share.new_price)
             data_list = list(reversed(data_list))
             labels = list(reversed(labels))
-            datasets.update({
+            dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
@@ -241,22 +238,22 @@ def five_chart(request):
 
             })
         logger.info("查询5天股票k线成功.")
-        cache.set(FiveChart.format(user_id=user_id), datasets, surplus_second())
-        return JsonResponse.OK(data=datasets)
+        if stock_id:
+            cache.set(FiveStockChart.format(stock_id=stock_id), dataset, surplus_second())
+        else:
+            cache.set(FiveChart.format(user_id=user_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
 
 
 @auth_token()
 def ten_chart(request):
     if request.method == POST:
-        user_id = request.session.get("user_id")
-        datasets = cache.get(TenChart.format(user_id=user_id))
-        if datasets:
+        datasets, user_id, stock_id = handle_cache(request, "ten")
+        if isinstance(datasets, dict):
             return JsonResponse.OK(data=datasets)
-        model = model_superuser(request, SharesHold)
-        hold_list = model.filter(is_delete=False)
-        datasets = dict()
+        dataset = dict()
         moment = etc_time()
-        for hold in hold_list:
+        for hold in datasets:
             share_list = Shares.objects.filter(
                 Q(shares_hold_id=hold.id) &
                 Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("-date_time")
@@ -280,7 +277,7 @@ def ten_chart(request):
                     data_list.append(share.new_price)
             data_list = list(reversed(data_list))
             labels = list(reversed(labels))
-            datasets.update({
+            dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
@@ -290,22 +287,22 @@ def ten_chart(request):
 
             })
         logger.info("查询10天股票k线成功.")
-        cache.set(TenChart.format(user_id=user_id), datasets, surplus_second())
-        return JsonResponse.OK(data=datasets)
+        if stock_id:
+            cache.set(TenStockChart.format(stock_id=stock_id), dataset, surplus_second())
+        else:
+            cache.set(TenChart.format(user_id=user_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
 
 
 @auth_token()
 def twenty_chart(request):
     if request.method == POST:
-        user_id = request.session.get("user_id")
-        datasets = cache.get(TwentyChart.format(user_id=user_id))
-        if datasets:
+        datasets, user_id, stock_id = handle_cache(request, "twenty")
+        if isinstance(datasets, dict):
             return JsonResponse.OK(data=datasets)
-        model = model_superuser(request, SharesHold)
-        hold_list = model.filter(is_delete=False)
-        datasets = dict()
+        dataset = dict()
         moment = etc_time()
-        for hold in hold_list:
+        for hold in datasets:
             share_list = Shares.objects.filter(
                 Q(shares_hold_id=hold.id) &
                 Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("-date_time")
@@ -329,7 +326,7 @@ def twenty_chart(request):
                     data_list.append(share.new_price)
             data_list = list(reversed(data_list))
             labels = list(reversed(labels))
-            datasets.update({
+            dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
@@ -339,22 +336,22 @@ def twenty_chart(request):
 
             })
         logger.info("查询20天股票k线成功.")
-        cache.set(TwentyChart.format(user_id=user_id), datasets, surplus_second())
-        return JsonResponse.OK(data=datasets)
+        if stock_id:
+            cache.set(TwentyStockChart.format(stock_id=stock_id), dataset, surplus_second())
+        else:
+            cache.set(TwentyChart.format(user_id=user_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
 
 
 @auth_token()
 def half_year_chart(request):
     if request.method == POST:
-        user_id = request.session.get("user_id")
-        datasets = cache.get(YearChart.format(user_id=user_id))
-        if datasets:
+        datasets, user_id, stock_id = handle_cache(request, "year")
+        if isinstance(datasets, dict):
             return JsonResponse.OK(data=datasets)
-        model = model_superuser(request, SharesHold)
-        hold_list = model.filter(is_delete=False)
-        datasets = dict()
+        dataset = dict()
         moment = etc_time()
-        for hold in hold_list:
+        for hold in datasets:
             share_list = Shares.objects.filter(
                 Q(shares_hold_id=hold.id) &
                 Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("date_time")
@@ -372,7 +369,7 @@ def half_year_chart(request):
                 if flag in StockRule:
                     labels.append(share.date_time)
                     data_list.append(share.new_price)
-            datasets.update({
+            dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
@@ -382,8 +379,11 @@ def half_year_chart(request):
 
             })
         logger.info("查询全部股票k线成功.")
-        cache.set(YearChart.format(user_id=user_id), datasets, surplus_second())
-        return JsonResponse.OK(data=datasets)
+        if stock_id:
+            cache.set(YearStockChart.format(stock_id=stock_id), dataset, surplus_second())
+        else:
+            cache.set(YearChart.format(user_id=user_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
 
 
 @auth_token()
@@ -512,7 +512,7 @@ def buy_sell_chart(request):
 @auth_token()
 def record(request):
     if request.method == POST:
-        log_list = LogEntry.objects.all().order_by("-action_time")[:5]
+        log_list = LogEntry.objects.all().order_by("-action_time")[:HomeNumber]
         data_list = list()
         for log in log_list:
             log_dict = model_to_dict(log)
@@ -541,9 +541,10 @@ def message_remind(request):
         }
         if not message_list:
             return JsonResponse.OK(data=result)
-        for message in message_list[:5]:
+        for message in message_list[:HomeNumber]:
             result["data"].append({
                 "now_time": format_time(message.create_date),
+                "obj_id": message.obj_id,
                 "name": message.name
             })
         return JsonResponse.OK(data=result)

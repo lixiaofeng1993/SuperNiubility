@@ -64,7 +64,7 @@ def stock_history(code: str, hold_id: str, user_id, beg: str, end: str, last_day
             share = Shares.objects.filter(Q(code=code) & Q(shares_hold_id=hold_id)).exists()
         if not share:
             Shares.objects.bulk_create(objs=shares_list)
-            delete_cache(user_id)  # 导入成功，删除缓存
+            delete_cache(user_id, hold_id)  # 导入成功，删除缓存
             logger.info(f"{key} 保存成功===>>>{len(shares_list)} 条")
 
 
@@ -93,7 +93,7 @@ def last_day_stock_history(code: str, hold_id: str, user_id):
         date_time__contains=now_time).exists()
     if not share:
         Shares.objects.bulk_create(objs=shares_list)
-        delete_cache(user_id)  # 导入成功，删除缓存
+        delete_cache(user_id, hold_id)  # 导入成功，删除缓存
         cache.set(StockEndTime.format(user_id=user_id), True, 20)
         logger.info(f"{code} 保存成功===>>>{len(shares_list)} 条")
 
@@ -151,7 +151,7 @@ def stock_today():
             Q(code=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
         if not share:
             Shares.objects.bulk_create(objs=shares_list)
-            message_writing(MessageToday, hold.user_id)
+            message_writing(MessageToday.format(name=hold.name), hold.user_id, hold.id)
             logger.info(f"保存成功===>>>{len(shares_list)} 条")
 
 
@@ -182,7 +182,7 @@ def stock_detail(flag=True):
                                         Q(code=code) & Q(shares_hold_id=hold.id)).order_by("-time").first()
     if detail and check_time <= detail.time:  # 判重
         logger.info(f"股票详情表数据重复.===>>>{check_time} {detail.time}")
-        return
+        # return
     dapandata_dict = dict()
     for key, value in dapandata.items():
         if key in change.keys():
@@ -211,7 +211,7 @@ def stock_detail(flag=True):
         detail_obj.save()
         new_price = response["dot"]
         regularly_hold(hold, moment, new_price)
-        message_writing(MessageBuySell, hold.user_id)
+        message_writing(MessageBuySell.format(name=hold.name), hold.user_id, hold.id)
         logger.info("股票详情保存成功.")
     except Exception as error:
         logger.error(f"股票详情保存失败 ===>>> {error}")

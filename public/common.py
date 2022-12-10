@@ -11,10 +11,11 @@ import time
 from django.core.cache import cache
 from chinese_calendar import is_workday
 from random import randint, choice
+from django.db.models import Q  # 与或非 查询
 from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
 from django.contrib.admin.options import get_content_type_for_model
 
-from nb.models import Poetry, User, Message
+from nb.models import Poetry, User, Message, SharesHold
 from public.conf import *
 from public.recommend import recommend_handle
 from public.log import logger
@@ -38,16 +39,21 @@ def difference_stock(code: str):
         return f"sz{code}"
 
 
-def delete_cache(user_id):
+def delete_cache(user_id, stock_id):
     """
     清除redis缓存
     """
     cache.delete(YearChart.format(user_id=user_id))
+    cache.delete(YearStockChart.format(stock_id=stock_id))
     cache.delete(FiveChart.format(user_id=user_id))
+    cache.delete(FiveStockChart.format(stock_id=stock_id))
     cache.delete(TenChart.format(user_id=user_id))
+    cache.delete(TenStockChart.format(stock_id=stock_id))
     cache.delete(TodayChart.format(user_id=user_id))
+    cache.delete(TodayStockChart.format(stock_id=stock_id))
     cache.delete(TodayBuySellChart.format(user_id=user_id))
     cache.delete(TwentyChart.format(user_id=user_id))
+    cache.delete(TwentyStockChart.format(stock_id=stock_id))
 
 
 def regularly_hold(hold, moment: dict, price: float):
@@ -260,16 +266,18 @@ def home_poetry():
     return obj_list
 
 
-def message_writing(name: str, user_id: int):
+def message_writing(name: str, user_id: int, stock_id: str):
     """
     写入消息提醒
     """
     try:
         cache.delete(TodayChart.format(user_id=user_id))
+        cache.delete(TodayStockChart.format(stock_id=stock_id))
         cache.delete(TodayBuySellChart.format(user_id=user_id))
         moment = etc_time()
         message = Message()
         message.name = name
+        message.obj_id = stock_id
         message.date = moment["today"]
         message.save()
         logger.info("写入消息提醒成功.")
@@ -303,6 +311,47 @@ def request_get_search(request) -> dict:
         'page': page
     }
     return info
+
+
+def handle_cache(request, flag: str):
+    """
+    判断缓存和查询数据
+    """
+    body = handle_json(request)
+    stock_id, datasets = None, None
+    if body:
+        stock_id = body.get("stock_id")
+    user_id = request.session.get("user_id")
+    if stock_id:
+        if flag == "day":
+            datasets = cache.get(TodayStockChart.format(stock_id=stock_id))
+        elif flag == "five":
+            datasets = cache.get(FiveStockChart.format(stock_id=stock_id))
+        elif flag == "ten":
+            datasets = cache.get(TenStockChart.format(stock_id=stock_id))
+        elif flag == "twenty":
+            datasets = cache.get(TwentyStockChart.format(stock_id=stock_id))
+        elif flag == "year":
+            datasets = cache.get(YearStockChart.format(stock_id=stock_id))
+    else:
+        if flag == "day":
+            datasets = cache.get(TodayChart.format(user_id=user_id))
+        elif flag == "five":
+            datasets = cache.get(FiveChart.format(user_id=user_id))
+        elif flag == "ten":
+            datasets = cache.get(TenChart.format(user_id=user_id))
+        elif flag == "twenty":
+            datasets = cache.get(TwentyChart.format(user_id=user_id))
+        elif flag == "year":
+            datasets = cache.get(YearChart.format(user_id=user_id))
+    if datasets:
+        return datasets, user_id, stock_id
+    model = model_superuser(request, SharesHold)
+    if stock_id:
+        hold_list = model.filter(Q(is_delete=False) & Q(id=stock_id))
+    else:
+        hold_list = model.filter(is_delete=False)
+    return hold_list, user_id, stock_id
 
 
 def pagination_data(paginator, page, is_paginated):

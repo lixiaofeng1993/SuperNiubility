@@ -136,7 +136,7 @@ class StockIndex(ListView):
     model = SharesHold
     template_name = 'home/stock/stock.html'
     context_object_name = 'object_list'
-    paginate_by = NumberOfPages / 5
+    paginate_by = NumberOfPages
 
     def dispatch(self, *args, **kwargs):
         return super(StockIndex, self).dispatch(*args, **kwargs)
@@ -145,7 +145,6 @@ class StockIndex(ListView):
         model = model_superuser(self.request, self.model)
         obj_list = model.filter(is_delete=False).order_by("-create_date")
         obj_list = handle_model(list(obj_list))
-        Message.objects.filter(Q(is_delete=False) & Q(is_look=False)).update(is_look=True)
         return obj_list
 
     def get_context_data(self, **kwargs):
@@ -222,7 +221,7 @@ def stock_add(request):
                 hold.save()
         except Exception as error:
             return JsonResponse.DatabaseException(data=str(error))
-        delete_cache(user_id)
+        delete_cache(user_id, stock_id)
         hold = model.get(Q(code=code) & Q(is_delete=False))
         repr = "股票"
         operation_record(request, hold, stock_id, repr, "")
@@ -322,6 +321,19 @@ def stock_look(request, stock_id):
     return render(request, "home/stock/look_stock.html", info)
 
 
+@login_required
+def chart_look(request, stock_id):
+    if request.method == GET:
+        info = request_get_search(request)
+        model = model_superuser(request, SharesHold)
+        hold = model.get(id=stock_id)
+        info.update({
+            "obj": hold,
+        })
+        Message.objects.filter(Q(is_delete=False) & Q(is_look=False) & Q(obj_id=stock_id)).update(is_look=True)
+        return render(request, "home/stock/chart_stock.html", info)
+
+
 @auth_token()
 def stock_del(request, stock_id):
     if request.method == POST:
@@ -336,7 +348,7 @@ def stock_del(request, stock_id):
             hold.delete()
         except Exception as error:
             return JsonResponse.DatabaseException(data=str(error))
-        delete_cache(user_id)
+        delete_cache(user_id, stock_id)
         repr = "股票"
         operation_record(request, hold, stock_id, repr, "del")
         return JsonResponse.OK()
