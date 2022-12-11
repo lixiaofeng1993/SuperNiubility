@@ -369,15 +369,22 @@ def half_year_chart(request):
                 if flag in StockRule:
                     labels.append(share.date_time)
                     data_list.append(share.new_price)
+            year_number = cache.get(YearNumber)  # 缓存处理数据不一致的问题
+            if year_number and year_number <= len(labels):
+                pass
+            else:
+                cache.set(YearNumber, len(labels), ACCESS_TOKEN_EXPIRE_MINUTES)
+            year_number = cache.get(YearNumber)
             dataset.update({
                 hold.name: {
-                    "data": data_list,
+                    "data": data_list[-year_number:],
                     "color": hold.color,
                 },
-                "labels": labels,
+                "labels": labels[-year_number:],
                 "days": len((set(day_list)))
 
             })
+        cache.delete(YearNumber)
         logger.info("查询全部股票k线成功.")
         if stock_id:
             cache.set(YearStockChart.format(stock_id=stock_id), dataset, surplus_second())

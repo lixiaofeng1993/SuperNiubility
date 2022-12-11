@@ -53,6 +53,8 @@ VerificationCode = "VerificationCode"
 ToEmail = "ToEmail-{email}"
 # 邮箱请求时间间隔
 EmailTimeout = 60 * 60
+# 股票数据不一致
+YearNumber = "YearNumber"
 
 # 股票数据过滤规则
 StockRule = ["00", "15", "30", "45"]
