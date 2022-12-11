@@ -351,6 +351,7 @@ def half_year_chart(request):
             return JsonResponse.OK(data=datasets)
         dataset = dict()
         moment = etc_time()
+        diff = dict()
         for hold in datasets:
             share_list = Shares.objects.filter(
                 Q(shares_hold_id=hold.id) &
@@ -361,7 +362,6 @@ def half_year_chart(request):
             labels = list()
             data_list = list()
             day_list = list()
-            diff = dict()
             for share in share_list:
                 date_time = share.date_time
                 day_flag = date_time.split(" ")[0]
