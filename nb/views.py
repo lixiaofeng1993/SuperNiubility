@@ -245,8 +245,6 @@ def stock_edit(request, stock_id):
 def stock_look(request, stock_id):
     info = request_get_search(request)
     model = model_superuser(request, SharesHold)
-    if isinstance(stock_id, str):
-        stock_id = uuid.UUID(stock_id)
     hold = model.get(id=stock_id)
     info.update({
         "flag": False,
