@@ -129,7 +129,6 @@ def stock_today():
             date_time = data["日期"]
             new_price = data["收盘"]
             if date_time <= base_date_time:  # 避免重复写入
-                logger.info("stock_today 判断重复写入")
                 continue
             obj = Shares(
                 name=data["股票名称"], code=key, date_time=data["日期"], open_price=data["开盘"],
@@ -138,23 +137,25 @@ def stock_today():
                 rise_and_price=data["涨跌额"], turnover_rate=data["换手率"], shares_hold_id=stock_dict[key]
             )
             shares_list.append(obj)
-        if shares_list:
-            try:
-                hold = SharesHold.objects.get(id=stock_dict[key])
-                is_profit = regularly_hold(hold, moment, new_price)
-                if hold.is_detail:
-                    if is_profit != hold.is_profit:
-                        profit_and_loss(hold)  # 钉钉消息提醒
-                    profit_and_loss_ratio(hold, new_price)
-            except Exception as error:
-                logger.error(f"更新持仓盈亏出现错误. ===>>> {error}")
-                return
-            share = Shares.objects.filter(
-                Q(code=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
-            if not share:
-                Shares.objects.bulk_create(objs=shares_list)
-                message_writing(MessageToday.format(name=hold.name), hold.user_id, hold.id)
-                logger.info(f"保存成功===>>>{len(shares_list)} 条")
+        if not shares_list:
+            logger.info("stock_today 重复写入判断.")
+            return
+        try:
+            hold = SharesHold.objects.get(id=stock_dict[key])
+            is_profit = regularly_hold(hold, moment, new_price)
+            if hold.is_detail:
+                if is_profit != hold.is_profit:
+                    profit_and_loss(hold)  # 钉钉消息提醒
+                profit_and_loss_ratio(hold, new_price)
+        except Exception as error:
+            logger.error(f"更新持仓盈亏出现错误. ===>>> {error}")
+            return
+        share = Shares.objects.filter(
+            Q(code=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
+        if not share:
+            Shares.objects.bulk_create(objs=shares_list)
+            message_writing(MessageToday.format(name=hold.name), hold.user_id, hold.id)
+            logger.info(f"保存成功===>>>{len(shares_list)} 条")
 
 
 @shared_task()
