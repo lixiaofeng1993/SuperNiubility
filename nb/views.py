@@ -327,9 +327,11 @@ def stock_look(request, stock_id):
 def chart_look(request, stock_id):
     if request.method == GET:
         info = request_get_search(request)
+        model = model_superuser(request, SharesHold)
+        hold = model.get(id=stock_id)
         shares = Shares.objects.filter(Q(is_delete=False) & Q(shares_hold_id=stock_id)).order_by("-update_date").first()
         info.update({
-            "obj": shares,
+            "obj": hold,
             "update_time": format_time(shares.update_date),
         })
         Message.objects.filter(Q(is_delete=False) & Q(is_look=False) & Q(obj_id=stock_id)).update(is_look=True)
