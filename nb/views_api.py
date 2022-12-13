@@ -414,7 +414,7 @@ def kdj_chart(request):
                                            Q(is_delete=False) &
                                            Q(type="5m")).order_by("t")
         if not kdj_list:
-            return JsonResponse.EmptyException()
+            return JsonResponse.OK(data=dataset)
         kdj_df = read_frame(kdj_list)
         labels = list()
         for label in kdj_df["t"]:
