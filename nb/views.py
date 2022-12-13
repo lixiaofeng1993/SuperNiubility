@@ -6,7 +6,7 @@ from django.db.models import Q  # 与或非 查询
 from django.contrib.auth.decorators import login_required
 from django_pandas.io import read_frame
 
-from nb.models import ToDo, SharesHold, Shares, StockDetail
+from nb.models import ToDo, SharesHold, Shares, StockDetail, uuid
 from public.auth_token import auth_token
 from public.common import *
 from public.response import JsonResponse
@@ -245,6 +245,8 @@ def stock_edit(request, stock_id):
 def stock_look(request, stock_id):
     info = request_get_search(request)
     model = model_superuser(request, SharesHold)
+    if isinstance(stock_id, str):
+        stock_id = uuid.UUID(stock_id)
     hold = model.get(id=stock_id)
     info.update({
         "flag": False,
