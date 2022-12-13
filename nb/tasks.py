@@ -9,11 +9,11 @@ import efinance as ef
 from celery import Task, shared_task
 from django.db.models import Q  # 与或非 查询
 
-from nb.models import ToDo, Shares, SharesHold, StockDetail
+from nb.models import ToDo, Shares, SharesHold, StockDetail, KDJStock
 from public.common import delete_cache, check_stoke_date, etc_time, cache, StockEndTime, difference_stock, datetime, \
-    message_writing, MessageBuySell, MessageToday, regularly_hold
+    message_writing, MessageBuySell, MessageToday, regularly_hold, MessageKDJ
 from public.send_ding import profit_and_loss, profit_and_loss_ratio
-from public.stock_api import stock_api
+from public.stock_api import stock_api, kdj_api
 from public.log import logger
 
 
@@ -215,3 +215,36 @@ def stock_detail(flag=True):
         logger.info("股票详情保存成功.")
     except Exception as error:
         logger.error(f"股票详情保存失败 ===>>> {error}")
+
+
+@shared_task()
+def stock_detail_kdj():
+    moment = check_stoke_date()
+    if not moment:  # 判断股市开关时间
+        return
+    hold = SharesHold.objects.filter(Q(is_delete=False) & Q(is_detail=True)).first()
+    if not hold:
+        logger.error("未设置 is_detail 字段.")
+        return
+    level = "5m"
+    response = kdj_api(level, hold.code)
+    try:
+        kdj = KDJStock.objects.filter(Q(shares_hold_id=hold.id) & Q(is_delete=False) &
+                                      Q(t=response["t"])).exists()
+        if kdj:
+            logger.info(f"{hold.name} KDJ 数据写入重复判断.")
+            return
+        kdj = KDJStock()
+        kdj.type = level
+        kdj.name = hold.name
+        kdj.k = response["k"]
+        kdj.d = response["d"]
+        kdj.j = response["j"]
+        kdj.t = response["t"]
+        kdj.shares_hold_id = hold.id
+        kdj.save()
+        message_writing(MessageKDJ.format(name=hold.name), hold.user_id, hold.id)
+        logger.info("kdj数据保存成功！")
+    except Exception as error:
+        logger.error(f"保存kdj数据出现异常 ===>>> {error}")
+        return

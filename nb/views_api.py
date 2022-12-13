@@ -6,10 +6,10 @@
 # @Version：V 0.1
 # @desc :
 from django.forms.models import model_to_dict
-from django.db.models import Q  # 与或非 查询
 from dateutil.relativedelta import relativedelta
+from django_pandas.io import read_frame
 
-from .tasks import stock_history, last_day_stock_history, stock_detail
+from .tasks import stock_history, last_day_stock_history, stock_detail, KDJStock
 from nb.models import ToDo, SharesHold, Shares, StockDetail
 from public.auth_token import auth_token
 from public.common import *
@@ -395,6 +395,49 @@ def half_year_chart(request):
             cache.set(YearStockChart.format(stock_id=stock_id), dataset, surplus_second())
         else:
             cache.set(YearChart.format(user_id=user_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
+
+
+@auth_token()
+def kdj_chart(request):
+    if request.method == POST:
+        user_id = request.session.get("user_id")
+        datasets = cache.get(TodayKDJChart.format(user_id=user_id))
+        if datasets:
+            return JsonResponse.OK(data=datasets)
+        model = model_superuser(request, SharesHold)
+        hold = model.filter(Q(is_delete=False) & Q(is_detail=True)).first()
+        if not hold:
+            return JsonResponse.OK()
+        dataset = dict()
+        kdj_list = KDJStock.objects.filter(Q(shares_hold_id=hold.id) &
+                                           Q(is_delete=False) &
+                                           Q(type="5m")).order_by("t")
+        if not kdj_list:
+            return JsonResponse.EmptyException()
+        kdj_df = read_frame(kdj_list)
+        labels = list()
+        for label in kdj_df["t"]:
+            labels.append(str(label))
+        dataset.update({
+            "K": {
+                "data": kdj_df["k"].to_list(),
+                "color": "#F8F8FF",
+            },
+            "D": {
+                "data": kdj_df["d"].to_list(),
+                "color": "#FFFF33",
+            },
+            "J": {
+                "data": kdj_df["j"].to_list(),
+                "color": "#9933FF",
+            },
+            "labels": labels,
+            "name": hold.name,
+            "type": "5m",
+
+        })
+        cache.set(TodayKDJChart.format(user_id=user_id), dataset, surplus_second())
         return JsonResponse.OK(data=dataset)
 
 

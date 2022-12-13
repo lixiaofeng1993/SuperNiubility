@@ -43,4 +43,10 @@ app.conf.beat_schedule = {
         'schedule': 5 * 60,
         'args': (),
     },
+    'stock_detail_kdj': {
+        # 任务路径
+        'task': 'nb.tasks.stock_detail_kdj',
+        'schedule': 5 * 60,
+        'args': (),
+    },
 }

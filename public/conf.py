@@ -47,6 +47,8 @@ YearStockChart = "YearChart-{stock_id}"
 StockEndTime = "StockEndTime-{user_id}"
 # 当天买入卖出托单
 TodayBuySellChart = "TodayBuySellChart-{user_id}"
+# kdj
+TodayKDJChart = "TodayKDJChart-{user_id}"
 # 验证码缓存
 VerificationCode = "VerificationCode"
 # 每个邮箱十分钟只能发送一次
@@ -74,6 +76,9 @@ GAO_KEY = "b5b15bbd3252eb0cbb01877ae53a34d7"
 
 # 股票KEY
 STOCK_KEY = "c75a1cc261925a54b91d61ac6c9c7dcc"
+
+# kdj http://www.mairui.club/hsdata.html
+KDJ_KEY = "07d5931508181693cc"
 
 # 北京 110000
 # 顺义 110113
@@ -132,6 +137,7 @@ FOLLOW = "这世界怎么那么多人，蹉跎回首，已不再年轻。\n这�
 # 消息提醒类型
 MessageBuySell = "【{name}】买入卖出托单数据更新"
 MessageToday = "【{name}】今日走势K线数据更新"
+MessageKDJ = "【{name}】今日KDJ数据更新"
 
 # 登录背景图片
 BackgroundName = "http://127.0.0.1:8000/media/banner{num}.png" if settings.DEBUG else "http://121.41.54.234//banner{num}.png"
