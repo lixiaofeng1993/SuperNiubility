@@ -8,6 +8,7 @@
 import requests
 from jsonpath import jsonpath
 from random import randint
+from django.core.cache import cache
 
 from public.conf import *
 from public.log import logger
@@ -111,7 +112,9 @@ def now_season():
     return season
 
 
-def recommend_handle():
+def recommend_handle(flag: bool = True):
+    if not flag:
+        return now_season()
     holiday = get_holiday()
     if holiday and holiday in POETRY_TYPE.keys():
         poetry_type = holiday

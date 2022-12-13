@@ -55,6 +55,10 @@ VerificationCode = "VerificationCode"
 ToEmail = "ToEmail-{email}"
 # 邮箱请求时间间隔
 EmailTimeout = 60 * 60
+# 接口请求次数限制key
+APICount = "APICount"
+# 接口最大请求次数
+APICountNumber = 50
 
 # 股票数据过滤规则
 StockRule = ["00", "15", "30", "45"]

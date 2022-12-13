@@ -240,7 +240,17 @@ def home_poetry():
     """
     诗词推荐列表
     """
-    poetry_type = recommend_handle()
+    count = cache.get(APICount)
+    flag = False
+    if count and count < APICountNumber:
+        count += 1
+        flag = True
+        cache.set(APICount, count, surplus_second())
+    elif count and count >= APICountNumber:
+        flag = False
+    else:
+        cache.set(APICount, 1, surplus_second())
+    poetry_type = recommend_handle(flag)
     # 随机返回一条数据 filter 等于  exclude 不等于
     poetry_list = Poetry.objects.filter(type=poetry_type).exclude(phrase="").order_by('?')[:HomeNumber]
     obj_list = list()
@@ -300,6 +310,7 @@ def request_get_search(request) -> dict:
     :param request:
     :return:
     """
+    request.session["login_from"] = request.get_full_path()
     search_name = request.GET.get('search-input', '')
     page = request.GET.get('page', '1')
     info = {

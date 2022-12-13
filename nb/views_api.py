@@ -578,7 +578,7 @@ def record(request):
         return JsonResponse.OK(data=log_list)
 
 
-# @auth_token()
+@auth_token()
 def message_remind(request):
     if request.method == POST:
         # moment = etc_time()

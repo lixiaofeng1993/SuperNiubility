@@ -59,11 +59,18 @@
                     let code = result.code;
                     if (code === 200) {
                         let token = result.data.token;
+                        let login_from = result.data.login_from;
                         sessionStorage.setItem(username, token);
                         ale.html("登录成功.").addClass("alert-success").show().delay(1500).fadeOut();
-                        setTimeout(function () {
-                            top.location.href = "{% url 'index' %}";
-                        }, 1500);
+                        if (login_from) {
+                            setTimeout(function () {
+                                top.location.href = login_from;
+                            }, 1500);
+                        } else {
+                            setTimeout(function () {
+                                top.location.href = "{% url 'index' %}";
+                            }, 1500);
+                        }
                     } else {
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                     }

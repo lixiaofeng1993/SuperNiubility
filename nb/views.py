@@ -26,6 +26,7 @@ class ToDOIndex(ListView):
         return super(ToDOIndex, self).dispatch(*args, **kwargs)
 
     def get_queryset(self):
+        self.request.session["login_from"] = self.request.get_full_path()
         model = model_superuser(self.request, self.model)
         obj_list = model.filter(is_delete=False).order_by("-create_date")
         obj_list = handle_model(list(obj_list))
@@ -142,6 +143,7 @@ class StockIndex(ListView):
         return super(StockIndex, self).dispatch(*args, **kwargs)
 
     def get_queryset(self):
+        self.request.session["login_from"] = self.request.get_full_path()
         model = model_superuser(self.request, self.model)
         obj_list = model.filter(is_delete=False).order_by("-create_date")
         obj_list = handle_model(list(obj_list))
@@ -325,11 +327,10 @@ def stock_look(request, stock_id):
 def chart_look(request, stock_id):
     if request.method == GET:
         info = request_get_search(request)
-        model = model_superuser(request, SharesHold)
-        hold = model.get(id=stock_id)
+        shares = Shares.objects.filter(Q(is_delete=False) & Q(shares_hold_id=stock_id)).order_by("-update_date").first()
         info.update({
-            "obj": hold,
-            "update_time": format_time(hold.update_date),
+            "obj": shares,
+            "update_time": format_time(shares.update_date),
         })
         Message.objects.filter(Q(is_delete=False) & Q(is_look=False) & Q(obj_id=stock_id)).update(is_look=True)
         return render(request, "home/stock/chart_stock.html", info)
@@ -383,6 +384,7 @@ class RecordIndex(ListView):
         return super(RecordIndex, self).dispatch(*args, **kwargs)
 
     def get_queryset(self):
+        self.request.session["login_from"] = self.request.get_full_path()
         obj_list = self.model.objects.all().order_by("-action_time")
         obj_list = handle_model(list(obj_list))
         return obj_list

@@ -44,10 +44,13 @@ def login(request):
         request.session["user"] = username
         request.session["user_id"] = user.id
         request.session["super"] = user.is_superuser  # 是否是超级管理员
+        login_from = request.session.get("login_from")
+        logger.info(f"地址来源 ===>>> {login_from}")
         result = {
             "id": user.id,
             "username": username,
-            "token": token
+            "token": token,
+            "login_from": login_from
         }
         if not token:
             access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
