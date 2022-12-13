@@ -8,7 +8,6 @@
 import requests
 from jsonpath import jsonpath
 from random import randint
-from django.core.cache import cache
 
 from public.conf import *
 from public.log import logger
