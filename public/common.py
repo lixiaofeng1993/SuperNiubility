@@ -52,6 +52,7 @@ def delete_cache(user_id, stock_id):
     cache.delete(TodayChart.format(user_id=user_id))
     cache.delete(TodayStockChart.format(stock_id=stock_id))
     cache.delete(TodayBuySellChart.format(user_id=user_id))
+    cache.delete(TodayKDJChart.format(user_id=user_id))
     cache.delete(TwentyChart.format(user_id=user_id))
     cache.delete(TwentyStockChart.format(stock_id=stock_id))
 
@@ -280,6 +281,7 @@ def message_writing(name: str, user_id: int, stock_id: str):
         cache.delete(TodayChart.format(user_id=user_id))
         cache.delete(TodayStockChart.format(stock_id=stock_id))
         cache.delete(TodayBuySellChart.format(user_id=user_id))
+        cache.delete(TodayKDJChart.format(user_id=user_id))
         moment = etc_time()
         message = Message()
         message.name = name
