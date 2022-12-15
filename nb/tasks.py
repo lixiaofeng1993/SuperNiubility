@@ -5,15 +5,12 @@
 # 创建时间: 2022/11/23 0023 11:14
 # @Version：V 0.1
 # @desc :
-import efinance as ef
 from celery import Task, shared_task
 from django.db.models import Q  # 与或非 查询
 
-from nb.models import ToDo, Shares, SharesHold, StockDetail, KDJStock
-from public.common import delete_cache, check_stoke_date, etc_time, cache, StockEndTime, difference_stock, datetime, \
-    message_writing, MessageBuySell, MessageToday, regularly_hold, MessageKDJ
-from public.send_ding import profit_and_loss, profit_and_loss_ratio
-from public.stock_api import stock_api, kdj_api
+from nb.models import ToDo, Shares
+from public.stock_api import ef, delete_cache, etc_time, cache, StockEndTime, stock_today, stock_buy_sell, stock_inflow, \
+    stock_holder as holder, stock_sector
 from public.log import logger
 
 
@@ -99,155 +96,16 @@ def last_day_stock_history(code: str, hold_id: str, user_id):
 
 
 @shared_task()
-def stock_today():
+def stock():
     """
-    持仓股票当天数据自动写入
-    每五分钟写入一次
+    定时写入股票数据
     """
-    moment = check_stoke_date()
-    if not moment:  # 判断股市开关时间
-        return
-    hold_list = SharesHold.objects.filter(is_delete=False)
-    stock_list = list()
-    stock_dict = dict()
-    for hold in hold_list:
-        stock_list.append(hold.code)
-        stock_dict.update({hold.code: hold.id})
-    freq = 1
-    df = ef.stock.get_quote_history(stock_list, klt=freq)
-    if not df:
-        logger.error(f"持仓股票 {stock_list} 查询数据为空.")
-        return
-    for key, value in df.items():
-        shares = Shares.objects.filter(
-            Q(code=key) & Q(shares_hold_id=stock_dict[key])).order_by("-date_time").first()
-        base_date_time = shares.date_time
-        df_list = value.to_dict(orient="records")
-        shares_list = []
-        new_price = 0
-        for data in df_list:
-            date_time = data["日期"]
-            new_price = data["收盘"]
-            if date_time <= base_date_time:  # 避免重复写入
-                continue
-            obj = Shares(
-                name=data["股票名称"], code=key, date_time=data["日期"], open_price=data["开盘"],
-                new_price=data["收盘"], top_price=data["最高"], down_price=data["最低"], turnover=data["成交量"],
-                business_volume=data["成交额"], amplitude=data["振幅"], rise_and_fall=data["涨跌幅"],
-                rise_and_price=data["涨跌额"], turnover_rate=data["换手率"], shares_hold_id=stock_dict[key]
-            )
-            shares_list.append(obj)
-        if not shares_list:
-            logger.info("stock_today 重复写入判断.")
-            return
-        try:
-            hold = SharesHold.objects.get(id=stock_dict[key])
-            is_profit = regularly_hold(hold, moment, new_price)
-            if hold.is_detail:
-                if is_profit != hold.is_profit:
-                    profit_and_loss(hold)  # 钉钉消息提醒
-                profit_and_loss_ratio(hold, new_price)
-        except Exception as error:
-            logger.error(f"更新持仓盈亏出现错误. ===>>> {error}")
-            return
-        share = Shares.objects.filter(
-            Q(code=key) & Q(date_time__gt=base_date_time) & Q(shares_hold_id=hold.id)).exists()
-        if not share:
-            Shares.objects.bulk_create(objs=shares_list)
-            message_writing(MessageToday.format(name=hold.name), hold.user_id, hold.id)
-            logger.info(f"保存成功===>>>{len(shares_list)} 条")
+    stock_today()
+    stock_buy_sell()
+    stock_inflow()
+    stock_sector()
 
 
 @shared_task()
-def stock_detail(flag=True):
-    moment = check_stoke_date()
-    if not moment and flag:  # 判断股市开关时间
-        return
-    hold = SharesHold.objects.filter(Q(is_delete=False) & Q(is_detail=True)).first()
-    if not hold:
-        logger.error("未设置 is_detail 字段.")
-        return
-    code = difference_stock(code=hold.code)
-    result = stock_api(code=code)
-    if not result:
-        return
-    response = result["data"]
-    dapandata = result["dapandata"]
-    gopicture = result["gopicture"]
-    change = {
-        'traAmount': 'nowTraAmount',
-        'traNumber': 'nowTraNumber'
-    }
-    response.update(gopicture)
-    date_time = f'{response["date"]} {response["time"]}'
-    check_time = datetime.strptime(date_time, "%Y-%m-%d %H:%M:%S")
-    detail = StockDetail.objects.filter(Q(is_delete=False) &
-                                        Q(code=code) & Q(shares_hold_id=hold.id)).order_by("-time").first()
-    if detail and check_time <= detail.time:  # 判重
-        logger.info(f"股票详情表数据重复.===>>>{check_time} {detail.time}")
-        return
-    dapandata_dict = dict()
-    for key, value in dapandata.items():
-        if key in change.keys():
-            dapandata_dict.update({change[key]: value})
-        else:
-            dapandata_dict.update({key: value})
-    response.update(dapandata_dict)
-    detail_obj = StockDetail(
-        name=response["name"], code=code, increPer=response["increPer"], increase=response["increase"],
-        todayStartPri=response["todayStartPri"], yestodEndPri=response["yestodEndPri"], nowPri=response["nowPri"],
-        todayMax=response["todayMax"], todayMin=response["todayMin"], competitivePri=response["competitivePri"],
-        reservePri=response["reservePri"], traNumber=response["traNumber"], traAmount=response["traAmount"],
-        buyOne=response["buyOne"], buyOnePri=response["buyOnePri"], buyTwo=response["buyTwo"],
-        buyTwoPri=response["buyTwoPri"], buyThree=response["buyThree"], buyThreePri=response["buyThreePri"],
-        buyFour=response["buyFour"], buyFourPri=response["buyFourPri"], buyFive=response["buyFive"],
-        buyFivePri=response["buyFivePri"], sellOne=response["sellOne"], sellOnePri=response["sellOnePri"],
-        sellTwo=response["sellTwo"], sellTwoPri=response["sellTwoPri"], sellThree=response["sellThree"],
-        sellThreePri=response["sellThreePri"], sellFour=response["sellFour"], sellFourPri=response["sellFourPri"],
-        sellFive=response["sellFive"], sellFivePri=response["sellFivePri"], date=response["date"],
-        time=date_time, dot=response["dot"], nowPic=response["nowPic"], rate=response["rate"],
-        nowTraAmount=response["nowTraAmount"], nowTraNumber=response["nowTraNumber"], minurl=response["minurl"],
-        dayurl=response["dayurl"], weekurl=response["weekurl"], monthurl=response["monthurl"],
-        shares_hold_id=hold.id,
-    )
-    try:
-        detail_obj.save()
-        new_price = response["dot"]
-        regularly_hold(hold, moment, new_price)
-        message_writing(MessageBuySell.format(name=hold.name), hold.user_id, hold.id)
-        logger.info("股票详情保存成功.")
-    except Exception as error:
-        logger.error(f"股票详情保存失败 ===>>> {error}")
-
-
-@shared_task()
-def stock_detail_kdj():
-    moment = check_stoke_date()
-    if not moment:  # 判断股市开关时间
-        return
-    hold = SharesHold.objects.filter(Q(is_delete=False) & Q(is_detail=True)).first()
-    if not hold:
-        logger.error("未设置 is_detail 字段.")
-        return
-    level = "5m"
-    response = kdj_api(level, hold.code)
-    try:
-        kdj = KDJStock.objects.filter(Q(shares_hold_id=hold.id) & Q(is_delete=False) &
-                                      Q(t=response["t"])).exists()
-        if kdj:
-            logger.info(f"{hold.name} KDJ 数据写入重复判断.")
-            return
-        kdj = KDJStock()
-        kdj.type = level
-        kdj.name = hold.name
-        kdj.k = response["k"]
-        kdj.d = response["d"]
-        kdj.j = response["j"]
-        kdj.t = response["t"]
-        kdj.shares_hold_id = hold.id
-        kdj.save()
-        message_writing(MessageKDJ.format(name=hold.name), hold.user_id, hold.id)
-        logger.info("kdj数据保存成功！")
-    except Exception as error:
-        logger.error(f"保存kdj数据出现异常 ===>>> {error}")
-        return
+def stock_holder():
+    holder()

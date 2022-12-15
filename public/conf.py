@@ -46,7 +46,9 @@ YearStockChart = "YearChart-{stock_id}"
 # 导入股票end time
 StockEndTime = "StockEndTime-{user_id}"
 # 当天买入卖出托单
-TodayBuySellChart = "TodayBuySellChart-{user_id}"
+TodayBuySellChart = "TodayBuySellChart-{stock_id}"
+# 资金流入流出
+TodayInflowChart = "TodayInflowChart-{stock_id}"
 # kdj
 TodayKDJChart = "TodayKDJChart-{user_id}"
 # 验证码缓存
@@ -142,6 +144,9 @@ FOLLOW = "这世界怎么那么多人，蹉跎回首，已不再年轻。\n这�
 MessageBuySell = "【{name}】买入卖出托单数据更新"
 MessageToday = "【{name}】今日走势K线数据更新"
 MessageKDJ = "【{name}】今日KDJ数据更新"
+MessageInflow = "【{name}】资金流入流出数据更新"
+MessageHolder = "【{name}】持仓股东数据更新"
+MessageSector = "【{name}】所属板块数据更新"
 
 # 登录背景图片
 BackgroundName = "http://127.0.0.1:8000/media/banner{num}.png" if settings.DEBUG else "http://121.41.54.234//banner{num}.png"

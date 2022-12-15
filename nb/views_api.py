@@ -9,8 +9,8 @@ from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 from django_pandas.io import read_frame
 
-from .tasks import stock_history, last_day_stock_history, stock_detail, KDJStock
-from nb.models import ToDo, SharesHold, Shares, StockDetail
+from .tasks import stock_history, last_day_stock_history
+from nb.models import ToDo, Shares, StockDetail, InflowStock
 from public.auth_token import auth_token
 from public.common import *
 from public.response import JsonResponse
@@ -123,8 +123,6 @@ def stock_import(request, hold_id):
         share = Shares.objects.filter(Q(code=code) & Q(shares_hold_id=hold_id)).exists()
         if share:
             return JsonResponse.RepeatException()
-        if hold.is_detail:
-            stock_detail.delay(flag=False)
         flag = True
         last_day_time = ""
         if not check_stoke_date() or moment["now"] >= moment["end_time"]:
@@ -399,59 +397,14 @@ def half_year_chart(request):
 
 
 @auth_token()
-def kdj_chart(request):
-    if request.method == POST:
-        user_id = request.session.get("user_id")
-        datasets = cache.get(TodayKDJChart.format(user_id=user_id))
-        if datasets:
-            return JsonResponse.OK(data=datasets)
-        model = model_superuser(request, SharesHold)
-        hold = model.filter(Q(is_delete=False) & Q(is_detail=True)).first()
-        if not hold:
-            return JsonResponse.OK()
-        dataset = dict()
-        kdj_list = KDJStock.objects.filter(Q(shares_hold_id=hold.id) &
-                                           Q(is_delete=False) &
-                                           Q(type="5m")).order_by("t")
-        if not kdj_list:
-            return JsonResponse.OK(data=dataset)
-        kdj_df = read_frame(kdj_list)
-        labels = list()
-        for label in kdj_df["t"]:
-            labels.append(str(label))
-        dataset.update({
-            "K": {
-                "data": kdj_df["k"].to_list(),
-                "color": "#F8F8FF",
-            },
-            "D": {
-                "data": kdj_df["d"].to_list(),
-                "color": "#FFFF33",
-            },
-            "J": {
-                "data": kdj_df["j"].to_list(),
-                "color": "#9933FF",
-            },
-            "labels": labels,
-            "name": hold.name,
-            "type": "5m",
-
-        })
-        cache.set(TodayKDJChart.format(user_id=user_id), dataset, surplus_second())
-        return JsonResponse.OK(data=dataset)
-
-
-@auth_token()
 def buy_sell_chart(request):
     if request.method == POST:
-        user_id = request.session.get("user_id")
-        datasets = cache.get(TodayBuySellChart.format(user_id=user_id))
-        if datasets:
+        datasets, user_id, stock_id = handle_cache(request, "buy")
+        if isinstance(datasets, dict):
             return JsonResponse.OK(data=datasets)
-        model = model_superuser(request, SharesHold)
-        hold = model.filter(Q(is_delete=False) & Q(is_detail=True)).first()
-        if not hold:
-            return JsonResponse.OK()
+        if not stock_id:
+            return JsonResponse.CheckException()
+        hold = datasets[0]
         moment = etc_time()
         if check_stoke_day():  # 休市日展示最后一天的数据
             last_day = moment["today"]
@@ -560,8 +513,102 @@ def buy_sell_chart(request):
                 },
             ]
         }
-        logger.info("查询当天买入卖出托单股票数据成功.")
-        cache.set(TodayBuySellChart.format(user_id=user_id), datasets, surplus_second())
+        logger.info(f"查询 {hold.name} 当天买入卖出托单股票数据成功.")
+        cache.set(TodayBuySellChart.format(stock_id=stock_id), datasets, surplus_second())
+        return JsonResponse.OK(data=datasets)
+
+
+@auth_token()
+def inflow_chart(request):
+    if request.method == POST:
+        datasets, user_id, stock_id = handle_cache(request, "inflow")
+        if isinstance(datasets, dict):
+            return JsonResponse.OK(data=datasets)
+        if not stock_id:
+            return JsonResponse.CheckException()
+        hold = datasets[0]
+        moment = etc_time()
+        if check_stoke_day():  # 休市日展示最后一天的数据
+            last_day = moment["today"]
+        else:
+            if hold.last_day:
+                last_day = hold.last_day
+            else:
+                share_first = InflowStock.objects.filter(
+                    Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
+                if not share_first:
+                    return JsonResponse.OK()
+                last_day = share_first.date
+        detail_list = InflowStock.objects.filter(
+            Q(shares_hold_id=hold.id) & Q(is_delete=False) & Q(date=last_day)).order_by("time")
+        if not detail_list:
+            return JsonResponse.OK()
+        detail_list = handle_model(list(detail_list))
+        labels = list()
+        main_list = list()
+        small_list = list()
+        middle_list = list()
+        big_list = list()
+        huge_list = list()
+        flag = "00"
+        for detail in detail_list:
+            date_time = detail.time
+            if not date_time:
+                continue
+            flag = date_time.split(":")[-2]
+            if flag in StockRule:
+                main_list.append(round(detail.main_inflow / 10000))
+                small_list.append(round(detail.small_inflow / 10000))
+                middle_list.append(round(detail.middle_inflow / 10000))
+                big_list.append(round(detail.big_inflow / 10000))
+                huge_list.append(round(detail.huge_inflow / 10000))
+                labels.append(detail.time)
+        if flag not in StockRule:
+            main_list.append(round(detail_list[-1].main_inflow / 10000))
+            small_list.append(round(detail_list[-1].small_inflow / 10000))
+            middle_list.append(round(detail_list[-1].middle_inflow / 10000))
+            big_list.append(round(detail_list[-1].big_inflow / 10000))
+            huge_list.append(round(detail_list[-1].huge_inflow / 10000))
+            labels.append(detail_list[-1].time)
+        datasets = {
+            "labels": labels,
+            "name": hold.name,
+            "datasets": [
+                {
+                    "label": "主力净流入",
+                    "data": main_list,
+                    "borderColor": "red",
+                    "backgroundColor": "#880000",
+                    "stack": "1",
+                }, {
+                    "label": "小单净流入",
+                    "data": small_list,
+                    "borderColor": 'red',
+                    "backgroundColor": '#00FFFF',
+                    "stack": "2",
+                }, {
+                    "label": "中单净流入",
+                    "data": middle_list,
+                    "borderColor": 'red',
+                    "backgroundColor": '#008080',
+                    "stack": "3",
+                }, {
+                    "label": "大单净流入",
+                    "data": big_list,
+                    "borderColor": 'red',
+                    "backgroundColor": '#808000',
+                    "stack": "4",
+                }, {
+                    "label": "超大单净流入",
+                    "data": huge_list,
+                    "borderColor": 'red',
+                    "backgroundColor": '#000080',
+                    "stack": "5",
+                }
+            ]
+        }
+        logger.info(f"查询 {hold.name} 当天资金流入流出股票数据成功.")
+        cache.set(TodayInflowChart.format(stock_id=stock_id), datasets, surplus_second())
         return JsonResponse.OK(data=datasets)
 
 

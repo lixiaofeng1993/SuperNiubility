@@ -103,3 +103,28 @@ def profit_and_loss_ratio(hold, price):
                 "isAtAll": False,
             }}
         send_ding(body)
+
+
+def limit_up(hold, flag: bool):
+    """
+    涨跌停
+    """
+    if flag:
+        text = "涨停拉，福之祸所系，赶紧处理的吧！"
+        color = "#FF0000"
+    else:
+        text = "跌停喽，祸之福所依，表着急。"
+        color = "#00FF00"
+    body = {
+        "msgtype": "markdown",
+        "markdown": {
+            "title": hold.name,
+            "text": f"### {hold.name}\n\n"
+                    f"> **涨跌：**  <font color={color}>{text} </font> %\n\n"
+                    f"> **点击查看** [股票分析](http://121.41.54.234/nb/stock/look/{hold.id}/)@15235514553"
+        },
+        "at": {
+            "atMobiles": ["15235514553"],
+            "isAtAll": False,
+        }}
+    send_ding(body)

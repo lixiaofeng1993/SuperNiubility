@@ -15,7 +15,7 @@ from django.db.models import Q  # 与或非 查询
 from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
 from django.contrib.admin.options import get_content_type_for_model
 
-from nb.models import Poetry, User, Message, SharesHold
+from nb.models import Poetry, Message, SharesHold
 from public.conf import *
 from public.recommend import recommend_handle
 from public.log import logger
@@ -51,10 +51,11 @@ def delete_cache(user_id, stock_id):
     cache.delete(TenStockChart.format(stock_id=stock_id))
     cache.delete(TodayChart.format(user_id=user_id))
     cache.delete(TodayStockChart.format(stock_id=stock_id))
-    cache.delete(TodayBuySellChart.format(user_id=user_id))
+    cache.delete(TodayBuySellChart.format(stock_id=stock_id))
     cache.delete(TodayKDJChart.format(user_id=user_id))
     cache.delete(TwentyChart.format(user_id=user_id))
     cache.delete(TwentyStockChart.format(stock_id=stock_id))
+    cache.delete(TodayInflowChart.format(stock_id=stock_id))
 
 
 def regularly_hold(hold, moment: dict, price: float):
@@ -62,15 +63,18 @@ def regularly_hold(hold, moment: dict, price: float):
     实时更新 持有股票收益
     """
     is_profit = hold.is_profit = True if hold.profit_and_loss > 0 else False
-    if hold.number and hold.cost_price and moment["stock_time"] > hold.update_date:
-        hold.profit_and_loss = round(hold.number * float(price) - hold.number * hold.cost_price, 2)
-        hold.today_price = round((float(price) - hold.last_close_price) * hold.number, 2)
-        if moment["now"] >= moment["stock_time"]:
-            hold.last_close_price = price
-            hold.last_day = moment["today"]
-            hold.days += 1
+    hold.profit_and_loss = round(hold.number * float(price) - hold.number * hold.cost_price, 2)
+    hold.today_price = round((float(price) - hold.last_close_price) * hold.number, 2)
+    if moment["now"] >= moment["stock_time"] > hold.update_date:
+        hold.last_close_price = price
+        hold.last_day = moment["today"]
+        hold.days += 1
+    try:
         hold.save()
-    return is_profit
+        logger.info(f"实时更新 持有股票 {hold.name} 收益 保存成功！")
+        return is_profit
+    except Exception as error:
+        logger.error(f"实时更新 持有股票收益 保存报错！===>>> {error}")
 
 
 def format_time(date_time: datetime):
@@ -142,7 +146,7 @@ def check_stoke_date():
     if moment["now"] < moment["start_time"] or moment["now"] > moment["end_time"] or \
             moment["ap_time"] < moment["now"] < moment["pm_time"]:
         logger.info(f"当前时间 {moment['now']} 未开盘!!!")
-        return
+        # return
     return moment
 
 
@@ -201,7 +205,7 @@ def format_obj(obj: object):
         obj.id = str(obj.id)
     if hasattr(obj, "action_time"):
         obj.action_time = obj.action_time.strftime("%Y-%m-%d %H:%M:%S")
-    if hasattr(obj, "time"):
+    if hasattr(obj, "time") and obj.time:
         obj.time = obj.time.strftime("%Y-%m-%d %H:%M:%S")
     return obj
 
@@ -273,20 +277,20 @@ def home_poetry():
     return obj_list
 
 
-def message_writing(name: str, user_id: int, stock_id: str):
+def message_writing(name: str, user_id: int, stock_id: str, date_time: datetime):
     """
     写入消息提醒
     """
     try:
         cache.delete(TodayChart.format(user_id=user_id))
         cache.delete(TodayStockChart.format(stock_id=stock_id))
-        cache.delete(TodayBuySellChart.format(user_id=user_id))
+        cache.delete(TodayBuySellChart.format(stock_id=stock_id))
         cache.delete(TodayKDJChart.format(user_id=user_id))
-        moment = etc_time()
+        cache.delete(TodayInflowChart.format(stock_id=stock_id))
         message = Message()
         message.name = name
         message.obj_id = stock_id
-        message.date = moment["today"]
+        message.date = date_time
         message.save()
         logger.info("写入消息提醒成功.")
     except Exception as error:
@@ -342,6 +346,10 @@ def handle_cache(request, flag: str):
             datasets = cache.get(TwentyStockChart.format(stock_id=stock_id))
         elif flag == "year":
             datasets = cache.get(YearStockChart.format(stock_id=stock_id))
+        elif flag == "buy":
+            datasets = cache.get(TodayBuySellChart.format(stock_id=stock_id))
+        elif flag == "inflow":
+            datasets = cache.get(TodayInflowChart.format(stock_id=stock_id))
     else:
         if flag == "day":
             datasets = cache.get(TodayChart.format(user_id=user_id))
@@ -353,8 +361,10 @@ def handle_cache(request, flag: str):
             datasets = cache.get(TwentyChart.format(user_id=user_id))
         elif flag == "year":
             datasets = cache.get(YearChart.format(user_id=user_id))
-    if datasets:
-        return datasets, user_id, stock_id
+        elif flag == "kdj":
+            datasets = cache.get(TodayKDJChart.format(user_id=user_id))
+    # if datasets:
+    #     return datasets, user_id, stock_id
     model = model_superuser(request, SharesHold)
     if stock_id:
         hold_list = model.filter(Q(is_delete=False) & Q(id=stock_id))

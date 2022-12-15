@@ -31,22 +31,16 @@ app.conf.beat_schedule = {
         # 'schedule': 5,
         'args': (),
     },
-    'stock_today': {
+    'stock': {
         # 任务路径
-        'task': 'nb.tasks.stock_today',
+        'task': 'nb.tasks.stock',
         'schedule': 5 * 60,
         'args': (),
     },
-    'stock_detail': {
+    'stock_holder': {
         # 任务路径
-        'task': 'nb.tasks.stock_detail',
-        'schedule': 5 * 60,
-        'args': (),
-    },
-    'stock_detail_kdj': {
-        # 任务路径
-        'task': 'nb.tasks.stock_detail_kdj',
-        'schedule': 5 * 60,
+        'task': 'nb.tasks.stock_holder',
+        'schedule': crontab(minute=00, hour=8),
         'args': (),
     },
 }

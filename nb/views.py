@@ -6,7 +6,7 @@ from django.db.models import Q  # 与或非 查询
 from django.contrib.auth.decorators import login_required
 from django_pandas.io import read_frame
 
-from nb.models import ToDo, SharesHold, Shares, StockDetail, uuid
+from nb.models import ToDo, SharesHold, Shares, StockDetail, uuid, InflowStock, StockSector, Shareholder
 from public.auth_token import auth_token
 from public.common import *
 from public.response import JsonResponse
@@ -252,74 +252,155 @@ def stock_look(request, stock_id):
     })
     repr = "股票"
     operation_record(request, hold, hold.name, repr, "change")
-    if hold.is_detail:
-        detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
-        if not detail:
-            return render(request, "home/stock/look_stock.html", info)
-        update_time = format_time(detail.time)
-        # 当前
-        now_color = "red" if detail.rate > 0 else "green"
-        # 全部
-        color = "red" if detail.increPer > 0 else "green"
-        info.update({"share": detail, "flag": True, "now_color": now_color, "color": color,
-                     "update_time": update_time})
-        return render(request, "home/stock/look_stock.html", info)
-    moment = check_stoke_day()
-    if moment:
-        last_day = str(moment["today"])
-    else:
-        if hold.last_day:
-            last_day = str(hold.last_day).split(" ")[0]
+
+    def font_color(number):  # 字体颜色
+        if number > 0:
+            return "red"
+        elif number < 0:
+            return "green"
         else:
-            share_first = Shares.objects.filter(
-                Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-date_time").first()
-            if not share_first:
-                return render(request, "home/stock/look_stock.html", info)
-            last_day = share_first.date_time.split(" ")[0]
-    share_list = Shares.objects.filter(
-        Q(shares_hold_id=hold.id) &
-        Q(is_delete=False) & Q(date_time__contains=last_day)).order_by("-date_time")
-    if not share_list:
+            return "#757575"
+
+    def font_color_two(number, number1):  # 字体颜色
+        if number > number1:
+            return "red"
+        elif number < number1:
+            return "green"
+        else:
+            return "#757575"
+
+    # 股票详情
+    detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
+    if not detail:
         return render(request, "home/stock/look_stock.html", info)
-    share_df = read_frame(share_list)
-    # 更新时间
-    update_time = format_time(datetime.strptime(share_df["date_time"].values[0], "%Y-%m-%d %H:%M"))
-    # 最新
-    new_price = share_df["new_price"][0]
-    # 开盘
-    open_price = share_df["open_price"].values[-1]
-    # 平均
-    average = round(share_df["new_price"].mean(), 2)
-    # 涨幅
-    rise_and_fall = round(share_df["rise_and_fall"].sum(), 2)
-    # 涨跌
-    rise_and_price = round(share_df["rise_and_price"].sum(), 2)
-    # 换手
-    turnover_rate = round(share_df["turnover_rate"].sum(), 2)
-    # 成交量
-    turnover = round(share_df["turnover"].sum(), 2)
-    # 成交额
-    business_volume = round(share_df["business_volume"].sum(), 2) / 10000
-    # 最低
-    down_price = round(share_df["down_price"].min(), 2)
-    # 最高
-    top_price = round(share_df["top_price"].max(), 2)
-    # 最高
-    amplitude = round((top_price - down_price) / hold.last_close_price * 100, 2) if hold.last_close_price else ""
-    color = "red" if rise_and_fall > 0 else "green"
-    info.update({"share": {
-        "new_price": new_price,
-        "open_price": open_price,
-        "average": average,
-        "rise_and_fall": rise_and_fall,
-        "rise_and_price": rise_and_price,
-        "turnover_rate": turnover_rate,
-        "turnover": turnover,
-        "business_volume": business_volume,
-        "down_price": down_price,
-        "top_price": top_price,
-        "amplitude": amplitude,
-    }, "color": color, "update_time": update_time})
+    stock_detail = {
+        "todayStartPri": {
+            "todayStartPri": detail.todayStartPri,
+            "color": font_color_two(detail.todayStartPri, detail.yestodEndPri),
+        }, "nowPri": {
+            "nowPri": detail.nowPri,
+            "color": font_color_two(detail.nowPri, detail.yestodEndPri),
+        }, "avg_price": {
+            "avg_price": detail.avg_price,
+            "color": font_color_two(detail.avg_price, detail.yestodEndPri),
+        }, "todayMax": {
+            "todayMax": detail.todayMax,
+            "color": font_color_two(detail.todayMax, detail.yestodEndPri),
+        }, "todayMin": {
+            "todayMin": detail.todayMin,
+            "color": font_color_two(detail.todayMin, detail.yestodEndPri),
+        }, "increPer": {
+            "increPer": detail.increPer,
+            "color": font_color(detail.increPer),
+        }, "increase": {
+            "increase": detail.increase,
+            "color": font_color(detail.increase),
+        },
+        "top_price": detail.top_price,
+        "down_price": detail.down_price,
+        "turnover_rate": detail.turnover_rate,
+        "traNumber": detail.traNumber,
+        "traAmount": round(detail.traAmount / 10000),
+        "yestodEndPri": detail.yestodEndPri,
+    }
+    # 资金流向
+    # 主力资金趋势
+    inflow_time_list = InflowStock.objects.filter(Q(is_delete=False) &
+                                                  Q(shares_hold_id=hold.id)).exclude(time=None).order_by("-time")
+    day_list = list()
+    price = 0
+    five_price = 0
+    twenty_price = 0
+    sixty_price = 0
+    inflow_date_list = []
+    for flow in inflow_time_list:
+        day_list.append(flow.date)
+    day_list = list(set(day_list))
+    i = 0
+    for day in day_list:
+        _flow = InflowStock.objects.filter(Q(is_delete=False) & Q(date=day) &
+                                           Q(shares_hold_id=hold.id)).exclude(time=None).order_by("-time").first()
+        price += _flow.main_inflow
+        i += 1
+        if i == 5:
+            five_price = price
+            break
+        elif i == 20:
+            twenty_price = price
+            break
+        elif i == 60:
+            sixty_price = price
+            break
+    if not sixty_price:
+        inflow_date_list = InflowStock.objects.filter(Q(is_delete=False) & Q(time=None) &
+                                                      Q(shares_hold_id=hold.id)).order_by("-date")[:60 - len(day_list)]
+        for _flow in inflow_date_list:
+            sixty_price += _flow.main_inflow
+    if not twenty_price:
+        for _flow in inflow_date_list[:20 - len(day_list)]:
+            twenty_price += _flow.main_inflow
+    if not five_price:
+        for _flow in inflow_date_list[:5 - len(day_list)]:
+            five_price += _flow.main_inflow
+    five_price = round((five_price + price) / 10000)
+    twenty_price = round((twenty_price + price) / 10000)
+    sixty_price = round((sixty_price + price) / 10000)
+    inflow = inflow_time_list[0] if inflow_time_list else inflow_date_list[0]
+    # 股票股东
+    holder_list = Shareholder.objects.filter(Q(is_delete=False) &
+                                             Q(shares_hold_id=hold.id)).order_by("-time", "-hold_rate")[:10]
+    for holder in holder_list:
+        holder.time = str(holder.time).split(" ")[0]
+    # 股票板块
+    sector_list = StockSector.objects.filter(Q(is_delete=False) &
+                                             Q(shares_hold_id=hold.id)).order_by("-update_date")[:20]
+    sector_list_diff = list()
+    sectors = list()
+    for sector in sector_list:
+        if sector.sector_name not in sector_list_diff:
+            sector.update_date = sector.update_date.strftime("%Y-%m-%d %H:%M")
+            sectors.append(sector)
+        sector_list_diff.append(sector.sector_name)
+    info.update({
+        "detail": stock_detail,
+        "inflow": {
+            "main": {
+                "main_inflow": round(inflow.main_inflow / 10000),
+                "color": font_color(inflow.main_inflow)
+            },
+            "small": {
+                "small_inflow": round(inflow.small_inflow / 10000),
+                "color": font_color(inflow.small_inflow)
+            },
+            "middle": {
+                "middle_inflow": round(inflow.middle_inflow / 10000),
+                "color": font_color(inflow.middle_inflow)
+            },
+            "big": {
+                "big_inflow": round(inflow.big_inflow / 10000),
+                "color": font_color(inflow.big_inflow)
+            },
+            "huge": {
+                "huge_inflow": round(inflow.huge_inflow / 10000),
+                "color": font_color(inflow.huge_inflow)
+            },
+            "five": {
+                "five_price": five_price,
+                "color": font_color(five_price)
+            },
+            "twenty": {
+                "twenty_price": twenty_price,
+                "color": font_color(twenty_price)
+            },
+            "sixty": {
+                "sixty_price": sixty_price,
+                "color": font_color(sixty_price)
+            },
+        },
+        "holder": holder_list,
+        "sector": sectors,
+        "update_time": format_time(detail.time),
+    })
     return render(request, "home/stock/look_stock.html", info)
 
 
@@ -330,6 +411,8 @@ def chart_look(request, stock_id):
         model = model_superuser(request, SharesHold)
         hold = model.get(id=stock_id)
         shares = Shares.objects.filter(Q(is_delete=False) & Q(shares_hold_id=stock_id)).order_by("-update_date").first()
+        if not shares:
+            return render(request, "home/stock/chart_stock.html", info)
         info.update({
             "obj": hold,
             "update_time": format_time(shares.update_date),

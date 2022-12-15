@@ -28,12 +28,12 @@ urlpatterns = [
     path("stock/del/<uuid:stock_id>/", views.stock_del, name="stock_del"),
     path("stock/import/<uuid:hold_id>/", views_api.stock_import, name="stock_import"),
     path("stock/year/chart/", views_api.half_year_chart, name="half_year_chart"),
-    path("stock/kdj/chart/", views_api.kdj_chart, name="kdj_chart"),
     path("stock/day/chart/", views_api.day_chart, name="day_chart"),
     path("stock/five/chart/", views_api.five_chart, name="five_chart"),
     path("stock/ten/chart/", views_api.ten_chart, name="ten_chart"),
     path("stock/twenty/chart/", views_api.twenty_chart, name="twenty_chart"),
     path("stock/buy/sell/", views_api.buy_sell_chart, name="buy_sell"),
+    path("stock/inflow/", views_api.inflow_chart, name="inflow_chart"),
 
     path("record/", views.RecordIndex.as_view(), name="record"),
     path("record/five/", views_api.record, name="record_five"),

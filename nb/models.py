@@ -47,6 +47,9 @@ class Poetry(models.Model):
 
 
 class SharesHold(models.Model):
+    """
+    持仓股票
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, null=False, help_text="持仓股票名称")
     code = models.CharField(max_length=20, null=False, help_text="持仓股票代码")
@@ -60,6 +63,7 @@ class SharesHold(models.Model):
     color = models.CharField(max_length=20, default="red", null=True, help_text="折线颜色")
     is_profit = models.BooleanField(default=False, help_text="盈转亏、亏转盈")
     is_detail = models.BooleanField(default=False, help_text="是否查看详情")  # 唯一标识，只能设置一个
+
     is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
     create_date = models.DateTimeField("保存时间", default=timezone.now)
@@ -74,6 +78,9 @@ class SharesHold(models.Model):
 
 
 class Shares(models.Model):
+    """
+    股票详情
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, default=None, help_text="股票名称")
     code = models.CharField(max_length=20, default=None, help_text="股票代码")
@@ -102,6 +109,9 @@ class Shares(models.Model):
 
 
 class StockDetail(models.Model):
+    """
+    股票卖出买入托单
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, default=None, help_text="股票名称")
     code = models.CharField(max_length=20, default=None, help_text="股票代码")
@@ -109,11 +119,13 @@ class StockDetail(models.Model):
     increase = models.FloatField(default=0.00, help_text="涨跌额")
     todayStartPri = models.FloatField(default=0.00, help_text="今日开盘价")
     yestodEndPri = models.FloatField(default=0.00, help_text="昨日收盘价")
+    top_price = models.FloatField(default=0.00, help_text="涨停价")
+    down_price = models.FloatField(default=0.00, help_text="跌停价")
+    avg_price = models.FloatField(default=0.00, help_text="平均价")
+    turnover_rate = models.FloatField(default=0.00, help_text="换手率")
     nowPri = models.FloatField(default=0.00, help_text="当前价格")
     todayMax = models.FloatField(default=0.00, help_text="今日最高价")
     todayMin = models.FloatField(default=0.00, help_text="今日最低价")
-    competitivePri = models.FloatField(default=0.00, help_text="竞买价")
-    reservePri = models.FloatField(default=0.00, help_text="竞卖价")
     traNumber = models.IntegerField(default=0, help_text="成交量")
     traAmount = models.FloatField(default=0.00, help_text="成交金额")
     buyOne = models.IntegerField(default=0, help_text="买一")
@@ -139,17 +151,6 @@ class StockDetail(models.Model):
     date = models.DateTimeField("日期", null=True, help_text="日期")
     time = models.DateTimeField("时间", null=True, help_text="时间")
 
-    dot = models.FloatField(default=0.00, help_text="当前价格")
-    nowPic = models.FloatField(default=0.00, help_text="涨量")
-    rate = models.FloatField(default=0.00, help_text="涨幅(%)")
-    nowTraAmount = models.IntegerField(default=0, help_text="成交额(万)")
-    nowTraNumber = models.IntegerField(default=0, help_text="成交量")
-
-    minurl = models.CharField(max_length=200, default=None, help_text="分时K线图")
-    dayurl = models.CharField(max_length=200, default=None, help_text="日K线图")
-    weekurl = models.CharField(max_length=200, default=None, help_text="周K线图")
-    monthurl = models.CharField(max_length=200, default=None, help_text="月K线图")
-
     is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
     create_date = models.DateTimeField("保存时间", default=timezone.now)
@@ -165,6 +166,9 @@ class StockDetail(models.Model):
 
 
 class ToDo(models.Model):
+    """
+    待办
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     describe = models.TextField(default=None, help_text="待办描述")
     end_time = models.DateTimeField("截止时间", null=True, help_text="截止时间")
@@ -184,6 +188,9 @@ class ToDo(models.Model):
 
 
 class Message(models.Model):
+    """
+    消息
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, null=False, help_text="消息内容")
     obj_id = models.CharField(max_length=50, null=True, help_text="对象ID")
@@ -202,6 +209,9 @@ class Message(models.Model):
 
 
 class KDJStock(models.Model):
+    """
+    kdj
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     k = models.FloatField(default=0.00, help_text="k值")
     d = models.FloatField(default=0.00, help_text="d值")
@@ -216,6 +226,89 @@ class KDJStock(models.Model):
 
     class Meta:
         db_table = "kdj_stock"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
+class Shareholder(models.Model):
+    """
+    股票股东
+    """
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, default=None, help_text="股票名称")
+    code = models.CharField(max_length=20, default=None, help_text="股票代码")
+    time = models.DateTimeField("信息更新时间", null=True, help_text="信息更新时间")
+    holder_code = models.CharField(max_length=50, default=None, help_text="股东代码")
+    holder_name = models.CharField(max_length=200, default=None, help_text="股东名称")
+    hold_number = models.CharField(max_length=50, default=None, help_text="持股数")
+    hold_rate = models.FloatField(default=0.00, help_text="持股比例")
+    fluctuate = models.CharField(max_length=50, default=None, help_text="增减")
+    fluctuate_rate = models.CharField(max_length=50, default=None, help_text="变动率")
+
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
+
+    class Meta:
+        db_table = "shareholder"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
+class InflowStock(models.Model):
+    """
+    资金流入流出
+    """
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, default=None, help_text="股票名称")
+    code = models.CharField(max_length=20, default=None, help_text="股票代码")
+    time = models.DateTimeField("时间", null=True, help_text="时间")
+    date = models.DateTimeField("日期", null=True, help_text="日期")
+    main_inflow = models.FloatField(default=0.00, help_text="主力净流入")
+    small_inflow = models.FloatField(default=0.00, help_text="小单净流入")
+    middle_inflow = models.FloatField(default=0.00, help_text="中单净流入")
+    big_inflow = models.FloatField(default=0.00, help_text="大单净流入")
+    huge_inflow = models.FloatField(default=0.00, help_text="超大单净流入")
+
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
+
+    class Meta:
+        db_table = "inflow_stock"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
+class StockSector(models.Model):
+    """
+    股票板块
+    """
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, default=None, help_text="股票名称")
+    code = models.CharField(max_length=20, default=None, help_text="股票代码")
+    sector_code = models.CharField(max_length=20, default=None, help_text="板块代码")
+    sector_name = models.CharField(max_length=20, default=None, help_text="板块名称")
+    sector_rate = models.FloatField(default=0.00, help_text="板块涨幅")
+
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
+
+    class Meta:
+        db_table = "stock_sector"
 
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True
