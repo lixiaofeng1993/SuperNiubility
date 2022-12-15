@@ -233,6 +233,12 @@
                                 `<small>` + data_list[i].now_time + `</small>` +
                                 '</a>' +
                                 `<hr class="dropdown-divider">`;
+                        } else {
+                            content += `<a href="/nb/stock/chart/${data_list[i].obj_id}/" class="dropdown-item">` +
+                                `<h6 class="fw-normal mb-0">` + data_list[i].name + `</h6>` +
+                                `<small>` + data_list[i].now_time + `</small>` +
+                                '</a>' +
+                                `<hr class="dropdown-divider">`;
                         }
                     }
                     if (number >= 5) {
