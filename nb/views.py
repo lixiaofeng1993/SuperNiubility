@@ -345,6 +345,8 @@ def stock_look(request, stock_id):
     five_price = round((five_price + price) / 10000)
     twenty_price = round((twenty_price + price) / 10000)
     sixty_price = round((sixty_price + price) / 10000)
+    if not inflow_time_list and not inflow_date_list:
+        return render(request, "home/stock/look_stock.html", info)
     inflow = inflow_time_list[0] if inflow_time_list else inflow_date_list[0]
     # 股票股东
     holder_list = Shareholder.objects.filter(Q(is_delete=False) &
