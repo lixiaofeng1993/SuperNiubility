@@ -648,6 +648,7 @@ def message_remind(request):
             result["data"].append({
                 "now_time": format_time(message.create_date),
                 "obj_id": message.obj_id,
-                "name": message.name
+                "name": message.name,
+                "type": message.type,
             })
         return JsonResponse.OK(data=result)

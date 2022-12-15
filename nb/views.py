@@ -355,7 +355,7 @@ def stock_look(request, stock_id):
         holder.time = str(holder.time).split(" ")[0]
     # 股票板块
     sector_list = StockSector.objects.filter(Q(is_delete=False) &
-                                             Q(shares_hold_id=hold.id)).order_by("-update_date")[:20]
+                                             Q(shares_hold_id=hold.id)).order_by("-update_date", "-sector_rate")[:20]
     sector_list_diff = list()
     sectors = list()
     for sector in sector_list:

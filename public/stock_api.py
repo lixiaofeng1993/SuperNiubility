@@ -65,7 +65,7 @@ def stock_today():
                     profit_and_loss(hold)  # 钉钉消息提醒
                 if hold.cost_price:
                     profit_and_loss_ratio(hold, new_price)
-                message_writing(MessageToday.format(name=hold.name), hold.user_id, hold.id, moment["today"])
+                message_writing(MessageToday.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
             except Exception as error:
                 logger.error(f"今日走势K线 更新持仓盈亏出现错误. ===>>> {error}")
                 return
@@ -112,7 +112,7 @@ def stock_buy_sell():
         )
         detail_list.append(obj)
         if detail_list:
-            message_writing(MessageBuySell.format(name=hold.name), hold.user_id, hold.id, moment["today"])
+            message_writing(MessageBuySell.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
             if quotes["最新价"] == quotes["涨停价"]:
                 limit_up(hold, True)
             elif quotes["最新价"] == quotes["跌停价"]:
@@ -170,7 +170,7 @@ def stock_inflow():
             )
             inflow_list.append(obj)
         if inflow_list:
-            message_writing(MessageInflow.format(name=hold.name), hold.user_id, hold.id, moment["today"])
+            message_writing(MessageInflow.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
     if inflow_list:
         try:
             InflowStock.objects.bulk_create(objs=inflow_list)
@@ -215,7 +215,7 @@ def stock_holder():
             )
             holder_list.append(obj)
         if holder_list:
-            message_writing(MessageHolder.format(name=hold.name), hold.user_id, hold.id, moment["today"])
+            message_writing(MessageHolder.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
     if holder_list:
         try:
             Shareholder.objects.bulk_create(objs=holder_list)
@@ -258,7 +258,7 @@ def stock_sector():
             )
             sector_list.append(obj)
         if sector_list:
-            message_writing(MessageSector.format(name=hold.name), hold.user_id, hold.id, moment["today"])
+            message_writing(MessageSector.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
     if sector_list:
         try:
             StockSector.objects.bulk_create(objs=sector_list)

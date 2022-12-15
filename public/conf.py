@@ -147,6 +147,10 @@ MessageKDJ = "【{name}】今日KDJ数据更新"
 MessageInflow = "【{name}】资金流入流出数据更新"
 MessageHolder = "【{name}】持仓股东数据更新"
 MessageSector = "【{name}】所属板块数据更新"
+# 股票详情页面
+Detail = "Detail"
+# 股票图表页面
+Chart = "Chart"
 
 # 登录背景图片
 BackgroundName = "http://127.0.0.1:8000/media/banner{num}.png" if settings.DEBUG else "http://121.41.54.234//banner{num}.png"

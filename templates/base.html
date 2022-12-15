@@ -194,7 +194,7 @@
             },
             async: false,
             success: function (result) {
-                console.log(result);
+                console.log("===message===>>>", result);
                 let code = result.code;
                 let message = result.message;
                 let data = result.data;
@@ -221,11 +221,19 @@
                     let data_list = data.data;
                     let content = "";
                     for (let i = 0; i < data_list.length; i++) {
-                        content += `<a href="/nb/stock/chart/${data_list[i].obj_id}/" class="dropdown-item">` +
-                            `<h6 class="fw-normal mb-0">` + data_list[i].name + `</h6>` +
-                            `<small>` + data_list[i].now_time + `</small>` +
-                            '</a>' +
-                            `<hr class="dropdown-divider">`;
+                        if (data_list[i].type === "Detail") {
+                            content += `<a href="/nb/stock/look/${data_list[i].obj_id}/" class="dropdown-item">` +
+                                `<h6 class="fw-normal mb-0">` + data_list[i].name + `</h6>` +
+                                `<small>` + data_list[i].now_time + `</small>` +
+                                '</a>' +
+                                `<hr class="dropdown-divider">`;
+                        } else if (data_list[i].type === "Chart") {
+                            content += `<a href="/nb/stock/chart/${data_list[i].obj_id}/" class="dropdown-item">` +
+                                `<h6 class="fw-normal mb-0">` + data_list[i].name + `</h6>` +
+                                `<small>` + data_list[i].now_time + `</small>` +
+                                '</a>' +
+                                `<hr class="dropdown-divider">`;
+                        }
                     }
                     if (number >= 5) {
                         content += `<a href="{% url 'chart_all' %}" style="margin-left: 40%;"><i class="fa fa-angle-double-right"></i></a>`;

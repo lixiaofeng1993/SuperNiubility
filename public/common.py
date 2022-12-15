@@ -146,7 +146,7 @@ def check_stoke_date():
     if moment["now"] < moment["start_time"] or moment["now"] > moment["end_time"] or \
             moment["ap_time"] < moment["now"] < moment["pm_time"]:
         logger.info(f"当前时间 {moment['now']} 未开盘!!!")
-        # return
+        return
     return moment
 
 
@@ -277,7 +277,7 @@ def home_poetry():
     return obj_list
 
 
-def message_writing(name: str, user_id: int, stock_id: str, date_time: datetime):
+def message_writing(name: str, user_id: int, stock_id: str, date_time: datetime, link_type: str):
     """
     写入消息提醒
     """
@@ -291,6 +291,7 @@ def message_writing(name: str, user_id: int, stock_id: str, date_time: datetime)
         message.name = name
         message.obj_id = stock_id
         message.date = date_time
+        message.type = link_type
         message.save()
         logger.info("写入消息提醒成功.")
     except Exception as error:

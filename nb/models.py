@@ -194,6 +194,7 @@ class Message(models.Model):
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, null=False, help_text="消息内容")
     obj_id = models.CharField(max_length=50, null=True, help_text="对象ID")
+    type = models.CharField(max_length=20, null=True, help_text="跳转页面")
     date = models.DateTimeField("写入时间", null=True, help_text="写入时间")
     is_look = models.BooleanField(default=False, help_text="是否已读")
     is_delete = models.BooleanField(default=False, help_text="是否删除")
