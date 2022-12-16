@@ -182,8 +182,8 @@ def stock_inflow():
 
 def stock_holder():
     moment = check_stoke_date()
-    if not moment:  # 判断股市开关时间
-        return
+    # if not moment:  # 判断股市开关时间
+    #     return
     hold_list = SharesHold.objects.filter(is_delete=False)
     if not hold_list:
         logger.error("持仓股东数据 持仓 表数据为空.")
