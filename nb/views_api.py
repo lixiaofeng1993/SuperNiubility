@@ -7,7 +7,6 @@
 # @desc :
 from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
-from django_pandas.io import read_frame
 
 from .tasks import stock_history, last_day_stock_history
 from nb.models import ToDo, Shares, StockDetail, InflowStock

@@ -7,7 +7,7 @@
 # @desc :
 import efinance as ef
 
-from nb.models import Shares, StockDetail, InflowStock, Shareholder, StockSector
+from nb.models import Shares, StockDetail, InflowStock, Shareholder, StockSector, ShareholderNumber, StockSuper
 from public.send_ding import profit_and_loss, profit_and_loss_ratio, limit_up
 from public.common import *
 from public.log import logger
@@ -121,7 +121,6 @@ def stock_buy_sell():
         try:
             StockDetail.objects.bulk_create(objs=detail_list)
             logger.info(f"买入卖出托单 保存成功===>>>{len(detail_list)} 条")
-            return hold_list
         except Exception as error:
             logger.error(f"买入卖出托单 保存失败 ===>>> {error}")
             return
@@ -175,15 +174,12 @@ def stock_inflow():
         try:
             InflowStock.objects.bulk_create(objs=inflow_list)
             logger.info(f"资金流入流出 保存成功！===>>> {len(inflow_list)}")
-            return hold_list
         except Exception as error:
             logger.error(f"资金流入流出 保存失败 ===>>> {error}条")
 
 
 def stock_holder():
-    moment = check_stoke_date()
-    # if not moment:  # 判断股市开关时间
-    #     return
+    moment = etc_time()
     hold_list = SharesHold.objects.filter(is_delete=False)
     if not hold_list:
         logger.error("持仓股东数据 持仓 表数据为空.")
@@ -220,9 +216,51 @@ def stock_holder():
         try:
             Shareholder.objects.bulk_create(objs=holder_list)
             logger.info(f"持仓股东数据 保存成功！===>>> {len(holder_list)}条")
-            return hold_list
         except Exception as error:
             logger.error(f"持仓股东数据 保存失败 ===>>> {error}")
+
+
+def stock_holder_number():
+    moment = etc_time()
+    hold_list = SharesHold.objects.filter(is_delete=False)
+    if not hold_list:
+        logger.error("持仓股东数量数据 持仓 表数据为空.")
+        return
+    holder_list = list()
+    for hold in hold_list:
+        holder = ShareholderNumber.objects.filter(
+            Q(code=hold.code) & Q(shares_hold_id=hold.id)).order_by("-end_time").first()
+        if holder:
+            base_date_time = str(holder.end_time)
+        else:
+            base_date_time = ""
+        df = ef.stock.get_latest_holder_number()
+        if df.empty:
+            logger.error(f"持仓股东数量数据 股票 {hold.name} 查询数据为空.")
+            return
+        df_list = df.to_dict(orient="records")
+        for data in df_list:
+            if hold.code == data["股票代码"]:
+                date_time = data["股东户数统计截止日"]
+                if base_date_time and date_time <= base_date_time:  # 避免重复写入
+                    logger.info(date_time)
+                    logger.info(base_date_time)
+                    continue
+                obj = ShareholderNumber(
+                    name=data["股票名称"], code=data["股票代码"], holder_number=data["股东人数"], fluctuate=data["股东人数增减"],
+                    diff_rate=data["较上期变化百分比"], end_time=data["股东户数统计截止日"], avg_amount=data["户均持股市值"],
+                    avg_number=data["户均持股数量"], total_amount=data["总市值"], total_price=data["总股本"],
+                    notice_date=data["公告日期"], shares_hold_id=hold.id
+                )
+                holder_list.append(obj)
+        if holder_list:
+            message_writing(MessageHolderNumber.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
+    if holder_list:
+        try:
+            ShareholderNumber.objects.bulk_create(objs=holder_list)
+            logger.info(f"持仓股东数量数据 保存成功！===>>> {len(holder_list)}条")
+        except Exception as error:
+            logger.error(f"持仓股东数量数据 保存失败 ===>>> {error}")
 
 
 def stock_sector():
@@ -263,9 +301,46 @@ def stock_sector():
         try:
             StockSector.objects.bulk_create(objs=sector_list)
             logger.info(f"所属板块数据 保存成功！===>>> {len(sector_list)}条")
-            return hold_list
         except Exception as error:
             logger.error(f"所属板块数据 保存失败 ===>>> {error}")
+
+
+def stock_super():
+    moment = etc_time()
+    holder = StockSuper.objects.filter(is_delete=False).order_by("-time").first()
+    if holder:
+        base_date_time = str(holder.time).split(" ")[0]
+    else:
+        base_date_time = ""
+    df = ef.stock.get_daily_billboard()
+    if df.empty:
+        logger.error(f"龙虎榜查询数据为空.")
+        return
+    df_list = df.to_dict(orient="records")
+    super_list = list()
+    for data in df_list:
+        date_time = data["上榜日期"]
+        if base_date_time and date_time <= base_date_time:  # 避免重复写入
+            logger.info(date_time)
+            logger.info(base_date_time)
+            continue
+        hold = SharesHold.objects.filter(code=data["股票代码"]).first()
+        hod_id = hold.id if hold else None
+        obj = StockSuper(
+            name=data["股票名称"], code=data["股票代码"], time=data["上榜日期"], unscramble=data["解读"], open_price=data["收盘价"],
+            rise_rate=data["涨跌幅"], turnover_rate=data["换手率"], net_purchase_amount=data["龙虎榜净买额"],
+            purchase_amount=data["龙虎榜买入额"], sales_amount=data["龙虎榜卖出额"], turnover_amount=data["龙虎榜成交额"],
+            total_turnover_amount=data["市场总成交额"], net_purchases_rate=data["净买额占总成交比"],
+            net_turnover_rate=data["成交额占总成交比"], market_equity=data["流通市值"], reason=data["上榜原因"], shares_hold_id=hod_id
+        )
+        super_list.append(obj)
+    if super_list:
+        try:
+            StockSuper.objects.bulk_create(objs=super_list)
+            logger.info(f"龙虎榜 保存成功！===>>> {len(super_list)}条")
+            message_writing(MessageDragon.format(name="龙虎榜"), "", "", moment["today"], Dragon)
+        except Exception as error:
+            logger.error(f"龙虎榜 保存失败 ===>>> {error}")
 
 
 if __name__ == '__main__':

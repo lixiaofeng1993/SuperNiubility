@@ -262,6 +262,34 @@ class Shareholder(models.Model):
         self.save()
 
 
+class ShareholderNumber(models.Model):
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, default=None, help_text="股票名称")
+    code = models.CharField(max_length=20, default=None, help_text="股票代码")
+    holder_number = models.FloatField(default=0.00, help_text="股东人数")
+    fluctuate = models.FloatField(default=0.00, help_text="股东人数增减")
+    diff_rate = models.FloatField(default=0.00, help_text="较上期变化百分比")
+    end_time = models.DateTimeField("股东户数统计截止日", null=True, help_text="股东户数统计截止日")
+    avg_amount = models.FloatField(default=0.00, help_text="户均持股市值")
+    avg_number = models.FloatField(default=0.00, help_text="户均持股数量")
+    total_amount = models.FloatField(default=0.00, help_text="总市值")
+    total_price = models.FloatField(default=0.00, help_text="总股本")
+    notice_date = models.DateTimeField("公告日期", null=True, help_text="公告日期")
+
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
+
+    class Meta:
+        db_table = "shareholder_number"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
 class InflowStock(models.Model):
     """
     资金流入流出
@@ -310,6 +338,39 @@ class StockSector(models.Model):
 
     class Meta:
         db_table = "stock_sector"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
+class StockSuper(models.Model):
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, default=None, help_text="股票名称")
+    code = models.CharField(max_length=20, default=None, help_text="股票代码")
+    time = models.DateTimeField("上榜日期", null=True, help_text="上榜日期")
+    unscramble = models.CharField(max_length=200, default=None, help_text="解读")
+    open_price = models.FloatField(default=0.00, help_text="收盘价")
+    rise_rate = models.FloatField(default=0.00, help_text="涨跌幅")
+    turnover_rate = models.FloatField(default=0.00, help_text="换手率")
+    net_purchase_amount = models.FloatField(default=0.00, help_text="龙虎榜净买额")
+    purchase_amount = models.FloatField(default=0.00, help_text="龙虎榜买入额")
+    sales_amount = models.FloatField(default=0.00, help_text="龙虎榜卖出额")
+    turnover_amount = models.FloatField(default=0.00, help_text="龙虎榜成交额")
+    total_turnover_amount = models.FloatField(default=0.00, help_text="市场总成交额")
+    net_purchases_rate = models.FloatField(default=0.00, help_text="净买额占总成交比")
+    net_turnover_rate = models.FloatField(default=0.00, help_text="成交额占总成交比")
+    market_equity = models.FloatField(default=0.00, help_text="流通市值")
+    reason = models.CharField(max_length=200, default=None, help_text="上榜原因")
+
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
+
+    class Meta:
+        db_table = "stock_super"
 
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True

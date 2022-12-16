@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+
+{% block body %}
+    <div role="alert" id="alert">
+
+    </div>
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="bg-light rounded h-100 p-4">
+                    <h6 class="nav-item mb-4">股票分析</h6>
+                    <p class="nav-item mb-4" style="font-weight: 999;">今日龙虎榜</p>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">股票名称</th>
+                                <th scope="col">上榜日期</th>
+                                <th scope="col">解读</th>
+                                <th scope="col">收盘价</th>
+                                <th scope="col">涨跌幅</th>
+                                <th scope="col">龙虎榜净买额</th>
+                                <th scope="col">龙虎榜买入额</th>
+                                <th scope="col">龙虎榜卖出额</th>
+                                <th scope="col">龙虎榜成交额</th>
+                                <th scope="col">市场总成交额</th>
+                                <th scope="col">净买额占总成交比</th>
+                                <th scope="col">成交额占总成交比</th>
+                                <th scope="col">换手率</th>
+                                <th scope="col">流通市值</th>
+                                <th scope="col">上榜原因</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for object in stock_list %}
+                                <tr>
+                                    <th scope="row">{{ forloop.counter }}</th>
+                                    <td>{{ object.name }}</td>
+                                    <td>{{ object.time }}</td>
+                                    <td>{{ object.unscramble }}</td>
+                                    {% if "-" in object.rise_rate %}
+                                        <td style="color: green;">{{ object.open_price }}</td>
+                                    {% else %}
+                                        <td style="color: red;">{{ object.open_price }}</td>
+                                    {% endif %}
+                                    {% if "-" in object.rise_rate %}
+                                        <td style="color: green;">{{ object.rise_rate }}</td>
+                                    {% else %}
+                                        <td style="color: red;">{{ object.rise_rate }}</td>
+                                    {% endif %}
+                                    {% if "-" in object.net_purchase_amount %}
+                                        <td style="color: green;">{{ object.net_purchase_amount }}</td>
+                                    {% else %}
+                                        <td style="color: red;">{{ object.net_purchase_amount }}</td>
+                                    {% endif %}
+                                    <td style="color: red;">{{ object.purchase_amount }}</td>
+                                    <td style="color: green;">{{ object.sales_amount }}</td>
+                                    <td>{{ object.turnover_amount }}</td>
+                                    <td>{{ object.total_turnover_amount }}</td>
+                                    {% if "-" in object.net_purchases_rate %}
+                                        <td style="color: green;">{{ object.net_purchases_rate }}</td>
+                                    {% else %}
+                                        <td style="color: red;">{{ object.net_purchases_rate }}</td>
+                                    {% endif %}
+                                    <td>{{ object.net_turnover_rate }}</td>
+                                    <td>{{ object.turnover_rate }}</td>
+                                    <td>{{ object.market_equity }}</td>
+                                    <td>{{ object.reason }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{% url 'stock' %}?page={{ page }}" type="button" class="btn btn-primary">返回</a>
+                    <a href="javascript:location.reload();" type="button" class="btn btn-primary">刷新</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

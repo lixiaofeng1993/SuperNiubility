@@ -6,7 +6,8 @@ from django.db.models import Q  # 与或非 查询
 from django.contrib.auth.decorators import login_required
 from django_pandas.io import read_frame
 
-from nb.models import ToDo, SharesHold, Shares, StockDetail, uuid, InflowStock, StockSector, Shareholder
+from nb.models import ToDo, SharesHold, Shares, StockDetail, uuid, InflowStock, StockSector, Shareholder, StockSuper, \
+    ShareholderNumber
 from public.auth_token import auth_token
 from public.common import *
 from public.response import JsonResponse
@@ -250,8 +251,6 @@ def stock_look(request, stock_id):
         "flag": False,
         "obj": hold,
     })
-    repr = "股票"
-    operation_record(request, hold, hold.name, repr, "change")
 
     def font_color(number):  # 字体颜色
         if number > 0:
@@ -363,6 +362,22 @@ def stock_look(request, stock_id):
             sector.update_date = sector.update_date.strftime("%Y-%m-%d %H:%M")
             sectors.append(sector)
         sector_list_diff.append(sector.sector_name)
+    # 龙虎榜
+    dragon_obj = StockSuper.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
+    # 持仓股东数量数据
+    holder_obj = ShareholderNumber.objects.filter(Q(is_delete=False) &
+                                                  Q(shares_hold_id=hold.id)).order_by("-end_time").first()
+    holder_number = {
+        "holder_number": round(holder_obj.holder_number),
+        "fluctuate": round(holder_obj.fluctuate, 2),
+        "diff_rate": handle_rate(holder_obj.diff_rate),
+        "end_time": holder_obj.end_time.strftime("%Y-%m-%d"),
+        "avg_amount": handle_price(holder_obj.avg_amount),
+        "avg_number": handle_price(holder_obj.avg_number),
+        "total_amount": handle_price(holder_obj.total_amount),
+        "total_price": handle_price(holder_obj.total_price),
+        "notice_date": holder_obj.notice_date.strftime("%Y-%m-%d"),
+    }
     info.update({
         "detail": stock_detail,
         "inflow": {
@@ -400,6 +415,8 @@ def stock_look(request, stock_id):
             },
         },
         "holder": holder_list,
+        "dragon_obj": dragon_obj,
+        "holder_number": holder_number,
         "sector": sectors,
         "update_time": format_time(detail.time),
     })
@@ -438,6 +455,39 @@ def chart_all(request):
         })
         Message.objects.filter(Q(is_delete=False) & Q(is_look=False)).update(is_look=True)
         return render(request, "home/stock/chart_all.html", info)
+
+
+@login_required
+def dragon(request):
+    if request.method == GET:
+        info = request_get_search(request)
+        moment = check_stoke_date()
+        last_day = None
+        if moment:
+            last_day = moment["today"]
+        else:
+            stock = StockSuper.objects.filter(is_delete=False).order_by("-time").first()
+            if stock:
+                last_day = stock.time
+        stock_list = StockSuper.objects.filter(Q(is_delete=False) & Q(time=last_day)).order_by("open_price")
+        for stock in stock_list:
+            stock.name = stock.name + "\n" + stock.code
+            stock.time = stock.time.strftime("%Y-%m-%d")
+            stock.rise_rate = handle_rate(stock.rise_rate)
+            stock.net_purchase_amount = handle_price(stock.net_purchase_amount)
+            stock.purchase_amount = handle_price(stock.purchase_amount)
+            stock.sales_amount = handle_price(stock.sales_amount)
+            stock.turnover_amount = handle_price(stock.turnover_amount)
+            stock.total_turnover_amount = handle_price(stock.total_turnover_amount)
+            stock.net_purchases_rate = handle_rate(stock.net_purchases_rate)
+            stock.net_turnover_rate = handle_rate(stock.net_turnover_rate)
+            stock.market_equity = handle_price(stock.market_equity)
+            stock.turnover_rate = handle_rate(stock.turnover_rate)
+        info.update({
+            "stock_list": stock_list
+        })
+        Message.objects.filter(Q(is_delete=False) & Q(is_look=False) & Q(type=Dragon)).update(is_look=True)
+        return render(request, "home/stock/dragon.html", info)
 
 
 @auth_token()

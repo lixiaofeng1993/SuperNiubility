@@ -211,7 +211,11 @@
                         return
                     } else {
                         if (flag_str) {
-                            corner_span_obj.find("i").attr("style", "width: 16px;")
+                            if (number > 99) {
+                                corner_span_obj.find("i").attr("style", "width: 26px;")
+                            } else {
+                                corner_span_obj.find("i").attr("style", "width: 16px;")
+                            }
                             corner_obj.text(number);
                             console.log(number)
                         } else {
@@ -233,8 +237,14 @@
                                 `<small>` + data_list[i].now_time + `</small>` +
                                 '</a>' +
                                 `<hr class="dropdown-divider">`;
+                        } else if (data_list[i].type === "Dragon") {
+                            content += `<a href="{% url 'dragon' %}" class="dropdown-item">` +
+                                `<h6 class="fw-normal mb-0">` + data_list[i].name + `</h6>` +
+                                `<small>` + data_list[i].now_time + `</small>` +
+                                '</a>' +
+                                `<hr class="dropdown-divider">`;
                         } else {
-                            content += `<a href="/nb/stock/chart/${data_list[i].obj_id}/" class="dropdown-item">` +
+                            content += `<a href="{% url 'stock' %}" class="dropdown-item">` +
                                 `<h6 class="fw-normal mb-0">` + data_list[i].name + `</h6>` +
                                 `<small>` + data_list[i].now_time + `</small>` +
                                 '</a>' +

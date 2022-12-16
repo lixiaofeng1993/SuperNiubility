@@ -10,7 +10,7 @@ from django.db.models import Q  # 与或非 查询
 
 from nb.models import ToDo, Shares
 from public.stock_api import ef, delete_cache, etc_time, cache, StockEndTime, stock_today, stock_buy_sell, stock_inflow, \
-    stock_holder as holder, stock_sector
+    stock_holder as holder, stock_sector, stock_holder_number, stock_super
 from public.log import logger
 
 
@@ -109,3 +109,4 @@ def stock():
 @shared_task()
 def stock_holder():
     holder()
+    stock_super()

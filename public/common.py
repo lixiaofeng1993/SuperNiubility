@@ -277,7 +277,7 @@ def home_poetry():
     return obj_list
 
 
-def message_writing(name: str, user_id: int, stock_id: str, date_time: datetime, link_type: str):
+def message_writing(name: str, user_id, stock_id: str, date_time: datetime, link_type: str):
     """
     写入消息提醒
     """
@@ -372,6 +372,18 @@ def handle_cache(request, flag: str):
     else:
         hold_list = model.filter(is_delete=False)
     return hold_list, user_id, stock_id
+
+
+def handle_price(price):
+    if price >= 100000000 or price <= -100000000:
+        price = str(round(price / 100000000, 2)) + "亿"
+    elif price >= 10000 or price <= -10000:
+        price = str(round(price / 10000, 2)) + "万"
+    return price
+
+
+def handle_rate(rate):
+    return str(round(rate, 2)) + "%"
 
 
 def pagination_data(paginator, page, is_paginated):

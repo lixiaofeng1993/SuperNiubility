@@ -146,11 +146,15 @@ MessageToday = "【{name}】今日走势K线数据更新"
 MessageKDJ = "【{name}】今日KDJ数据更新"
 MessageInflow = "【{name}】资金流入流出数据更新"
 MessageHolder = "【{name}】持仓股东数据更新"
+MessageHolderNumber = "【{name}】持仓股东数量数据更新"
 MessageSector = "【{name}】所属板块数据更新"
+MessageDragon = "【{name}】数据更新"
 # 股票详情页面
 Detail = "Detail"
 # 股票图表页面
 Chart = "Chart"
+# 龙虎榜页面
+Dragon = "Dragon"
 
 # 登录背景图片
 BackgroundName = "http://127.0.0.1:8000/media/banner{num}.png" if settings.DEBUG else "http://121.41.54.234//banner{num}.png"

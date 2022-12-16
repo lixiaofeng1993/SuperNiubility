@@ -44,6 +44,21 @@
                     <h6 class="nav-item mb-4">股票分析</h6>
                     <form>
                         <span style="font-size: 12px;">{{ update_time }}更新</span>
+                        {% if dragon_obj %}
+                            <div class="bg-light rounded h-100 p-4">
+                                <p class="nav-item mb-4" id="text-style">龙虎榜</p>
+                                <div class="input-group mb-3">
+                                    <span id="text">解读：</span>
+                                    <span id="text-style">
+                                    {{ dragon_obj.unscramble }}
+                                    </span>
+                                    <span id="text">上榜原因：</span>
+                                    <span id="text-style">
+                                    {{ dragon_obj.reason }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
                         <div class="bg-light rounded h-100 p-4">
                             <p class="nav-item mb-4" id="text-style">详情</p>
                             <div class="input-group mb-3">
@@ -239,6 +254,43 @@
                                 </div>
                             </div>
                         </div>
+                        {% if holder_number %}
+                            <div class="bg-light rounded h-100 p-4">
+                                <p class="nav-item mb-4" id="text-style">股东数量</p>
+                                <div class="col-sm-12 col-xl-12">
+                                    <div class="bg-light rounded h-100 p-4">
+                                        <table class="table table-borderless">
+                                            <thead>
+                                            <tr>
+                                                <th scope="col">股东人数</th>
+                                                <th scope="col">股东人数增减</th>
+                                                <th scope="col">较上期变化百分比</th>
+                                                <th scope="col">股东户数统计截止日</th>
+                                                <th scope="col">户均持股市值</th>
+                                                <th scope="col">户均持股数量</th>
+                                                <th scope="col">总市值</th>
+                                                <th scope="col">总股本</th>
+                                                <th scope="col">公告日期</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr>
+                                                <td>{{ holder_number.holder_number }}</td>
+                                                <td>{{ holder_number.fluctuate }}</td>
+                                                <td>{{ holder_number.diff_rate }}</td>
+                                                <td>{{ holder_number.end_time }}</td>
+                                                <td>{{ holder_number.avg_amount }}</td>
+                                                <td>{{ holder_number.avg_number }}</td>
+                                                <td>{{ holder_number.total_amount }}</td>
+                                                <td>{{ holder_number.total_price }}</td>
+                                                <td>{{ holder_number.notice_date }}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
                         <a href="{% url 'stock' %}?page={{ page }}" type="button" class="btn btn-primary">返回</a>
                         <a href="javascript:location.reload();" type="button" class="btn btn-primary">刷新</a>
                     </form>
