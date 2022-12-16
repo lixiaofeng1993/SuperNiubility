@@ -109,4 +109,5 @@ def stock():
 @shared_task()
 def stock_holder():
     holder()
+    stock_holder_number()
     stock_super()
