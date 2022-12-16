@@ -367,6 +367,7 @@ def stock_look(request, stock_id):
     # 持仓股东数量数据
     holder_obj = ShareholderNumber.objects.filter(Q(is_delete=False) &
                                                   Q(shares_hold_id=hold.id)).order_by("-end_time").first()
+
     holder_number = {
         "holder_number": round(holder_obj.holder_number),
         "fluctuate": round(holder_obj.fluctuate, 2),
@@ -377,7 +378,7 @@ def stock_look(request, stock_id):
         "total_amount": handle_price(holder_obj.total_amount),
         "total_price": handle_price(holder_obj.total_price),
         "notice_date": holder_obj.notice_date.strftime("%Y-%m-%d"),
-    }
+    } if holder_obj else {}
     info.update({
         "detail": stock_detail,
         "inflow": {
