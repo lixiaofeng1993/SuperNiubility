@@ -321,8 +321,6 @@ def stock_super():
     for data in df_list:
         date_time = data["上榜日期"]
         if base_date_time and date_time <= base_date_time:  # 避免重复写入
-            logger.info(date_time)
-            logger.info(base_date_time)
             continue
         hold = SharesHold.objects.filter(code=data["股票代码"]).first()
         hod_id = hold.id if hold else None
