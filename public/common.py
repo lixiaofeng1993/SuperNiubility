@@ -109,12 +109,12 @@ def etc_time():
         "year": today.year,
         "month": today.month,
         "day": today.day,
-        "no_time": datetime(year, month, day, 9, 0, 0),
-        "start_time": datetime(year, month, day, 9, 25, 0),
-        "end_time": datetime(year, month, day, 15, 6, 30),
-        "stock_time": datetime(year, month, day, 15, 0, 0),
-        "ap_time": datetime(year, month, day, 11, 36, 30),
-        "pm_time": datetime(year, month, day, 13, 0, 0),
+        "no_time": datetime(year, month, day, 9, 0, 0),  # 禁止添加时间
+        "start_time": datetime(year, month, day, 9, 15, 0),  # 定时任务开始时间
+        "end_time": datetime(year, month, day, 16, 0, 0),  # 定时任务结束时间
+        "stock_time": datetime(year, month, day, 15, 0, 0),  # 股市停止时间
+        "ap_time": datetime(year, month, day, 11, 40, 00),  # 股市上午停止时间
+        "pm_time": datetime(year, month, day, 13, 0, 0),  # 股市下午开始时间
     }
     return moment
 

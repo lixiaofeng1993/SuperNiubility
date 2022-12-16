@@ -403,6 +403,8 @@ def stock_look(request, stock_id):
         "sector": sectors,
         "update_time": format_time(detail.time),
     })
+    Message.objects.filter(Q(is_delete=False) & Q(is_look=False) &
+                           Q(obj_id=stock_id) & Q(type=Detail)).update(is_look=True)
     return render(request, "home/stock/look_stock.html", info)
 
 
@@ -419,7 +421,8 @@ def chart_look(request, stock_id):
             "obj": hold,
             "update_time": format_time(shares.update_date),
         })
-        Message.objects.filter(Q(is_delete=False) & Q(is_look=False) & Q(obj_id=stock_id)).update(is_look=True)
+        Message.objects.filter(Q(is_delete=False) & Q(is_look=False) &
+                               Q(obj_id=stock_id) & Q(type=Chart)).update(is_look=True)
         return render(request, "home/stock/chart_stock.html", info)
 
 
