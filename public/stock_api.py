@@ -155,7 +155,7 @@ def stock_inflow():
             if date_time:
                 if base_date_time and date_time <= base_date_time:  # 避免重复写入
                     continue
-                if base_date and str(moment["today"]) == base_date:
+                if base_date and not base_date_time and str(moment["today"]) == base_date:
                     continue
                 _date = date_time.split(" ")[0]
                 _time = date_time
