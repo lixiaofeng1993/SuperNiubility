@@ -40,7 +40,7 @@ app.conf.beat_schedule = {
     'stock_holder': {
         # 任务路径
         'task': 'nb.tasks.stock_holder',
-        'schedule': crontab(minute=00, hour=8),
+        'schedule': crontab(minute=25, hour=9),
         'args': (),
     },
 }
