@@ -379,6 +379,8 @@ def handle_price(price):
         price = str(round(price / 100000000, 2)) + "亿"
     elif price >= 10000 or price <= -10000:
         price = str(round(price / 10000, 2)) + "万"
+    else:
+        price = round(price, 2)
     return price
 
 
