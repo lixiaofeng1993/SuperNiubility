@@ -298,8 +298,8 @@ def stock_look(request, stock_id):
         "top_price": detail.top_price,
         "down_price": detail.down_price,
         "turnover_rate": detail.turnover_rate,
-        "traNumber": detail.traNumber,
-        "traAmount": round(detail.traAmount / 10000),
+        "traNumber": handle_price(detail.traNumber),
+        "traAmount": handle_price(detail.traAmount),
         "yestodEndPri": detail.yestodEndPri,
     }
     # 资金流向

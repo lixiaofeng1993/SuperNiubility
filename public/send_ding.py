@@ -110,7 +110,7 @@ def limit_up(hold, flag: bool):
     涨跌停
     """
     if flag:
-        text = "涨停拉，福之祸所系，赶紧处理的吧！"
+        text = "涨停啦，福之祸所系，赶紧处理的吧！"
         color = "#FF0000"
     else:
         text = "跌停喽，祸之福所依，表着急。"

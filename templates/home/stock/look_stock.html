@@ -44,23 +44,7 @@
                     <h6 class="nav-item mb-4">股票分析</h6>
                     <form>
                         <span style="font-size: 12px;">{{ update_time }}更新</span>
-                        {% if dragon_obj %}
-                            <div class="bg-light rounded h-100 p-4">
-                                <p class="nav-item mb-4" id="text-style"><a href="{% url 'dragon' %}">龙虎榜</a></p>
-                                <div class="input-group mb-3">
-                                    <span id="text">解读：</span>
-                                    <span id="text-style">
-                                    {{ dragon_obj.unscramble }}
-                                    </span>
-                                    <span id="text">上榜原因：</span>
-                                    <span id="text-style">
-                                    {{ dragon_obj.reason }}
-                                    </span>
-                                </div>
-                            </div>
-                        {% endif %}
                         <div class="bg-light rounded h-100 p-4">
-                            <p class="nav-item mb-4" id="text-style">详情</p>
                             <div class="input-group mb-3">
                                 <span id="text">股票：</span><span id="text-style">{{ obj.name }}</span>
                                 <span id="text">代码：</span><span id="text-style">{{ obj.code }}</span>
@@ -86,17 +70,26 @@
                                     <span id="text-style">{{ obj.today_price }}</span>
                                 {% endif %}
                                 <i>元</i>
-                                <span id="text">涨停：</span><span id="text-style" style="color: red">
-                                {{ detail.top_price }}</span><i>元/股</i>
-                                <span id="text">跌停：</span><span id="text-style" style="color: green">
-                                {{ detail.down_price }}</span><i>元/股</i>
                             </div>
+                        </div>
+                        {% if dragon_obj %}
+                            <div class="bg-light rounded h-100 p-4">
+                                <p class="nav-item mb-4" id="text-style"><a href="{% url 'dragon' %}">龙虎榜</a></p>
+                                <div class="input-group mb-3">
+                                    <span id="text">解读：</span>
+                                    <span id="text-style">
+                                    {{ dragon_obj.unscramble }}
+                                    </span>
+                                    <span id="text">上榜原因：</span>
+                                    <span id="text-style">
+                                    {{ dragon_obj.reason }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="bg-light rounded h-100 p-4">
+                            <p class="nav-item mb-4" id="text-style">盘口</p>
                             <div class="input-group mb-3">
-                                <span id="text">今开：</span>
-                                <span id="text-style" style="color:{{ detail.todayStartPri.color }};">
-                                {{ detail.todayStartPri.todayStartPri }} 元/股
-                                </span>
-                                <span id="text">昨价：</span><span id="text-style">{{ detail.yestodEndPri }} 元/股</span>
                                 <span id="text">最新：</span>
                                 <span id="text-style" style="color: {{ detail.nowPri.color }}">
                                     {{ detail.nowPri.nowPri }} 元/股
@@ -105,6 +98,19 @@
                                 <span id="text-style" style="color: {{ detail.avg_price.color }}">
                                     {{ detail.avg_price.avg_price }} 元/股
                                 </span>
+                                <span id="text">涨幅：</span>
+                                <span id="text-style" style="color: {{ detail.increPer.color }}">
+                                    {{ detail.increPer.increPer }} %
+                                </span>
+                                <span id="text">跌涨：</span>
+                                <span id="text-style" style="color: {{ detail.increase.color }}">
+                                    {{ detail.increase.increase }} 元
+                                </span>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span id="text">总手：</span><span id="text-style">{{ detail.traNumber }}</span>
+                                <span id="text">金额：</span><span id="text-style">{{ detail.traAmount }}</span>
+                                <span id="text">换手：</span><span id="text-style">{{ detail.turnover_rate }} %</span>
                             </div>
                             <div class="input-group mb-3">
                                 <span id="text">最高：</span>
@@ -115,19 +121,17 @@
                                 <span id="text-style" style="color: {{ detail.todayMin.color }}">
                                     {{ detail.todayMin.todayMin }} 元/股
                                 </span>
-                                <span id="text">换手：</span><span id="text-style">{{ detail.turnover_rate }} %</span>
+                                <span id="text">今开：</span>
+                                <span id="text-style" style="color:{{ detail.todayStartPri.color }};">
+                                {{ detail.todayStartPri.todayStartPri }} 元/股
+                                </span>
+                                <span id="text">昨价：</span><span id="text-style">{{ detail.yestodEndPri }} 元/股</span>
                             </div>
                             <div class="input-group mb-3">
-                                <span id="text">涨幅：</span>
-                                <span id="text-style" style="color: {{ detail.increPer.color }}">
-                                    {{ detail.increPer.increPer }} %
-                                </span>
-                                <span id="text">涨额：</span>
-                                <span id="text-style" style="color: {{ detail.increase.color }}">
-                                    {{ detail.increase.increase }} 元
-                                </span>
-                                <span id="text">成交量：</span><span id="text-style">{{ detail.traNumber }} 手</span>
-                                <span id="text">成交额：</span><span id="text-style">{{ detail.traAmount }} 万元</span>
+                                <span id="text">涨停：</span><span id="text-style" style="color: red">
+                                {{ detail.top_price }}</span><i>元/股</i>
+                                <span id="text">跌停：</span><span id="text-style" style="color: green">
+                                {{ detail.down_price }}</span><i>元/股</i>
                             </div>
                         </div>
                         <div class="bg-light rounded h-100 p-4">
