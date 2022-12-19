@@ -677,7 +677,7 @@ def cost_chart(request):
 
         })
         logger.info("查询持仓成本成功.")
-        cache.set(TodayPrice.format(stock_id=stock_id), dataset, surplus_second())
+        cache.set(TodayCostPrice.format(stock_id=stock_id), dataset, surplus_second())
         return JsonResponse.OK(data=dataset)
 
 
