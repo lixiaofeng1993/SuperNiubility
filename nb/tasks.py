@@ -128,6 +128,5 @@ def stock_today_price():
         try:
             StockTodayPrice.objects.bulk_create(price_list)
             logger.info(f"持仓股票日盈数据 保存成功 ===>>> {len(price_list)} 条")
-            return hold_list
         except Exception as error:
             logger.error(f"持仓股票日盈数据 保存失败 ===>>> {error}")
