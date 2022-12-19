@@ -288,6 +288,7 @@ def message_writing(name: str, user_id, stock_id: str, date_time: datetime, link
         cache.delete(TodayBuySellChart.format(stock_id=stock_id))
         cache.delete(TodayKDJChart.format(user_id=user_id))
         cache.delete(TodayInflowChart.format(stock_id=stock_id))
+        cache.delete(TodayPrice.format(stock_id=stock_id))
         message = Message()
         message.name = name
         message.obj_id = stock_id

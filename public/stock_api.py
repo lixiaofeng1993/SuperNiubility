@@ -73,7 +73,6 @@ def stock_today():
         try:
             Shares.objects.bulk_create(objs=shares_list)
             logger.info(f"今日走势K线 保存成功 ===>>> {len(shares_list)} 条")
-            return hold_list
         except Exception as error:
             logger.error(f"今日走势K线 保存失败 ===>>> {error}")
 
