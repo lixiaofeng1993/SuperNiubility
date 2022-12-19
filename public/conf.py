@@ -49,6 +49,10 @@ StockEndTime = "StockEndTime-{user_id}"
 TodayBuySellChart = "TodayBuySellChart-{stock_id}"
 # 资金流入流出
 TodayInflowChart = "TodayInflowChart-{stock_id}"
+# 日盈
+TodayPrice = "TodayPrice-{stock_id}"
+# 持股成本
+TodayCostPrice = "TodayCostPrice-{stock_id}"
 # kdj
 TodayKDJChart = "TodayKDJChart-{user_id}"
 # 验证码缓存

@@ -6,8 +6,7 @@ from django.db.models import Q  # 与或非 查询
 from django.contrib.auth.decorators import login_required
 from django_pandas.io import read_frame
 
-from nb.models import ToDo, SharesHold, Shares, StockDetail, uuid, InflowStock, StockSector, Shareholder, StockSuper, \
-    ShareholderNumber
+from nb.models import *
 from public.auth_token import auth_token
 from public.common import *
 from public.response import JsonResponse
@@ -204,15 +203,29 @@ def stock_add(request):
         try:
             user_id = request.session.get("user_id")
             if stock_id:
-                if is_detail:
-                    hold = model.filter(Q(is_detail=True) & Q(is_delete=False)).first()
-                    if hold:
-                        hold.is_detail = False
-                        hold.save()
-                model.filter(Q(id=stock_id) & Q(is_delete=False)).update(
-                    name=name, code=code, number=number, cost_price=cost_price, color=color, user_id=user_id,
-                    is_detail=is_detail, days=days
-                )
+                # if is_detail:
+                #     hold = model.filter(Q(is_detail=True) & Q(is_delete=False)).first()
+                #     if hold:
+                #         hold.is_detail = False
+                #         hold.save()
+                hold = model.filter(Q(id=stock_id) & Q(is_delete=False)).first()
+                try:
+                    if str(hold.cost_price) != cost_price:
+                        change = StockChange()
+                        change.name = hold.name
+                        change.code = hold.code
+                        change.number = hold.number
+                        change.cost_price = hold.cost_price
+                        change.change_date = moment["now"]
+                        change.shares_hold_id = hold.id
+                        change.save()
+                        cache.delete(TodayCostPrice.format(stock_id=hold.id))
+                    model.filter(Q(id=stock_id) & Q(is_delete=False)).update(
+                        name=name, code=code, number=number, cost_price=cost_price, color=color, user_id=user_id,
+                        is_detail=is_detail, days=days
+                    )
+                except Exception as error:
+                    return JsonResponse.DatabaseException(data=str(error))
             else:
                 hold = SharesHold()
                 hold.name = name
@@ -447,6 +460,7 @@ def chart_look(request, stock_id):
         info.update({
             "obj": hold,
             "update_time": format_time(shares.update_date),
+            "flag": hold.cost_price
         })
         Message.objects.filter(Q(is_delete=False) & Q(is_look=False) &
                                Q(obj_id=stock_id) & Q(type=Chart)).update(is_look=True)

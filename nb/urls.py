@@ -35,6 +35,8 @@ urlpatterns = [
     path("stock/twenty/chart/", views_api.twenty_chart, name="twenty_chart"),
     path("stock/buy/sell/", views_api.buy_sell_chart, name="buy_sell"),
     path("stock/inflow/", views_api.inflow_chart, name="inflow_chart"),
+    path("stock/price/", views_api.price_chart, name="price_chart"),
+    path("stock/cost/", views_api.cost_chart, name="cost_chart"),
 
     path("record/", views.RecordIndex.as_view(), name="record"),
     path("record/five/", views_api.record, name="record_five"),

@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 
 from .tasks import stock_history, last_day_stock_history
-from nb.models import ToDo, Shares, StockDetail, InflowStock
+from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange
 from public.auth_token import auth_token
 from public.common import *
 from public.response import JsonResponse
@@ -609,6 +609,72 @@ def inflow_chart(request):
         logger.info(f"查询 {hold.name} 当天资金流入流出股票数据成功.")
         cache.set(TodayInflowChart.format(stock_id=stock_id), datasets, surplus_second())
         return JsonResponse.OK(data=datasets)
+
+
+@auth_token()
+def price_chart(request):
+    if request.method == POST:
+        datasets, user_id, stock_id = handle_cache(request, "price")
+        if isinstance(datasets, dict):
+            return JsonResponse.OK(data=datasets)
+        if not stock_id:
+            return JsonResponse.CheckException()
+        hold = datasets[0]
+        dataset = dict()
+        data_list = list()
+        labels = list()
+        price_list = StockTodayPrice.objects.filter(Q(is_delete=False) &
+                                                    Q(shares_hold_id=hold.id)).order_by("update_date")
+        name = hold.name
+        color = hold.color
+        for price in price_list:
+            data_list.append(price.today_price)
+            update_date = str(price.update_date).split(" ")[0]
+            labels.append(update_date)
+        dataset.update({
+            name: {
+                "data": data_list,
+                "color": color,
+            },
+            "labels": labels,
+
+        })
+        logger.info("查询持仓日盈成功.")
+        cache.set(TodayPrice.format(stock_id=stock_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
+
+
+@auth_token()
+def cost_chart(request):
+    if request.method == POST:
+        datasets, user_id, stock_id = handle_cache(request, "cost")
+        if isinstance(datasets, dict):
+            return JsonResponse.OK(data=datasets)
+        if not stock_id:
+            return JsonResponse.CheckException()
+        hold = datasets[0]
+        dataset = dict()
+        data_list = list()
+        labels = list()
+        price_list = StockChange.objects.filter(Q(is_delete=False) &
+                                                Q(shares_hold_id=hold.id)).order_by("change_date")
+        name = hold.name
+        color = hold.color
+        for price in price_list:
+            data_list.append(price.cost_price)
+            change_date = str(price.change_date)
+            labels.append(change_date)
+        dataset.update({
+            name: {
+                "data": data_list,
+                "color": color,
+            },
+            "labels": labels,
+
+        })
+        logger.info("查询持仓成本成功.")
+        cache.set(TodayPrice.format(stock_id=stock_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
 
 
 @auth_token()

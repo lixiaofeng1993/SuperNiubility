@@ -8,9 +8,9 @@
 from celery import Task, shared_task
 from django.db.models import Q  # 与或非 查询
 
-from nb.models import ToDo, Shares
+from nb.models import ToDo, Shares, StockTodayPrice, SharesHold
 from public.stock_api import ef, delete_cache, etc_time, cache, StockEndTime, stock_today, stock_buy_sell, stock_inflow, \
-    stock_holder as holder, stock_sector, stock_holder_number, stock_super
+    stock_holder as holder, stock_sector, stock_holder_number, stock_super, TodayPrice
 from public.log import logger
 
 
@@ -111,3 +111,23 @@ def stock_holder():
     holder()
     stock_holder_number()
     stock_super()
+
+
+@shared_task()
+def stock_today_price():
+    hold_list = SharesHold.objects.filter(is_delete=False)
+    price_list = list()
+    for hold in hold_list:
+        if hold.today_price:
+            obj = StockTodayPrice(
+                name=hold.name, code=hold.code, today_price=hold.today_price, shares_hold_id=hold.id
+            )
+            price_list.append(obj)
+            cache.delete(TodayPrice.format(stock_id=hold.id))
+    if price_list:
+        try:
+            StockTodayPrice.objects.bulk_create(price_list)
+            logger.info(f"持仓股票日盈数据 保存成功 ===>>> {len(price_list)} 条")
+            return hold_list
+        except Exception as error:
+            logger.error(f"持仓股票日盈数据 保存失败 ===>>> {error}")

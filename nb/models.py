@@ -77,6 +77,54 @@ class SharesHold(models.Model):
         self.save()
 
 
+class StockChange(models.Model):
+    """
+    持仓成本变更
+    """
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, null=False, help_text="持仓股票名称")
+    code = models.CharField(max_length=20, null=False, help_text="持仓股票代码")
+    number = models.IntegerField(default=0, null=False, help_text="持仓数量")
+    cost_price = models.FloatField(default=0.00, null=False, help_text="成本价")
+    change_date = models.DateTimeField("变更时间", null=True, help_text="变更时间")
+
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
+
+    class Meta:
+        db_table = "stock_change"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
+class StockTodayPrice(models.Model):
+    """
+    持仓日盈
+    """
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, null=False, help_text="持仓股票名称")
+    code = models.CharField(max_length=20, null=False, help_text="持仓股票代码")
+    today_price = models.FloatField(default=0.00, null=True, help_text="当天盈亏")
+
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
+
+    class Meta:
+        db_table = "stock_today_price"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
 class Shares(models.Model):
     """
     股票详情

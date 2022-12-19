@@ -72,7 +72,7 @@ def stock_today():
     if shares_list:
         try:
             Shares.objects.bulk_create(objs=shares_list)
-            logger.info(f"今日走势K线 保存成功===>>>{len(shares_list)} 条")
+            logger.info(f"今日走势K线 保存成功 ===>>> {len(shares_list)} 条")
             return hold_list
         except Exception as error:
             logger.error(f"今日走势K线 保存失败 ===>>> {error}")
@@ -136,7 +136,7 @@ def stock_buy_sell():
     if detail_list:
         try:
             StockDetail.objects.bulk_create(objs=detail_list)
-            logger.info(f"买入卖出托单 保存成功===>>>{len(detail_list)} 条")
+            logger.info(f"买入卖出托单 保存成功 ===>>> {len(detail_list)} 条")
         except Exception as error:
             logger.error(f"买入卖出托单 保存失败 ===>>> {error}")
             return
@@ -189,7 +189,7 @@ def stock_inflow():
     if inflow_list:
         try:
             InflowStock.objects.bulk_create(objs=inflow_list)
-            logger.info(f"资金流入流出 保存成功！===>>> {len(inflow_list)}")
+            logger.info(f"资金流入流出 保存成功 ===>>> {len(inflow_list)}")
         except Exception as error:
             logger.error(f"资金流入流出 保存失败 ===>>> {error}条")
 
@@ -231,7 +231,7 @@ def stock_holder():
     if holder_list:
         try:
             Shareholder.objects.bulk_create(objs=holder_list)
-            logger.info(f"持仓股东数据 保存成功！===>>> {len(holder_list)}条")
+            logger.info(f"持仓股东数据 保存成功 ===>>> {len(holder_list)}条")
         except Exception as error:
             logger.error(f"持仓股东数据 保存失败 ===>>> {error}")
 
@@ -272,7 +272,7 @@ def stock_holder_number():
     if holder_list:
         try:
             ShareholderNumber.objects.bulk_create(objs=holder_list)
-            logger.info(f"持仓股东数量数据 保存成功！===>>> {len(holder_list)}条")
+            logger.info(f"持仓股东数量数据 保存成功 ===>>> {len(holder_list)}条")
         except Exception as error:
             logger.error(f"持仓股东数量数据 保存失败 ===>>> {error}")
 
@@ -314,7 +314,7 @@ def stock_sector():
     if sector_list:
         try:
             StockSector.objects.bulk_create(objs=sector_list)
-            logger.info(f"所属板块数据 保存成功！===>>> {len(sector_list)}条")
+            logger.info(f"所属板块数据 保存成功 ===>>> {len(sector_list)}条")
         except Exception as error:
             logger.error(f"所属板块数据 保存失败 ===>>> {error}")
 
@@ -349,7 +349,7 @@ def stock_super():
     if super_list:
         try:
             StockSuper.objects.bulk_create(objs=super_list)
-            logger.info(f"龙虎榜 保存成功！===>>> {len(super_list)}条")
+            logger.info(f"龙虎榜 保存成功 ===>>> {len(super_list)}条")
             message_writing(MessageDragon.format(name="龙虎榜"), "", "", moment["today"], Dragon)
         except Exception as error:
             logger.error(f"龙虎榜 保存失败 ===>>> {error}")

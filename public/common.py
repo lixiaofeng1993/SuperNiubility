@@ -146,7 +146,7 @@ def check_stoke_date():
     if moment["now"] < moment["start_time"] or moment["now"] > moment["end_time"] or \
             moment["ap_time"] < moment["now"] < moment["pm_time"]:
         logger.info(f"当前时间 {moment['now']} 未开盘!!!")
-        return
+        # return
     return moment
 
 
@@ -351,6 +351,10 @@ def handle_cache(request, flag: str):
             datasets = cache.get(TodayBuySellChart.format(stock_id=stock_id))
         elif flag == "inflow":
             datasets = cache.get(TodayInflowChart.format(stock_id=stock_id))
+        elif flag == "price":
+            datasets = cache.get(TodayPrice.format(stock_id=stock_id))
+        elif flag == "cost":
+            datasets = cache.get(TodayCostPrice.format(stock_id=stock_id))
     else:
         if flag == "day":
             datasets = cache.get(TodayChart.format(user_id=user_id))
@@ -364,8 +368,8 @@ def handle_cache(request, flag: str):
             datasets = cache.get(YearChart.format(user_id=user_id))
         elif flag == "kdj":
             datasets = cache.get(TodayKDJChart.format(user_id=user_id))
-    # if datasets:
-    #     return datasets, user_id, stock_id
+    if datasets:
+        return datasets, user_id, stock_id
     model = model_superuser(request, SharesHold)
     if stock_id:
         hold_list = model.filter(Q(is_delete=False) & Q(id=stock_id))
