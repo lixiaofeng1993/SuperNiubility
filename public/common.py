@@ -56,6 +56,7 @@ def delete_cache(user_id, stock_id):
     cache.delete(TwentyChart.format(user_id=user_id))
     cache.delete(TwentyStockChart.format(stock_id=stock_id))
     cache.delete(TodayInflowChart.format(stock_id=stock_id))
+    cache.delete(TodayCostPrice.format(stock_id=stock_id))
 
 
 def regularly_hold(hold, moment: dict, price: float):

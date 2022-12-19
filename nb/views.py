@@ -219,7 +219,6 @@ def stock_add(request):
                         change.change_date = moment["now"]
                         change.shares_hold_id = hold.id
                         change.save()
-                        cache.delete(TodayCostPrice.format(stock_id=hold.id))
                     model.filter(Q(id=stock_id) & Q(is_delete=False)).update(
                         name=name, code=code, number=number, cost_price=cost_price, color=color, user_id=user_id,
                         is_detail=is_detail, days=days
