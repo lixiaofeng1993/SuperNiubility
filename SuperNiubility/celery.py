@@ -34,7 +34,7 @@ app.conf.beat_schedule = {
     'stock': {
         # 任务路径
         'task': 'nb.tasks.stock',
-        'schedule': 5 * 60,
+        'schedule': crontab(minute=5),
         'args': (),
     },
     'stock_holder': {
