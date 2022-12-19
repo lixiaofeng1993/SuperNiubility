@@ -133,6 +133,23 @@
                                 <span id="text">跌停：</span><span id="text-style" style="color: green">
                                 {{ detail.down_price }}</span><i>元/股</i>
                             </div>
+                            <div class="input-group mb-3">
+                                <span id="text">净利润：</span><span id="text-style">{{ detail.net_profit }}</span>
+                                <span id="text">净利率：</span><span id="text-style">{{ detail.net_interest_rate }}</span>
+                                <span id="text">毛利率：</span><span
+                                    id="text-style">{{ detail.gross_profit_margin }}</span>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span id="text">总市值：</span><span id="text-style">{{ detail.total_market_value }}</span>
+                                <span id="text">流通市值：</span><span
+                                    id="text-style">{{ detail.circulation_market_value }}</span>
+                                <span id="text">市盈率(动)：</span><span
+                                    id="text-style">{{ detail.P_E_ratio_dynamic }}</span>
+                                <span id="text">净资产收益率：</span><span id="text-style">{{ detail.ROE_ratio }}</span>
+                            </div>
+                            <div class="input-group mb-3">
+                                <span id="text">所处行业：</span><span id="text-style">{{ detail.industry }}</span>
+                            </div>
                         </div>
                         <div class="bg-light rounded h-100 p-4">
                             <p class="nav-item mb-4" id="text-style">今日资金流向(万元)</p>

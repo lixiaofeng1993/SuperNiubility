@@ -151,6 +151,16 @@ class StockDetail(models.Model):
     date = models.DateTimeField("日期", null=True, help_text="日期")
     time = models.DateTimeField("时间", null=True, help_text="时间")
 
+    net_profit = models.FloatField(default=0.00, help_text="净利润")
+    total_market_value = models.FloatField(default=0.00, help_text="总市值")
+    circulation_market_value = models.FloatField(default=0.00, help_text="流通市值")
+    industry = models.CharField(max_length=20, default=None, help_text="所处行业")
+    P_E_ratio_dynamic = models.FloatField(default=0.00, help_text="市盈率(动)")
+    ROE_ratio = models.FloatField(default=0.00, help_text="净资产收益率")
+    gross_profit_margin = models.FloatField(default=0.00, help_text="毛利率")
+    net_interest_rate = models.FloatField(default=0.00, help_text="净利率")
+    section_no = models.CharField(max_length=20, default=None, help_text="板块编号")
+
     is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
     create_date = models.DateTimeField("保存时间", default=timezone.now)

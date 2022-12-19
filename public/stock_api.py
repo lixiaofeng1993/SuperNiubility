@@ -98,6 +98,19 @@ def stock_buy_sell():
         if detail:
             logger.info(f"买入卖出托单 股票 {hold.name} 当前时间 {date_time} 查询数据重复.")
             continue
+        base_df = ef.stock.get_base_info(hold.code)
+        if base_df.empty:
+            logger.info(f"股票 {hold.name} 信息查询数据为空.")
+        net_profit = base_df["净利润"] if base_df.get("净利润") else None
+
+        total_market_value = base_df["总市值"] if base_df.get("总市值") else None
+        circulation_market_value = base_df["流通市值"] if base_df.get("流通市值") else None
+        industry = base_df["所处行业"] if base_df.get("所处行业") else None
+        pe_ratio_dynamic = base_df["市盈率(动)"] if base_df.get("市盈率(动)") else None
+        roe_ratio = base_df["ROE"] if base_df.get("ROE") else None
+        gross_profit_margin = base_df["毛利率"] if base_df.get("毛利率") else None
+        net_interest_rate = base_df["净利率"] if base_df.get("净利率") else None
+        section_no = base_df["板块编号"] if base_df.get("板块编号") else None
         obj = StockDetail(
             code=quotes["代码"], name=quotes["名称"], time=date_time, increPer=quotes["涨跌幅"], increase=quotes["涨跌额"],
             nowPri=quotes["最新价"], yestodEndPri=quotes["昨收"], todayStartPri=quotes["今开"], todayMax=quotes["最高"],
@@ -108,7 +121,10 @@ def stock_buy_sell():
             buyFivePri=quotes["买5价"], sellOne=quotes["卖1数量"], sellTwo=quotes["卖2数量"], sellThree=quotes["卖3数量"],
             sellFour=quotes["卖4数量"], sellFive=quotes["卖5数量"], buyOne=quotes["买1数量"], buyTwo=quotes["买2数量"],
             buyThree=quotes["买3数量"], buyFour=quotes["买4数量"], buyFive=quotes["买5数量"], shares_hold_id=hold.id,
-            date=moment["today"]
+            date=moment["today"], net_profit=net_profit, total_market_value=total_market_value,
+            circulation_market_value=circulation_market_value, industry=industry, P_E_ratio_dynamic=pe_ratio_dynamic,
+            ROE_ratio=roe_ratio, gross_profit_margin=gross_profit_margin, net_interest_rate=net_interest_rate,
+            section_no=section_no,
         )
         detail_list.append(obj)
         if detail_list:
@@ -243,8 +259,6 @@ def stock_holder_number():
             if hold.code == data["股票代码"]:
                 date_time = data["股东户数统计截止日"]
                 if base_date_time and date_time <= base_date_time:  # 避免重复写入
-                    logger.info(date_time)
-                    logger.info(base_date_time)
                     continue
                 obj = ShareholderNumber(
                     name=data["股票名称"], code=data["股票代码"], holder_number=data["股东人数"], fluctuate=data["股东人数增减"],

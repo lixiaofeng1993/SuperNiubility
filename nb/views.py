@@ -298,9 +298,18 @@ def stock_look(request, stock_id):
         "top_price": detail.top_price,
         "down_price": detail.down_price,
         "turnover_rate": detail.turnover_rate,
+        "industry": detail.industry,
+        "P_E_ratio_dynamic": detail.P_E_ratio_dynamic,
+        "ROE_ratio": handle_rate(detail.ROE_ratio),
         "traNumber": handle_price(detail.traNumber),
         "traAmount": handle_price(detail.traAmount),
         "yestodEndPri": detail.yestodEndPri,
+        "section_no": detail.section_no,
+        "net_profit": handle_price(detail.net_profit),
+        "total_market_value": handle_price(detail.total_market_value),
+        "circulation_market_value": handle_price(detail.circulation_market_value),
+        "gross_profit_margin": handle_rate(detail.gross_profit_margin),
+        "net_interest_rate": handle_rate(detail.net_interest_rate),
     }
     # 资金流向
     # 主力资金趋势
