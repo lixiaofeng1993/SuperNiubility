@@ -705,10 +705,10 @@ def number_chart(request):
                 diff_list.append(date_time)
                 data_list.append(round(detail.traNumber / 10000, 2))
                 labels.append(date_time)
-        use_list = data_list.copy()
-        use_list.sort()
-        cache.set(MaxTar, use_list[-1])  # 缓存最大最小成交量
-        cache.set(MinTar, use_list[0])
+        # use_list = data_list.copy()
+        # use_list.sort()
+        # cache.set(MaxTar, use_list[-1])  # 缓存最大最小成交量
+        # cache.set(MinTar, use_list[0])
         dataset.update({
             name: {
                 "data": data_list,
@@ -768,18 +768,18 @@ def message_remind(request):
 def forecast(request):
     if request.method == POST:
         import efinance as ef
-        body = handle_json(request)
+        body = handle_json(request)  # TODO:成交量预测，流入流出预测
         stock_id = body.get("stock_id")
         hold = SharesHold.objects.filter(Q(is_delete=False) & Q(id=stock_id)).first()
         quote = ef.stock.get_quote_snapshot(hold.code)
         buy_num = quote["买1数量"] + quote["买2数量"] + quote["买3数量"] + quote["买4数量"] + quote["买5数量"]
         sell_num = quote["卖1数量"] + quote["卖2数量"] + quote["卖3数量"] + quote["卖4数量"] + quote["卖5数量"]
-        diff_num = buy_num - sell_num
+        diff_num = round(buy_num - sell_num)
         flag = True if diff_num > 0 else False
         date_time = quote["时间"]
         info = {
             "date_time": date_time,
             "flag": flag,
-            "text": f"买卖托单差 {diff_num}",
+            "text": f"买卖托单差 {diff_num} 手",
         }
         return JsonResponse.OK(data=info)
