@@ -67,6 +67,10 @@ EmailTimeout = 60 * 60
 APICount = "APICount"
 # 接口最大请求次数
 APICountNumber = 50
+# 最大成交量
+MaxTar = "MaxTar-{stock_id}"
+# 最小成交量
+MinTar = "MinTar-{stock_id}"
 
 # 股票数据过滤规则
 StockRule = ["00", "15", "30", "45"]
