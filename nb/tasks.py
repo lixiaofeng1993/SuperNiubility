@@ -10,7 +10,7 @@ from django.db.models import Q  # 与或非 查询
 
 from nb.models import ToDo, Shares, StockTodayPrice, SharesHold
 from public.stock_api import ef, delete_cache, etc_time, cache, StockEndTime, stock_today, stock_buy_sell, stock_inflow, \
-    stock_holder as holder, stock_sector, stock_holder_number, stock_super, TodayPrice
+    stock_holder as holder, stock_sector, stock_holder_number, stock_super, TodayPrice, TodayTraNumber
 from public.log import logger
 
 
@@ -124,6 +124,7 @@ def stock_today_price():
             )
             price_list.append(obj)
             cache.delete(TodayPrice.format(stock_id=hold.id))
+            cache.delete(TodayTraNumber.format(stock_id=hold.id))
     if price_list:
         try:
             StockTodayPrice.objects.bulk_create(price_list)

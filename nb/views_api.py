@@ -666,7 +666,7 @@ def cost_chart(request):
         color = hold.color
         for price in price_list:
             data_list.append(price.cost_price)
-            change_date = str(price.change_date)
+            change_date = price.change_date.strftime("%Y-%m-%d %H:%M")
             labels.append(change_date)
         dataset.update({
             name: {
