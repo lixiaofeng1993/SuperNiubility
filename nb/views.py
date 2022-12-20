@@ -215,7 +215,7 @@ def stock_add(request):
                         change.name = hold.name
                         change.code = hold.code
                         change.number = hold.number
-                        change.cost_price = hold.cost_price
+                        change.cost_price = cost_price
                         change.change_date = moment["now"]
                         change.shares_hold_id = hold.id
                         change.save()
