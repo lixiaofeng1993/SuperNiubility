@@ -484,14 +484,10 @@ def chart_all(request):
 def dragon(request):
     if request.method == GET:
         info = request_get_search(request)
-        moment = check_stoke_date()
-        last_day = None
-        if moment:
-            last_day = moment["today"]
-        else:
-            stock = StockSuper.objects.filter(is_delete=False).order_by("-time").first()
-            if stock:
-                last_day = stock.time
+        stock = StockSuper.objects.filter(is_delete=False).order_by("-time").first()
+        if not stock:
+            return render(request, "home/stock/dragon.html", info)
+        last_day = stock.time
         stock_list = StockSuper.objects.filter(Q(is_delete=False) & Q(time=last_day)).order_by("open_price")
         for stock in stock_list:
             stock.name = stock.name + "\n" + stock.code
