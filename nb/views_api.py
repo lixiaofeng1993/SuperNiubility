@@ -633,7 +633,7 @@ def price_chart(request):
             labels.append(update_date)
         moment = etc_time()
         if moment["now"] < moment["stock_time"]:
-            data_list.append(hold.cost_price)
+            data_list.append(hold.today_price)
             data_list.append(str(moment["today"]))
         dataset.update({
             name: {
