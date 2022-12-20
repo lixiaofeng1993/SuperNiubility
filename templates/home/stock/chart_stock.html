@@ -61,17 +61,23 @@
                 {% if flag %}
                     <div class="col-sm-12 col-xl-6">
                         <div class="bg-light rounded h-100 p-4">
-                            <h6 class="mb-4">持仓成本走势</h6>
+                            <h6 class="mb-4">持仓成本</h6>
                             <canvas id="cost-price"></canvas>
                         </div>
                     </div>
                     <div class="col-sm-12 col-xl-6">
                         <div class="bg-light rounded h-100 p-4">
-                            <h6 class="mb-4">股票日盈走势</h6>
+                            <h6 class="mb-4">日盈</h6>
                             <canvas id="today-price"></canvas>
                         </div>
                     </div>
                 {% endif %}
+                <div class="col-sm-12 col-xl-6">
+                    <div class="bg-light rounded h-100 p-4">
+                        <h6 class="mb-4">成交量(万)</h6>
+                        <canvas id="traNumber"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -726,6 +732,73 @@
             })
         }
 
+        function TraNumberChart() {
+            let ale = $("#alert");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            let dataJson = JSON.stringify({
+                "stock_id": "{{ obj.id }}",
+            })
+            $.ajax({
+                type: "post",
+                url: "{% url 'number_chart' %}",
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                dataType: "json",
+                data: dataJson,
+                success: function (result) {
+                    console.log("===number_chart===>>>", result);
+                    let code = result.code;
+                    let message = result.message;
+                    if (code === 200) {
+                        let chart_obj = $("#traNumber").get(0).getContext("2d");
+                        let labels = result.data.labels;
+                        let data = result.data;
+                        let datasets = new List();
+                        if (JSON.stringify(data) !== "{}") {
+                            for (const key in data) {
+                                if (key !== "labels" && key !== "days") {
+                                    let borderColor = data[key].color;
+                                    datasets.append({
+                                        label: key,
+                                        data: data[key].data,
+                                        fill: true, // 阴影
+                                        tension: 0.1, // 曲线
+                                        showLine: true, // 是否展示线
+                                        borderColor: borderColor // 折线颜色
+                                    })
+                                }
+                            }
+                        } else {
+                            datasets.append({
+                                label: "",
+                                data: [],
+                            })
+                        }
+                        let data_dict = {
+                            labels: labels,
+                            datasets: datasets.dataStore
+                        }
+                        let config = {
+                            type: 'line', // 设置图表类型
+                            data: data_dict,
+                        };
+                        new Chart(chart_obj, config);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }
+
+            })
+        }
+
         TodayChart();
         FiveDayChart();
         TenDayChart();
@@ -733,6 +806,7 @@
         AllDayChart();
         buySell();
         inflow();
+        TraNumberChart();
         let make = {{ flag }};
         if (make) {
             PriceChart();

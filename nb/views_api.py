@@ -682,6 +682,43 @@ def cost_chart(request):
 
 
 @auth_token()
+def number_chart(request):
+    if request.method == POST:
+        datasets, user_id, stock_id = handle_cache(request, "number")
+        if isinstance(datasets, dict):
+            return JsonResponse.OK(data=datasets)
+        if not stock_id:
+            return JsonResponse.CheckException()
+        hold = datasets[0]
+        dataset = dict()
+        data_list = list()
+        labels = list()
+        detail_list = StockDetail.objects.filter(Q(is_delete=False) &
+                                                 Q(shares_hold_id=hold.id) &
+                                                 Q(time__hour=15)).order_by("time")
+        name = hold.name
+        color = hold.color
+        diff_list = list()
+        for detail in detail_list:
+            date_time = str(detail.time).split(" ")[0]
+            if date_time not in diff_list:
+                diff_list.append(date_time)
+                data_list.append(round(detail.traNumber / 10000, 2))
+                labels.append(date_time)
+        dataset.update({
+            name: {
+                "data": data_list,
+                "color": color,
+            },
+            "labels": labels,
+
+        })
+        logger.info("查询每日成交量成功.")
+        cache.set(TodayTraNumber.format(stock_id=stock_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
+
+
+@auth_token()
 def record(request):
     if request.method == POST:
         log_list = LogEntry.objects.all().order_by("-action_time")[:HomeNumber]

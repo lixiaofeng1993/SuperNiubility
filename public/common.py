@@ -357,6 +357,8 @@ def handle_cache(request, flag: str):
             datasets = cache.get(TodayPrice.format(stock_id=stock_id))
         elif flag == "cost":
             datasets = cache.get(TodayCostPrice.format(stock_id=stock_id))
+        elif flag == "number":
+            datasets = cache.get(TodayTraNumber.format(stock_id=stock_id))
     else:
         if flag == "day":
             datasets = cache.get(TodayChart.format(user_id=user_id))

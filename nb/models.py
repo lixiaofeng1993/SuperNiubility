@@ -118,7 +118,7 @@ class StockTodayPrice(models.Model):
     shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
 
     class Meta:
-        db_table = "stock_today_price"
+        db_table = "stock_today"
 
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True
@@ -216,7 +216,7 @@ class StockDetail(models.Model):
     shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
 
     class Meta:
-        db_table = "stockDetail"
+        db_table = "stock_detail"
 
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True
@@ -238,7 +238,7 @@ class ToDo(models.Model):
     create_date = models.DateTimeField("保存时间", default=timezone.now)
 
     class Meta:
-        db_table = "to_do"
+        db_table = "todo"
 
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True
@@ -284,7 +284,7 @@ class KDJStock(models.Model):
     shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
 
     class Meta:
-        db_table = "kdj_stock"
+        db_table = "stock_kdj"
 
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True
@@ -341,7 +341,7 @@ class ShareholderNumber(models.Model):
     shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
 
     class Meta:
-        db_table = "shareholder_number"
+        db_table = "shareholder_np"
 
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True
@@ -370,7 +370,7 @@ class InflowStock(models.Model):
     shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
 
     class Meta:
-        db_table = "inflow_stock"
+        db_table = "stock_inflow"
 
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True

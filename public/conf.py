@@ -53,6 +53,8 @@ TodayInflowChart = "TodayInflowChart-{stock_id}"
 TodayPrice = "TodayPrice-{stock_id}"
 # 持股成本
 TodayCostPrice = "TodayCostPrice-{stock_id}"
+# 成交量
+TodayTraNumber = "TodayTraNumber-{stock_id}"
 # kdj
 TodayKDJChart = "TodayKDJChart-{user_id}"
 # 验证码缓存
