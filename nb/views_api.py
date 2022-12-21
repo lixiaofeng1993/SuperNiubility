@@ -830,7 +830,7 @@ def forecast(request):
         if small_inflow > 0:
             small_rate = round(small_inflow / just_inflow, 2) * 100
         else:
-            small_rate = round(small_inflow / loss_inflow, 2) * 100
+            small_rate = -round(small_inflow / loss_inflow, 2) * 100
         if main_inflow < 0 and small_rate > 50:
             flag = False
             inflow_text = f"主力流出，小散买入超 {small_rate}%."
