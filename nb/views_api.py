@@ -796,15 +796,14 @@ def forecast(request):
             elif tra_num < data_list[0]:
                 tra_text = "缩量；"
             else:
-                for index, value in enumerate(data_list):
-                    if data_list[index + 1] > tra_num > value:
-                        tra_rate = round((index + 1) / len(data_list))
-                        if tra_rate < 0.4:
-                            tra_text = f"量偏低，在第{index + 1}位；"
-                        elif 0.4 <= tra_rate <= 0.6:
-                            tra_text = f"量中等，在第{index + 1}位；"
-                        else:
-                            tra_text = f"量偏高，在第{index + 1}位；"
+                index = data_list.index(tra_num)
+                tra_rate = round(index / len(data_list))
+                if tra_rate < 0.4:
+                    tra_text = f"量偏低，在第{index}位；"
+                elif 0.4 <= tra_rate <= 0.6:
+                    tra_text = f"量中等，在第{index}位；"
+                else:
+                    tra_text = f"量偏高，在第{index}位；"
         share_first = InflowStock.objects.filter(
             Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
         main_inflow = share_first.main_inflow

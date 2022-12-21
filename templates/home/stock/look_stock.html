@@ -381,7 +381,6 @@
                             top.location.href = "{% url 'login' %}";
                         }, 1500);
                     } else {
-                        $("#today").text(`<span>${message}</span>`);
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                     }
                 }
