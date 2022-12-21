@@ -8,7 +8,7 @@
 from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 
-from .tasks import stock_history, last_day_stock_history
+from .tasks import stock_history, last_day_stock_history, ef
 from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange
 from public.auth_token import auth_token
 from public.common import *
@@ -763,14 +763,13 @@ def message_remind(request):
 @auth_token()
 def forecast(request):
     if request.method == POST:
-        moment = check_stoke_date()
-        if not moment:  # 判断股市开关时间
-            return JsonResponse.OK()
-        import efinance as ef
-        body = handle_json(request)
-        stock_id = body.get("stock_id")
-        hold = SharesHold.objects.filter(Q(is_delete=False) & Q(id=stock_id)).first()
+        datasets, user_id, stock_id = handle_cache(request, flag="")
+        if not stock_id:
+            return JsonResponse.CheckException()
+        hold = datasets[0]
         quote = ef.stock.get_quote_snapshot(hold.code)
+        if quote.empty:
+            return JsonResponse.OK()
         buy_num = quote["买1数量"] + quote["买2数量"] + quote["买3数量"] + quote["买4数量"] + quote["买5数量"]
         sell_num = quote["卖1数量"] + quote["卖2数量"] + quote["卖3数量"] + quote["卖4数量"] + quote["卖5数量"]
         diff_num = round(buy_num - sell_num)
@@ -778,6 +777,7 @@ def forecast(request):
         flag = True if diff_num > 0 else False
         date_time = quote["时间"]
         tra_text, inflow_text = "", ""
+        moment = etc_time()
         if moment["now"] > moment["stock_time"]:
             tra_num = quote["成交量"]
             detail_list = StockDetail.objects.filter(Q(is_delete=False) &
@@ -844,4 +844,5 @@ def forecast(request):
             "flag": flag,
             "text": text,
         }
+        logger.info("查询预测数据成功.")
         return JsonResponse.OK(data=info)
