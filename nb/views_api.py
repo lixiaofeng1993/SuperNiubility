@@ -705,10 +705,6 @@ def number_chart(request):
                 diff_list.append(date_time)
                 data_list.append(round(detail.traNumber / 10000, 2))
                 labels.append(date_time)
-        # use_list = data_list.copy()
-        # use_list.sort()
-        # cache.set(MaxTar, use_list[-1])  # 缓存最大最小成交量
-        # cache.set(MinTar, use_list[0])
         dataset.update({
             name: {
                 "data": data_list,
@@ -767,19 +763,85 @@ def message_remind(request):
 @auth_token()
 def forecast(request):
     if request.method == POST:
+        moment = check_stoke_date()
+        if not moment:  # 判断股市开关时间
+            return JsonResponse.OK()
         import efinance as ef
-        body = handle_json(request)  # TODO:成交量预测，流入流出预测
+        body = handle_json(request)
         stock_id = body.get("stock_id")
         hold = SharesHold.objects.filter(Q(is_delete=False) & Q(id=stock_id)).first()
         quote = ef.stock.get_quote_snapshot(hold.code)
         buy_num = quote["买1数量"] + quote["买2数量"] + quote["买3数量"] + quote["买4数量"] + quote["买5数量"]
         sell_num = quote["卖1数量"] + quote["卖2数量"] + quote["卖3数量"] + quote["卖4数量"] + quote["卖5数量"]
         diff_num = round(buy_num - sell_num)
+        buy_text = f"买卖托单差 {diff_num} 手；"
         flag = True if diff_num > 0 else False
         date_time = quote["时间"]
+        tra_text, inflow_text = "", ""
+        if moment["now"] > moment["stock_time"]:
+            tra_num = quote["成交量"]
+            detail_list = StockDetail.objects.filter(Q(is_delete=False) &
+                                                     Q(shares_hold_id=hold.id) &
+                                                     Q(time__hour=15)).order_by("time")
+            data_list = list()
+            diff_list = list()
+            for detail in detail_list:
+                date_time = str(detail.time).split(" ")[0]
+                if date_time not in diff_list:
+                    diff_list.append(date_time)
+                    data_list.append(detail.traNumber)
+            data_list.sort()
+            if tra_num > data_list[-1]:
+                tra_text = "放量；"
+            elif tra_num < data_list[0]:
+                tra_text = "缩量；"
+            else:
+                for index, value in enumerate(data_list):
+                    if data_list[index + 1] > tra_num > value:
+                        tra_rate = round((index + 1) / len(data_list))
+                        if tra_rate < 0.4:
+                            tra_text = f"量偏低，在第{index + 1}位；"
+                        elif 0.4 <= tra_rate <= 0.6:
+                            tra_text = f"量中等，在第{index + 1}位；"
+                        else:
+                            tra_text = f"量偏高，在第{index + 1}位；"
+        share_first = InflowStock.objects.filter(
+            Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
+        main_inflow = share_first.main_inflow
+        small_inflow = share_first.small_inflow
+        middle_inflow = share_first.middle_inflow
+        big_inflow = share_first.big_inflow
+        huge_inflow = share_first.huge_inflow
+        just_inflow = 0
+        loss_inflow = 0
+
+        def add_inflow(flow):
+            nonlocal just_inflow, loss_inflow
+            if flow >= 0:
+                just_inflow += flow
+            else:
+                loss_inflow += flow
+
+        add_inflow(small_inflow)
+        add_inflow(middle_inflow)
+        add_inflow(big_inflow)
+        add_inflow(huge_inflow)
+
+        if small_inflow > 0:
+            small_rate = round(small_inflow / just_inflow, 2) * 100
+        else:
+            small_rate = round(small_inflow / loss_inflow, 2) * 100
+        if main_inflow < 0 and small_rate > 50:
+            flag = False
+            inflow_text = f"主力流出，小散买入超 {small_rate}%."
+        elif main_inflow > 0 > small_rate:
+            flag = True
+            inflow_text = f"主力流入，小散卖出 {small_rate}%."
+        text = buy_text + tra_text + inflow_text
+
         info = {
             "date_time": date_time,
             "flag": flag,
-            "text": f"买卖托单差 {diff_num} 手",
+            "text": text,
         }
         return JsonResponse.OK(data=info)

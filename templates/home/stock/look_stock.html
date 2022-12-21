@@ -87,11 +87,8 @@
                                 </div>
                             </div>
                         {% endif %}
-                        <div class="bg-light rounded h-100 p-4">
-                            <p class="nav-item mb-4" id="text-style">预测</p>
-                            <div class="input-group mb-3" id="forecast">
+                        <div class="bg-light rounded h-100 p-4" id="forecast">
 
-                            </div>
                         </div>
                         <div class="bg-light rounded h-100 p-4">
                             <p class="nav-item mb-4" id="text-style">盘口</p>
@@ -358,22 +355,26 @@
                     for_obj.find("span").remove();
                     if (code === 200) {
                         let data = result.data;
-                        let flag = data.flag;
-                        // let date_time = data.date_time;
-                        let text = data.text;
-                        let color = "";
-                        let msg = "";
-                        let content = "";
-                        if (flag) {
-                            color = "red";
-                            msg = "看涨";
-                        } else {
-                            color = "green";
-                            msg = "看跌";
+                        if (data) {
+                            let flag = data.flag;
+                            // let date_time = data.date_time;
+                            let text = data.text;
+                            let color = "";
+                            let msg = "";
+                            let content = "";
+                            if (flag) {
+                                color = "red";
+                                msg = "看涨";
+                            } else {
+                                color = "green";
+                                msg = "看跌";
+                            }
+                            content += `<p class="nav-item mb-4" id="text-style">预测</p><div class="input-group mb-3"><span id="text">` +
+                                `</span><span id="text-style" style="color: ${color};">${msg}</span>` +
+                                `<span id="text">解读：</span><span id="text-style">${text}</span></div>`
+                            for_obj.append(content)
                         }
-                        content += `<span id="text"></span><span id="text-style" style="color: ${color};">${msg}</span>` +
-                            `<span id="text">解读：</span><span id="text-style">${text}</span>`
-                        for_obj.append(content)
+
                     } else if (code === 401) {
                         ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
                         setTimeout(function () {
