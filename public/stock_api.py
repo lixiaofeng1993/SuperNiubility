@@ -101,7 +101,6 @@ def stock_buy_sell():
         if base_df.empty:
             logger.info(f"股票 {hold.name} 信息查询数据为空.")
         net_profit = base_df["净利润"] if base_df.get("净利润") else None
-
         total_market_value = base_df["总市值"] if base_df.get("总市值") else None
         circulation_market_value = base_df["流通市值"] if base_df.get("流通市值") else None
         industry = base_df["所处行业"] if base_df.get("所处行业") else None
@@ -288,15 +287,14 @@ def stock_sector():
     for hold in hold_list:
         sector = StockSector.objects.filter(
             Q(code=hold.code) & Q(shares_hold_id=hold.id)).order_by("-update_date").first()
-        if sector:
-            update_date = sector.update_date
-        else:
-            update_date = ""
-        if update_date:
-            seconds = (moment["now"] - update_date).total_seconds()
-            if seconds <= 300 and moment["now"] <= moment["stock_time"]:
-                logger.info(f"所属板块数据 剩余更新时间 {300 - seconds}秒")
-                return
+        if not sector:
+            logger.error("查询股票板块表数据为空.")
+            return
+        update_date = sector.update_date
+        seconds = (moment["now"] - update_date).total_seconds()
+        if seconds <= 300 and moment["now"] <= moment["stock_time"]:
+            logger.info(f"所属板块数据 剩余更新时间 {300 - seconds}秒")
+            return
         df = ef.stock.get_belong_board(hold.code)
         if df.empty:
             logger.error(f"所属板块数据 股票 {hold.name} 查询数据为空.")
