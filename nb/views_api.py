@@ -799,11 +799,11 @@ def forecast(request):
                 index = data_list.index(tra_num)
                 tra_rate = round(index / len(data_list))
                 if tra_rate < 0.4:
-                    tra_text = f"量偏低，在第{index}位；"
+                    tra_text = f"量偏低，在第{index + 1}位；"
                 elif 0.4 <= tra_rate <= 0.6:
-                    tra_text = f"量中等，在第{index}位；"
+                    tra_text = f"量中等，在第{index + 1}位；"
                 else:
-                    tra_text = f"量偏高，在第{index}位；"
+                    tra_text = f"量偏高，在第{index + 1}位；"
         share_first = InflowStock.objects.filter(
             Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
         main_inflow = share_first.main_inflow
@@ -827,9 +827,9 @@ def forecast(request):
         add_inflow(huge_inflow)
 
         if small_inflow > 0:
-            small_rate = round(small_inflow / just_inflow, 2) * 100
+            small_rate = round(small_inflow / just_inflow * 100, 2)
         else:
-            small_rate = -round(small_inflow / loss_inflow, 2) * 100
+            small_rate = round(small_inflow / loss_inflow * 100, 2)
         if main_inflow < 0 and small_rate > 50:
             flag = False
             inflow_text = f"主力流出，小散买入超 {small_rate}%."
