@@ -14,7 +14,7 @@ from public.log import logger
 
 def stock_today():
     """
-    持仓股票当天数据自动写入
+    今日走势K线
     每五分钟写入一次
     """
     moment = check_stoke_date()
@@ -71,14 +71,21 @@ def stock_today():
             logger.error(f"今日走势K线 保存失败 ===>>> {error}")
 
 
-def stock_buy_sell():
-    moment = check_stoke_date()
-    if not moment:  # 判断股市开关时间
-        return
-    hold_list = SharesHold.objects.filter(is_delete=False)
-    if not hold_list:
-        logger.error("买入卖出托单 持仓 表数据为空.")
-        return
+def stock_buy_sell(stock_id: str = ""):
+    """
+    买入卖出托单
+    """
+    if not stock_id:
+        moment = check_stoke_date()
+        if not moment:  # 判断股市开关时间
+            return
+        hold_list = SharesHold.objects.filter(is_delete=False)
+        if not hold_list:
+            logger.error("买入卖出托单 持仓 表数据为空.")
+            return
+    else:
+        moment = etc_time()
+        hold_list = SharesHold.objects.filter(Q(is_delete=False) & Q(id=stock_id))
     detail_list = list()
     for hold in hold_list:
         quotes = ef.stock.get_quote_snapshot(hold.code)
@@ -138,6 +145,9 @@ def stock_buy_sell():
 
 
 def stock_inflow():
+    """
+    资金流入流出
+    """
     moment = check_stoke_date()
     if not moment:  # 判断股市开关时间
         return
@@ -190,6 +200,9 @@ def stock_inflow():
 
 
 def stock_holder():
+    """
+    股票持仓十大股东数据变化
+    """
     moment = etc_time()
     hold_list = SharesHold.objects.filter(is_delete=False)
     if not hold_list:
@@ -232,6 +245,9 @@ def stock_holder():
 
 
 def stock_holder_number():
+    """
+    持仓股东数量数据变化
+    """
     moment = etc_time()
     hold_list = SharesHold.objects.filter(is_delete=False)
     if not hold_list:
@@ -273,6 +289,9 @@ def stock_holder_number():
 
 
 def stock_sector():
+    """
+    股票所属板块涨跌数据
+    """
     moment = check_stoke_date()
     if not moment:  # 判断股市开关时间
         return
@@ -314,6 +333,9 @@ def stock_sector():
 
 
 def stock_super():
+    """
+    龙虎榜数据
+    """
     moment = etc_time()
     holder = StockSuper.objects.filter(is_delete=False).order_by("-time").first()
     if holder:

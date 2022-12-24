@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django_pandas.io import read_frame
 
 from nb.models import *
+from nb.tasks import real_time_stock
 from public.auth_token import auth_token
 from public.common import *
 from public.response import JsonResponse
@@ -210,7 +211,7 @@ def stock_add(request):
                 #         hold.save()
                 hold = model.filter(Q(id=stock_id) & Q(is_delete=False)).first()
                 try:
-                    if str(hold.cost_price) != cost_price:
+                    if str(hold.cost_price) != cost_price:  # 持仓成本修改后，更新 StockChange 表
                         change = StockChange()
                         change.name = hold.name
                         change.code = hold.code
@@ -219,6 +220,7 @@ def stock_add(request):
                         change.change_date = moment["now"]
                         change.shares_hold_id = hold.id
                         change.save()
+                        real_time_stock.delay(stock_id=hold.id)  # 更新持仓成本后，实时刷新盈亏
                     model.filter(Q(id=stock_id) & Q(is_delete=False)).update(
                         name=name, code=code, number=number, cost_price=cost_price, color=color, user_id=user_id,
                         is_detail=is_detail, days=days
