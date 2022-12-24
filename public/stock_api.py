@@ -59,9 +59,6 @@ def stock_today():
         if new_price:
             try:
                 hold = SharesHold.objects.get(id=stock_dict[key])
-                is_profit = regularly_hold(hold, moment, new_price)
-                if is_profit != hold.is_profit:
-                    profit_and_loss(hold)  # 钉钉消息提醒
                 message_writing(MessageToday.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
             except Exception as error:
                 logger.error(f"今日走势K线 更新持仓盈亏出现错误. ===>>> {error}")
@@ -123,11 +120,14 @@ def stock_buy_sell():
         )
         detail_list.append(obj)
         if detail_list:
-            message_writing(MessageBuySell.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
+            is_profit = regularly_hold(hold, moment, quotes["最新价"])
+            if is_profit != hold.is_profit:
+                profit_and_loss(hold)  # 钉钉消息提醒
             if quotes["最新价"] == quotes["涨停价"]:
                 limit_up(hold, True)
             elif quotes["最新价"] == quotes["跌停价"]:
                 limit_up(hold, False)
+            message_writing(MessageBuySell.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
     if detail_list:
         try:
             StockDetail.objects.bulk_create(objs=detail_list)
