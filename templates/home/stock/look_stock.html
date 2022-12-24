@@ -43,17 +43,14 @@
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="nav-item mb-4">股票分析</h6>
                     <form>
-                        {% if update_time %}
-                            <span style="font-size: 12px;">{{ update_time }}更新</span>
-                        {% else %}
-                            <span style="font-size: 12px;">未更新</span>
-                        {% endif %}
+                        <span style="font-size: 12px;">{{ update_time|default:"未" }}更新</span>
                         <div class="bg-light rounded h-100 p-4">
                             <div class="input-group mb-3">
                                 <span id="text">股票：</span><span id="text-style">{{ obj.name }}</span>
                                 <span id="text">代码：</span><span id="text-style">{{ obj.code }}</span>
                                 <span id="text">数量：</span><span id="text-style">{{ obj.number|default:"--" }} 股</span>
-                                <span id="text">成本：</span><span id="text-style">{{ obj.cost_price|default:"--" }} 元/股</span>
+                                <span id="text">成本：</span><span
+                                    id="text-style">{{ obj.cost_price|default:"--" }} 元/股</span>
                             </div>
                             <div class="input-group mb-3">
                                 <span id="text">盈亏：</span>
@@ -113,8 +110,10 @@
                                 </span>
                             </div>
                             <div class="input-group mb-3">
-                                <span id="text">总手：</span><span id="text-style">{{ detail.traNumber|default:"--" }}</span>
-                                <span id="text">金额：</span><span id="text-style">{{ detail.traAmount|default:"--" }}</span>
+                                <span id="text">总手：</span><span
+                                    id="text-style">{{ detail.traNumber|default:"--" }}</span>
+                                <span id="text">金额：</span><span
+                                    id="text-style">{{ detail.traAmount|default:"--" }}</span>
                                 <span id="text">换手：</span><span id="text-style">{{ detail.turnover_rate|default:"--" }} %</span>
                             </div>
                             <div class="input-group mb-3">
@@ -130,7 +129,8 @@
                                 <span id="text-style" style="color:{{ detail.todayStartPri.color }};">
                                 {{ detail.todayStartPri.todayStartPri|default:"--" }} 元/股
                                 </span>
-                                <span id="text">昨价：</span><span id="text-style">{{ detail.yestodEndPri|default:obj.last_close_price }} 元/股</span>
+                                <span id="text">昨价：</span><span
+                                    id="text-style">{{ detail.yestodEndPri|default:obj.last_close_price }} 元/股</span>
                             </div>
                             <div class="input-group mb-3">
                                 <span id="text">涨停：</span><span id="text-style" style="color: red">
@@ -139,21 +139,26 @@
                                 {{ detail.down_price|default:"--" }} 元/股</span>
                             </div>
                             <div class="input-group mb-3">
-                                <span id="text">净利润：</span><span id="text-style">{{ detail.net_profit|default:"--" }}</span>
-                                <span id="text">净利率：</span><span id="text-style">{{ detail.net_interest_rate|default:"--" }}</span>
+                                <span id="text">净利润：</span><span
+                                    id="text-style">{{ detail.net_profit|default:"--" }}</span>
+                                <span id="text">净利率：</span><span
+                                    id="text-style">{{ detail.net_interest_rate|default:"--" }}</span>
                                 <span id="text">毛利率：</span><span
                                     id="text-style">{{ detail.gross_profit_margin|default:"--" }}</span>
                             </div>
                             <div class="input-group mb-3">
-                                <span id="text">总市值：</span><span id="text-style">{{ detail.total_market_value|default:"--" }}</span>
+                                <span id="text">总市值：</span><span
+                                    id="text-style">{{ detail.total_market_value|default:"--" }}</span>
                                 <span id="text">流通市值：</span><span
                                     id="text-style">{{ detail.circulation_market_value|default:"--" }}</span>
                                 <span id="text">市盈率(动)：</span><span
                                     id="text-style">{{ detail.P_E_ratio_dynamic|default:"--" }}</span>
-                                <span id="text">净资产收益率：</span><span id="text-style">{{ detail.ROE_ratio|default:"--" }}</span>
+                                <span id="text">净资产收益率：</span><span
+                                    id="text-style">{{ detail.ROE_ratio|default:"--" }}</span>
                             </div>
                             <div class="input-group mb-3">
-                                <span id="text">所处行业：</span><span id="text-style">{{ detail.industry|default:"--" }}</span>
+                                <span id="text">所处行业：</span><span
+                                    id="text-style">{{ detail.industry|default:"--" }}</span>
                             </div>
                         </div>
                         <div class="bg-light rounded h-100 p-4">
