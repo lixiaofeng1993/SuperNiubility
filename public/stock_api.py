@@ -8,7 +8,6 @@
 import efinance as ef
 
 from nb.models import Shares, StockDetail, InflowStock, Shareholder, StockSector, ShareholderNumber, StockSuper
-from public.send_ding import profit_and_loss, profit_and_loss_ratio, limit_up
 from public.common import *
 from public.log import logger
 
@@ -63,8 +62,6 @@ def stock_today():
                 is_profit = regularly_hold(hold, moment, new_price)
                 if is_profit != hold.is_profit:
                     profit_and_loss(hold)  # 钉钉消息提醒
-                if hold.cost_price:
-                    profit_and_loss_ratio(hold, new_price)
                 message_writing(MessageToday.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
             except Exception as error:
                 logger.error(f"今日走势K线 更新持仓盈亏出现错误. ===>>> {error}")

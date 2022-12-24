@@ -125,6 +125,8 @@ def stock_today_price():
             price_list.append(obj)
             cache.delete(TodayPrice.format(stock_id=hold.id))
             cache.delete(TodayTraNumber.format(stock_id=hold.id))
+            hold.today_price = 0
+            hold.save()
     if price_list:
         try:
             StockTodayPrice.objects.bulk_create(price_list)

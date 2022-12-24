@@ -43,33 +43,35 @@
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="nav-item mb-4">股票分析</h6>
                     <form>
-                        <span style="font-size: 12px;">{{ update_time }}更新</span>
+                        {% if update_time %}
+                            <span style="font-size: 12px;">{{ update_time }}更新</span>
+                        {% else %}
+                            <span style="font-size: 12px;">未更新</span>
+                        {% endif %}
                         <div class="bg-light rounded h-100 p-4">
                             <div class="input-group mb-3">
                                 <span id="text">股票：</span><span id="text-style">{{ obj.name }}</span>
                                 <span id="text">代码：</span><span id="text-style">{{ obj.code }}</span>
-                                <span id="text">数量：</span><span id="text-style">{{ obj.number }} 股</span>
-                                <span id="text">成本：</span><span id="text-style">{{ obj.cost_price }} 元/股</span>
+                                <span id="text">数量：</span><span id="text-style">{{ obj.number|default:"--" }} 股</span>
+                                <span id="text">成本：</span><span id="text-style">{{ obj.cost_price|default:"--" }} 元/股</span>
                             </div>
                             <div class="input-group mb-3">
                                 <span id="text">盈亏：</span>
                                 {% if obj.profit_and_loss > 0 %}
-                                    <span id="text-style" style="color: red">{{ obj.profit_and_loss }}</span>
+                                    <span id="text-style" style="color: red">{{ obj.profit_and_loss }} 元</span>
                                 {% elif obj.profit_and_loss < 0 %}
-                                    <span id="text-style" style="color: green">{{ obj.profit_and_loss }}</span>
+                                    <span id="text-style" style="color: green">{{ obj.profit_and_loss }} 元</span>
                                 {% else %}
-                                    <span id="text-style">{{ obj.profit_and_loss }}</span>
+                                    <span id="text-style">{{ obj.profit_and_loss|default:"--" }} 元</span>
                                 {% endif %}
-                                <i>元</i>
                                 <span id="text">日盈：</span>
                                 {% if obj.today_price > 0 %}
-                                    <span id="text-style" style="color: red">{{ obj.today_price }}</span>
+                                    <span id="text-style" style="color: red">{{ obj.today_price }} 元</span>
                                 {% elif obj.today_price < 0 %}
-                                    <span id="text-style" style="color: green">{{ obj.today_price }}</span>
+                                    <span id="text-style" style="color: green">{{ obj.today_price }} 元</span>
                                 {% else %}
-                                    <span id="text-style">{{ obj.today_price }}</span>
+                                    <span id="text-style">{{ obj.today_price|default:"--" }} 元</span>
                                 {% endif %}
-                                <i>元</i>
                             </div>
                         </div>
                         {% if dragon_obj %}
@@ -95,63 +97,63 @@
                             <div class="input-group mb-3">
                                 <span id="text">最新：</span>
                                 <span id="text-style" style="color: {{ detail.nowPri.color }}">
-                                    {{ detail.nowPri.nowPri }} 元/股
+                                    {{ detail.nowPri.nowPri|default:"--" }} 元/股
                                 </span>
                                 <span id="text">均价：</span>
                                 <span id="text-style" style="color: {{ detail.avg_price.color }}">
-                                    {{ detail.avg_price.avg_price }} 元/股
+                                    {{ detail.avg_price.avg_price|default:"--" }} 元/股
                                 </span>
                                 <span id="text">涨幅：</span>
                                 <span id="text-style" style="color: {{ detail.increPer.color }}">
-                                    {{ detail.increPer.increPer }} %
+                                    {{ detail.increPer.increPer|default:"--" }} %
                                 </span>
                                 <span id="text">跌涨：</span>
                                 <span id="text-style" style="color: {{ detail.increase.color }}">
-                                    {{ detail.increase.increase }} 元
+                                    {{ detail.increase.increase|default:"--" }} 元
                                 </span>
                             </div>
                             <div class="input-group mb-3">
-                                <span id="text">总手：</span><span id="text-style">{{ detail.traNumber }}</span>
-                                <span id="text">金额：</span><span id="text-style">{{ detail.traAmount }}</span>
-                                <span id="text">换手：</span><span id="text-style">{{ detail.turnover_rate }} %</span>
+                                <span id="text">总手：</span><span id="text-style">{{ detail.traNumber|default:"--" }}</span>
+                                <span id="text">金额：</span><span id="text-style">{{ detail.traAmount|default:"--" }}</span>
+                                <span id="text">换手：</span><span id="text-style">{{ detail.turnover_rate|default:"--" }} %</span>
                             </div>
                             <div class="input-group mb-3">
                                 <span id="text">最高：</span>
                                 <span id="text-style" style="color: {{ detail.todayMax.color }}">
-                                    {{ detail.todayMax.todayMax }} 元/股
+                                    {{ detail.todayMax.todayMax|default:"--" }} 元/股
                                 </span>
                                 <span id="text">最低：</span>
                                 <span id="text-style" style="color: {{ detail.todayMin.color }}">
-                                    {{ detail.todayMin.todayMin }} 元/股
+                                    {{ detail.todayMin.todayMin|default:"--" }} 元/股
                                 </span>
                                 <span id="text">今开：</span>
                                 <span id="text-style" style="color:{{ detail.todayStartPri.color }};">
-                                {{ detail.todayStartPri.todayStartPri }} 元/股
+                                {{ detail.todayStartPri.todayStartPri|default:"--" }} 元/股
                                 </span>
-                                <span id="text">昨价：</span><span id="text-style">{{ detail.yestodEndPri }} 元/股</span>
+                                <span id="text">昨价：</span><span id="text-style">{{ detail.yestodEndPri|default:obj.last_close_price }} 元/股</span>
                             </div>
                             <div class="input-group mb-3">
                                 <span id="text">涨停：</span><span id="text-style" style="color: red">
-                                {{ detail.top_price }}</span><i>元/股</i>
+                                {{ detail.top_price|default:"--" }} 元/股</span>
                                 <span id="text">跌停：</span><span id="text-style" style="color: green">
-                                {{ detail.down_price }}</span><i>元/股</i>
+                                {{ detail.down_price|default:"--" }} 元/股</span>
                             </div>
                             <div class="input-group mb-3">
-                                <span id="text">净利润：</span><span id="text-style">{{ detail.net_profit }}</span>
-                                <span id="text">净利率：</span><span id="text-style">{{ detail.net_interest_rate }}</span>
+                                <span id="text">净利润：</span><span id="text-style">{{ detail.net_profit|default:"--" }}</span>
+                                <span id="text">净利率：</span><span id="text-style">{{ detail.net_interest_rate|default:"--" }}</span>
                                 <span id="text">毛利率：</span><span
-                                    id="text-style">{{ detail.gross_profit_margin }}</span>
+                                    id="text-style">{{ detail.gross_profit_margin|default:"--" }}</span>
                             </div>
                             <div class="input-group mb-3">
-                                <span id="text">总市值：</span><span id="text-style">{{ detail.total_market_value }}</span>
+                                <span id="text">总市值：</span><span id="text-style">{{ detail.total_market_value|default:"--" }}</span>
                                 <span id="text">流通市值：</span><span
-                                    id="text-style">{{ detail.circulation_market_value }}</span>
+                                    id="text-style">{{ detail.circulation_market_value|default:"--" }}</span>
                                 <span id="text">市盈率(动)：</span><span
-                                    id="text-style">{{ detail.P_E_ratio_dynamic }}</span>
-                                <span id="text">净资产收益率：</span><span id="text-style">{{ detail.ROE_ratio }}</span>
+                                    id="text-style">{{ detail.P_E_ratio_dynamic|default:"--" }}</span>
+                                <span id="text">净资产收益率：</span><span id="text-style">{{ detail.ROE_ratio|default:"--" }}</span>
                             </div>
                             <div class="input-group mb-3">
-                                <span id="text">所处行业：</span><span id="text-style">{{ detail.industry }}</span>
+                                <span id="text">所处行业：</span><span id="text-style">{{ detail.industry|default:"--" }}</span>
                             </div>
                         </div>
                         <div class="bg-light rounded h-100 p-4">
@@ -159,25 +161,25 @@
                             <div class="input-group mb-3">
                                 <span id="text">主力净流入：</span>
                                 <span id="text-style" style="color: {{ inflow.main.color }}">
-                                {{ inflow.main.main_inflow }}
+                                {{ inflow.main.main_inflow|default:0 }}
                                 </span>
                                 <span id="text">超大单净流入：</span>
                                 <span id="text-style" style="color: {{ inflow.huge.color }}">
-                                {{ inflow.huge.huge_inflow }}
+                                {{ inflow.huge.huge_inflow|default:0 }}
                                 </span>
                                 <span id="text">大单净流入：</span>
                                 <span id="text-style" style="color: {{ inflow.big.color }}">
-                                {{ inflow.big.big_inflow }}
+                                {{ inflow.big.big_inflow|default:0 }}
                                 </span>
                             </div>
                             <div class="input-group mb-3">
                                 <span id="text">中单净流入：</span>
                                 <span id="text-style" style="color: {{ inflow.middle.color }}">
-                                {{ inflow.middle.middle_inflow }}
+                                {{ inflow.middle.middle_inflow|default:0 }}
                                 </span>
                                 <span id="text">小单净流入：</span>
                                 <span id="text-style" style="color: {{ inflow.small.color }}">
-                                {{ inflow.small.small_inflow }}
+                                {{ inflow.small.small_inflow|default:0 }}
                                 </span>
                             </div>
                         </div>
@@ -186,21 +188,21 @@
                             <div class="input-group mb-3">
                                 <span id="text">当日净流入：</span>
                                 <span id="text-style" style="color: {{ inflow.main.color }}">
-                                {{ inflow.main.main_inflow }}
+                                {{ inflow.main.main_inflow|default:0 }}
                                 </span>
                                 <span id="text">5日净流入：</span>
                                 <span id="text-style" style="color: {{ inflow.five.color }}">
-                                {{ inflow.five.five_price }}
+                                {{ inflow.five.five_price|default:0 }}
                                 </span>
                                 <span id="text">20日净流入：</span>
                                 <span id="text-style" style="color: {{ inflow.twenty.color }}">
-                                {{ inflow.twenty.twenty_price }}
+                                {{ inflow.twenty.twenty_price|default:0 }}
                                 </span>
                             </div>
                             <div class="input-group mb-3">
                                 <span id="text">60日净流入：</span>
                                 <span id="text-style" style="color: {{ inflow.sixty.color }}">
-                                {{ inflow.sixty.sixty_price }}
+                                {{ inflow.sixty.sixty_price|default:0 }}
                                 </span>
                             </div>
                         </div>

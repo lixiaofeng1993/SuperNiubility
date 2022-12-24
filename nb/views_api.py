@@ -8,7 +8,7 @@
 from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 
-from .tasks import stock_history, last_day_stock_history, ef
+from .tasks import stock_history, last_day_stock_history, ef, stock_today_price
 from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange
 from public.auth_token import auth_token
 from public.common import *
@@ -26,6 +26,7 @@ def recommend_poetry(request):
 @auth_token()
 def poetry_detail(request, poetry_id):
     if request.method == POST:
+        stock_today_price.delay()
         user_id = request.session.get("user_id")
         result = cache.get(PoetryDetail.format(user_id=user_id, poetry_id=poetry_id))
         if result:

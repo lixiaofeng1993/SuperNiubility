@@ -16,6 +16,7 @@ from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
 from django.contrib.admin.options import get_content_type_for_model
 
 from nb.models import Poetry, Message, SharesHold
+from public.send_ding import profit_and_loss, profit_and_loss_ratio, limit_up
 from public.conf import *
 from public.recommend import recommend_handle
 from public.log import logger
@@ -66,10 +67,11 @@ def regularly_hold(hold, moment: dict, price: float):
     is_profit = hold.is_profit = True if hold.profit_and_loss > 0 else False
     hold.profit_and_loss = round(hold.number * float(price) - hold.number * hold.cost_price, 2)
     hold.today_price = round((float(price) - hold.last_close_price) * hold.number, 2)
-    if moment["now"] >= moment["stock_time"] > hold.update_date:
+    if moment["now"] >= moment["stock_time"] > hold.update_date and hold.cost_price:
         hold.last_close_price = price
         hold.last_day = moment["today"]
         hold.days += 1
+        profit_and_loss_ratio(hold, price)
     try:
         hold.save()
         logger.info(f"实时更新 持有股票 {hold.name} 收益 保存成功！")
@@ -136,7 +138,7 @@ def check_stoke_day():
     weekday = date(moment["year"], moment["month"], moment["day"]).strftime("%A")
     if not is_workday(date(moment["year"], moment["month"], moment["day"])) or weekday in ["Saturday", "Sunday"]:
         logger.info(f"当前时间 {moment['today']} 休市日!!!")
-        return
+        # return
     return moment
 
 

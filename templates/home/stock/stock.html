@@ -40,35 +40,27 @@
                                     <th scope="row" id="cen">{{ forloop.counter|add:flag }}</th>
                                     <td id="cen">{{ object.name }}</td>
                                     <td id="cen">{{ object.code }}</td>
-                                    <td id="cen">{{ object.number }}</td>
-                                    <td id="cen">{{ object.cost_price }}</td>
-                                    {% if object.profit_and_loss %}
-                                        {% if object.profit_and_loss < 0 %}
-                                            <td id="cen"
-                                                style="color: green;font-weight: 900;">{{ object.profit_and_loss }}</td>
-                                        {% elif object.profit_and_loss == 0 %}
-                                            <td id="cen">{{ object.profit_and_loss }}</td>
-                                        {% else %}
-                                            <td id="cen"
-                                                style="color: red;font-weight: 900;">{{ object.profit_and_loss }}</td>
-                                        {% endif %}
+                                    <td id="cen">{{ object.number|default:"--" }}</td>
+                                    <td id="cen">{{ object.cost_price|default:"--" }}</td>
+                                    {% if object.profit_and_loss < 0 %}
+                                        <td id="cen"
+                                            style="color: green;font-weight: 900;">{{ object.profit_and_loss }}</td>
+                                    {% elif object.profit_and_loss > 0 %}
+                                        <td id="cen"
+                                            style="color: red;font-weight: 900;">{{ object.profit_and_loss }}</td>
                                     {% else %}
-                                        <td id="cen">-</td>
+                                        <td id="cen">{{ object.profit_and_loss|default:"--" }}</td>
                                     {% endif %}
-                                    {% if object.today_price %}
-                                        {% if object.today_price < 0 %}
-                                            <td id="cen"
-                                                style="color: green;font-weight: 900;">{{ object.today_price }}</td>
-                                        {% elif object.today_price == 0 %}
-                                            <td id="cen">{{ object.today_price }}</td>
-                                        {% else %}
-                                            <td id="cen"
-                                                style="color: red;font-weight: 900;">{{ object.today_price }}</td>
-                                        {% endif %}
+                                    {% if object.today_price < 0 %}
+                                        <td id="cen"
+                                            style="color: green;font-weight: 900;">{{ object.today_price }}</td>
+                                    {% elif object.today_price > 0 %}
+                                        <td id="cen"
+                                            style="color: red;font-weight: 900;">{{ object.today_price }}</td>
                                     {% else %}
-                                        <td id="cen">-</td>
+                                        <td id="cen">{{ object.today_price|default:"--" }}</td>
                                     {% endif %}
-                                    <td id="cen">{{ object.days }}</td>
+                                    <td id="cen">{{ object.days|default:"--" }}</td>
                                     <td>
                                         <button class="btn btn-square btn-outline-primary m-2" title="导入历史数据."
                                                 onclick="return import_data('{{ object.id }}');">
