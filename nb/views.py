@@ -145,9 +145,9 @@ class StockIndex(ListView):
     def get_queryset(self):
         self.request.session["login_from"] = self.request.get_full_path()
         model = model_superuser(self.request, self.model)
-        obj_list = model.filter(is_delete=False).order_by("-create_date")
+        obj_list = model.filter(is_delete=False).order_by("-number", "-create_date")
         obj_list = handle_model(list(obj_list))
-        return obj_list
+        return stock_home(obj_list)
 
     def get_context_data(self, **kwargs):
         self.page = self.request.GET.dict().get('page', '1')

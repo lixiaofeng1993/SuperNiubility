@@ -24,13 +24,13 @@
                             <thead>
                             <tr>
                                 <th scope="col">#</th>
-                                <th scope="col">持仓股票</th>
-                                <th scope="col">股票代码</th>
+                                <th scope="col">证券/市值</th>
                                 <th scope="col">持仓数量</th>
-                                <th scope="col">持仓成本</th>
+                                <th scope="col">现价/成本</th>
                                 <th scope="col">持仓盈亏</th>
                                 <th scope="col">当日盈亏</th>
                                 <th scope="col">持仓天数</th>
+                                <th scope="col">证券代码</th>
                                 <th scope="col">操作</th>
                             </tr>
                             </thead>
@@ -38,29 +38,46 @@
                             {% for object in object_list %}
                                 <tr>
                                     <th scope="row" id="cen">{{ forloop.counter|add:flag }}</th>
-                                    <td id="cen">{{ object.name }}</td>
-                                    <td id="cen">{{ object.code }}</td>
-                                    <td id="cen">{{ object.number|default:"--" }}</td>
-                                    <td id="cen">{{ object.cost_price|default:"--" }}</td>
-                                    {% if object.profit_and_loss < 0 %}
-                                        <td id="cen"
-                                            style="color: green;font-weight: 900;">{{ object.profit_and_loss }}</td>
-                                    {% elif object.profit_and_loss > 0 %}
-                                        <td id="cen"
-                                            style="color: red;font-weight: 900;">{{ object.profit_and_loss }}</td>
+                                    {% if object.cost_price %}
+                                        <td id="cen">
+                                            <span>{{ object.name }}</span><br><span>{{ object.total_price }}</span></td>
+                                        <td id="cen">{{ object.number|default:"--" }}</td>
+                                        <td id="cen">
+                                            <span>{{ object.now_price }}</span><br><span>{{ object.cost_price }}</span>
+                                        </td>
+                                        {% if object.profit_and_loss < 0 %}
+                                            <td id="cen" style="color: green;font-weight: 900;">
+                                                <span>{{ object.profit_and_loss }}</span><br><span>{{ object.hold_rate }}</span>
+                                            </td>
+                                        {% elif object.profit_and_loss > 0 %}
+                                            <td id="cen" style="color: red;font-weight: 900;">
+                                                <span>{{ object.profit_and_loss }}</span><br><span>{{ object.hold_rate }}</span>
+                                            </td>
+                                        {% else %}
+                                            <td id="cen">
+                                                <span>{{ object.profit_and_loss }}</span><br><span>{{ object.hold_rate }}</span>
+                                            </td>
+                                        {% endif %}
+                                        {% if object.today_price < 0 %}
+                                            <td id="cen"
+                                                style="color: green;font-weight: 900;">{{ object.today_price }}</td>
+                                        {% elif object.today_price > 0 %}
+                                            <td id="cen"
+                                                style="color: red;font-weight: 900;">{{ object.today_price }}</td>
+                                        {% else %}
+                                            <td id="cen">{{ object.today_price|default:"--" }}</td>
+                                        {% endif %}
+                                        <td id="cen">{{ object.days|default:"--" }}</td>
+                                        <td id="cen">{{ object.code }}</td>
                                     {% else %}
+                                        <td id="cen">{{ object.name }}</td>
+                                        <td id="cen">{{ object.number|default:"--" }}</td>
+                                        <td id="cen">{{ object.cost_price|default:"--" }}</td>
                                         <td id="cen">{{ object.profit_and_loss|default:"--" }}</td>
-                                    {% endif %}
-                                    {% if object.today_price < 0 %}
-                                        <td id="cen"
-                                            style="color: green;font-weight: 900;">{{ object.today_price }}</td>
-                                    {% elif object.today_price > 0 %}
-                                        <td id="cen"
-                                            style="color: red;font-weight: 900;">{{ object.today_price }}</td>
-                                    {% else %}
                                         <td id="cen">{{ object.today_price|default:"--" }}</td>
+                                        <td id="cen">{{ object.days|default:"--" }}</td>
+                                        <td id="cen">{{ object.code }}</td>
                                     {% endif %}
-                                    <td id="cen">{{ object.days|default:"--" }}</td>
                                     <td>
                                         <button class="btn btn-square btn-outline-primary m-2" title="导入历史数据."
                                                 onclick="return import_data('{{ object.id }}');">

@@ -15,7 +15,7 @@ from django.db.models import Q  # 与或非 查询
 from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
 from django.contrib.admin.options import get_content_type_for_model
 
-from nb.models import Poetry, Message, SharesHold
+from nb.models import Poetry, Message, SharesHold, StockDetail
 from public.send_ding import profit_and_loss, profit_and_loss_ratio, limit_up
 from public.conf import *
 from public.recommend import recommend_handle
@@ -243,6 +243,29 @@ def handle_model(model_obj):
     elif isinstance(model_obj, object):
         model_obj = format_obj(model_obj)
     return model_obj
+
+
+def stock_home(obj_list: list):
+    data_list = list()
+    for obj in obj_list:
+        if obj.cost_price:
+            detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=obj.id)).order_by("-time").first()
+            data_list.append({
+                "name": obj.name,
+                "code": obj.code,
+                "total_price": round(detail.nowPri * obj.number, 2),
+                "now_price": detail.nowPri,
+                "number": obj.number,
+                "profit_and_loss": obj.profit_and_loss,
+                "cost_price": obj.cost_price,
+                "hold_rate": str(round(obj.profit_and_loss / (obj.cost_price * obj.number) * 100, 3)) + "%",
+                "today_price": obj.today_price,
+                "days": obj.days,
+                "id": obj.id
+            })
+        else:
+            data_list.append(obj)
+    return data_list
 
 
 def home_poetry():

@@ -777,6 +777,38 @@ def forecast(request):
         flag = True if diff_num > 0 else False
         date_time = quote["时间"]
         tra_text, inflow_text = "", ""
+        share_first = InflowStock.objects.filter(
+            Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
+        if share_first:
+            main_inflow = share_first.main_inflow
+            small_inflow = share_first.small_inflow
+            middle_inflow = share_first.middle_inflow
+            big_inflow = share_first.big_inflow
+            huge_inflow = share_first.huge_inflow
+            just_inflow = 0
+            loss_inflow = 0
+
+            def add_inflow(flow):
+                nonlocal just_inflow, loss_inflow
+                if flow >= 0:
+                    just_inflow += flow
+                else:
+                    loss_inflow += flow
+
+            add_inflow(small_inflow)
+            add_inflow(middle_inflow)
+            add_inflow(big_inflow)
+            add_inflow(huge_inflow)
+            if small_inflow > 0:
+                small_rate = round(small_inflow / just_inflow * 100, 2)
+            else:
+                small_rate = round(small_inflow / loss_inflow * 100, 2)
+            if main_inflow < 0 and small_rate > 50:
+                flag = False
+                inflow_text = f"主力流出，小散买入超 {small_rate}%."
+            elif main_inflow > 0 > small_rate:
+                flag = True
+                inflow_text = f"主力流入，小散卖出 {small_rate}%."
         moment = etc_time()
         if moment["now"] > moment["stock_time"]:
             tra_num = quote["成交量"]
@@ -790,52 +822,21 @@ def forecast(request):
                 if date_time not in diff_list:
                     diff_list.append(date_time)
                     data_list.append(detail.traNumber)
-            data_list.sort()
-            if tra_num > data_list[-1]:
-                tra_text = "放量；"
-            elif tra_num < data_list[0]:
-                tra_text = "缩量；"
-            else:
-                index = data_list.index(tra_num)
-                tra_rate = round(index / len(data_list))
-                if tra_rate < 0.4:
-                    tra_text = f"量偏低，在第{index + 1}位；"
-                elif 0.4 <= tra_rate <= 0.6:
-                    tra_text = f"量中等，在第{index + 1}位；"
+            if data_list:
+                data_list.sort()
+                if tra_num > data_list[-1]:
+                    tra_text = "放量；"
+                elif tra_num < data_list[0]:
+                    tra_text = "缩量；"
                 else:
-                    tra_text = f"量偏高，在第{index + 1}位；"
-        share_first = InflowStock.objects.filter(
-            Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
-        main_inflow = share_first.main_inflow
-        small_inflow = share_first.small_inflow
-        middle_inflow = share_first.middle_inflow
-        big_inflow = share_first.big_inflow
-        huge_inflow = share_first.huge_inflow
-        just_inflow = 0
-        loss_inflow = 0
-
-        def add_inflow(flow):
-            nonlocal just_inflow, loss_inflow
-            if flow >= 0:
-                just_inflow += flow
-            else:
-                loss_inflow += flow
-
-        add_inflow(small_inflow)
-        add_inflow(middle_inflow)
-        add_inflow(big_inflow)
-        add_inflow(huge_inflow)
-
-        if small_inflow > 0:
-            small_rate = round(small_inflow / just_inflow * 100, 2)
-        else:
-            small_rate = round(small_inflow / loss_inflow * 100, 2)
-        if main_inflow < 0 and small_rate > 50:
-            flag = False
-            inflow_text = f"主力流出，小散买入超 {small_rate}%."
-        elif main_inflow > 0 > small_rate:
-            flag = True
-            inflow_text = f"主力流入，小散卖出 {small_rate}%."
+                    index = data_list.index(tra_num)
+                    tra_rate = round(index / len(data_list))
+                    if tra_rate < 0.4:
+                        tra_text = f"量偏低，在第{index + 1}位；"
+                    elif 0.4 <= tra_rate <= 0.6:
+                        tra_text = f"量中等，在第{index + 1}位；"
+                    else:
+                        tra_text = f"量偏高，在第{index + 1}位；"
         text = buy_text + tra_text + inflow_text
 
         info = {
