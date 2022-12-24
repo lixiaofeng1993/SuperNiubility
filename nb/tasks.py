@@ -10,7 +10,7 @@ from django.db.models import Q  # 与或非 查询
 
 from nb.models import ToDo, Shares, StockTodayPrice, SharesHold
 from public.stock_api import ef, delete_cache, etc_time, cache, StockEndTime, stock_today, stock_buy_sell, stock_inflow, \
-    stock_holder as holder, stock_sector, stock_holder_number, stock_super, TodayPrice, TodayTraNumber
+    stock_holder as holder, stock_sector, stock_holder_number, stock_super, TodayPrice, TodayTraNumber, check_stoke_day
 from public.log import logger
 
 
@@ -115,6 +115,9 @@ def stock_holder():
 
 @shared_task()
 def stock_today_price():
+    moment = check_stoke_day()
+    if not moment:  # 判断股市休市时间
+        return
     hold_list = SharesHold.objects.filter(is_delete=False)
     price_list = list()
     for hold in hold_list:
