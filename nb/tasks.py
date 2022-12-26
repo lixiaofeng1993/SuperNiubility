@@ -36,7 +36,7 @@ def make_overdue_todo():
 @shared_task()
 def stock_history(code: str, hold_id: str, user_id, beg: str, end: str, last_day_time: str):
     """
-    持仓股票历史数据写入
+    持仓股票k线历史数据写入
     """
     freq = 15  # 间隔15分钟
     df = ef.stock.get_quote_history([code], klt=freq, beg=beg, end=end)
@@ -97,6 +97,9 @@ def last_day_stock_history(code: str, hold_id: str, user_id):
 
 @shared_task()
 def real_time_stock(stock_id: str):
+    """
+    更新股票持仓成本实时更新盈亏
+    """
     stock_buy_sell(stock_id=stock_id)
 
 
@@ -113,6 +116,9 @@ def stock():
 
 @shared_task()
 def stock_holder():
+    """
+    定时更新龙虎榜、股东数据
+    """
     holder()
     stock_holder_number()
     stock_super()
@@ -120,6 +126,9 @@ def stock_holder():
 
 @shared_task()
 def stock_today_price():
+    """
+    更新股票日盈
+    """
     moment = check_stoke_day()
     if not moment:  # 判断股市休市时间
         return

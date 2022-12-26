@@ -2,21 +2,21 @@ import efinance as ef
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView
-from django.db.models import Q  # 与或非 查询
+# from django.db.models import Q  # 与或非 查询
 from django.contrib.auth.decorators import login_required
-from django_pandas.io import read_frame
+# from django_pandas.io import read_frame
 
 from nb.models import *
 from nb.tasks import real_time_stock
 from public.auth_token import auth_token
-from public.common import *
+from public.views_com import *
 from public.response import JsonResponse
 
 
 @method_decorator(login_required, name='dispatch')
 class ToDOIndex(ListView):
     """
-    签名页面
+    待办任务页面
     """
     model = ToDo
     template_name = 'home/to_do/to_do.html'
@@ -133,7 +133,7 @@ def todo_del(request, todo_id):
 @method_decorator(login_required, name='dispatch')
 class StockIndex(ListView):
     """
-    签名页面
+    股票页面
     """
     model = SharesHold
     template_name = 'home/stock/stock.html'
@@ -204,11 +204,6 @@ def stock_add(request):
         try:
             user_id = request.session.get("user_id")
             if stock_id:
-                # if is_detail:
-                #     hold = model.filter(Q(is_detail=True) & Q(is_delete=False)).first()
-                #     if hold:
-                #         hold.is_detail = False
-                #         hold.save()
                 hold = model.filter(Q(id=stock_id) & Q(is_delete=False)).first()
                 try:
                     if str(hold.cost_price) != cost_price:  # 持仓成本修改后，更新 StockChange 表
@@ -262,114 +257,14 @@ def stock_look(request, stock_id):
     model = model_superuser(request, SharesHold)
     hold = model.get(id=stock_id)
     info.update({
-        "flag": False,
         "obj": hold,
     })
-
-    def font_color(number):  # 字体颜色
-        if number > 0:
-            return "red"
-        elif number < 0:
-            return "green"
-        else:
-            return "#757575"
-
-    def font_color_two(number, number1):  # 字体颜色
-        if number > number1:
-            return "red"
-        elif number < number1:
-            return "green"
-        else:
-            return "#757575"
-
+    update_time = None
     # 股票详情
-    detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
-    if not detail:
-        return render(request, "home/stock/look_stock.html", info)
-    stock_detail = {
-        "todayStartPri": {
-            "todayStartPri": detail.todayStartPri,
-            "color": font_color_two(detail.todayStartPri, detail.yestodEndPri),
-        }, "nowPri": {
-            "nowPri": detail.nowPri,
-            "color": font_color_two(detail.nowPri, detail.yestodEndPri),
-        }, "avg_price": {
-            "avg_price": detail.avg_price,
-            "color": font_color_two(detail.avg_price, detail.yestodEndPri),
-        }, "todayMax": {
-            "todayMax": detail.todayMax,
-            "color": font_color_two(detail.todayMax, detail.yestodEndPri),
-        }, "todayMin": {
-            "todayMin": detail.todayMin,
-            "color": font_color_two(detail.todayMin, detail.yestodEndPri),
-        }, "increPer": {
-            "increPer": detail.increPer,
-            "color": font_color(detail.increPer),
-        }, "increase": {
-            "increase": detail.increase,
-            "color": font_color(detail.increase),
-        },
-        "top_price": detail.top_price,
-        "down_price": detail.down_price,
-        "turnover_rate": detail.turnover_rate,
-        "industry": detail.industry,
-        "P_E_ratio_dynamic": detail.P_E_ratio_dynamic,
-        "ROE_ratio": handle_rate(detail.ROE_ratio),
-        "traNumber": handle_price(detail.traNumber),
-        "traAmount": handle_price(detail.traAmount),
-        "yestodEndPri": detail.yestodEndPri,
-        "section_no": detail.section_no,
-        "net_profit": handle_price(detail.net_profit),
-        "total_market_value": handle_price(detail.total_market_value),
-        "circulation_market_value": handle_price(detail.circulation_market_value),
-        "gross_profit_margin": handle_rate(detail.gross_profit_margin),
-        "net_interest_rate": handle_rate(detail.net_interest_rate),
-    }
+    detail = handle_detail_data(stock_id)
     # 资金流向
     # 主力资金趋势
-    inflow_time_list = InflowStock.objects.filter(Q(is_delete=False) &
-                                                  Q(shares_hold_id=hold.id)).exclude(time=None).order_by("-time")
-    day_list = list()
-    price = 0
-    five_price = 0
-    twenty_price = 0
-    sixty_price = 0
-    inflow_date_list = []
-    for flow in inflow_time_list:
-        day_list.append(flow.date)
-    day_list = list(set(day_list))
-    i = 0
-    for day in day_list:
-        _flow = InflowStock.objects.filter(Q(is_delete=False) & Q(date=day) &
-                                           Q(shares_hold_id=hold.id)).exclude(time=None).order_by("-time").first()
-        price += _flow.main_inflow
-        i += 1
-        if i == 5:
-            five_price = price
-            break
-        elif i == 20:
-            twenty_price = price
-            break
-        elif i == 60:
-            sixty_price = price
-            break
-    if not sixty_price:
-        inflow_date_list = InflowStock.objects.filter(Q(is_delete=False) & Q(time=None) &
-                                                      Q(shares_hold_id=hold.id)).order_by("-date")[:60 - len(day_list)]
-        for _flow in inflow_date_list:
-            sixty_price += _flow.main_inflow
-    if not twenty_price:
-        for _flow in inflow_date_list[:20 - len(day_list)]:
-            twenty_price += _flow.main_inflow
-    if not five_price:
-        for _flow in inflow_date_list[:5 - len(day_list)]:
-            five_price += _flow.main_inflow
-    five_price = round((five_price + price) / 10000)
-    twenty_price = round((twenty_price + price) / 10000)
-    sixty_price = round((sixty_price + price) / 10000)
-    if not inflow_time_list and not inflow_date_list:
-        return render(request, "home/stock/look_stock.html", info)
-    inflow = inflow_time_list[0] if inflow_time_list else inflow_date_list[0]
+    inflow = handle_inflow_data(stock_id)
     # 股票股东
     holder_list = Shareholder.objects.filter(Q(is_delete=False) &
                                              Q(shares_hold_id=hold.id)).order_by("-time", "-hold_rate")[:10]
@@ -382,67 +277,22 @@ def stock_look(request, stock_id):
     sectors = list()
     for sector in sector_list:
         if sector.sector_name not in sector_list_diff:
+            update_time = sector.update_date
             sector.update_date = sector.update_date.strftime("%Y-%m-%d %H:%M")
             sectors.append(sector)
         sector_list_diff.append(sector.sector_name)
     # 龙虎榜
     dragon_obj = StockSuper.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
     # 持仓股东数量数据
-    holder_obj = ShareholderNumber.objects.filter(Q(is_delete=False) &
-                                                  Q(shares_hold_id=hold.id)).order_by("-end_time").first()
-
-    holder_number = {
-        "holder_number": round(holder_obj.holder_number),
-        "fluctuate": round(holder_obj.fluctuate, 2),
-        "diff_rate": handle_rate(holder_obj.diff_rate),
-        "end_time": holder_obj.end_time.strftime("%Y-%m-%d"),
-        "avg_amount": handle_price(holder_obj.avg_amount),
-        "avg_number": handle_price(holder_obj.avg_number),
-        "total_amount": handle_price(holder_obj.total_amount),
-        "total_price": handle_price(holder_obj.total_price),
-        "notice_date": holder_obj.notice_date.strftime("%Y-%m-%d"),
-    } if holder_obj else {}
+    number = handle_holder_number_data(stock_id)
     info.update({
-        "detail": stock_detail,
-        "inflow": {
-            "main": {
-                "main_inflow": round(inflow.main_inflow / 10000),
-                "color": font_color(inflow.main_inflow)
-            },
-            "small": {
-                "small_inflow": round(inflow.small_inflow / 10000),
-                "color": font_color(inflow.small_inflow)
-            },
-            "middle": {
-                "middle_inflow": round(inflow.middle_inflow / 10000),
-                "color": font_color(inflow.middle_inflow)
-            },
-            "big": {
-                "big_inflow": round(inflow.big_inflow / 10000),
-                "color": font_color(inflow.big_inflow)
-            },
-            "huge": {
-                "huge_inflow": round(inflow.huge_inflow / 10000),
-                "color": font_color(inflow.huge_inflow)
-            },
-            "five": {
-                "five_price": five_price,
-                "color": font_color(five_price)
-            },
-            "twenty": {
-                "twenty_price": twenty_price,
-                "color": font_color(twenty_price)
-            },
-            "sixty": {
-                "sixty_price": sixty_price,
-                "color": font_color(sixty_price)
-            },
-        },
+        "detail": detail,
+        "inflow": inflow,
         "holder": holder_list,
         "dragon_obj": dragon_obj,
-        "holder_number": holder_number,
+        "holder_number": number,
         "sector": sectors,
-        "update_time": format_time(detail.time),
+        "update_time": update_time,
     })
     Message.objects.filter(Q(is_delete=False) & Q(is_look=False) &
                            Q(obj_id=stock_id) & Q(type=Detail)).update(is_look=True)
@@ -451,6 +301,9 @@ def stock_look(request, stock_id):
 
 @login_required
 def chart_look(request, stock_id):
+    """
+    单个股票图表
+    """
     if request.method == GET:
         info = request_get_search(request)
         model = model_superuser(request, SharesHold)
@@ -470,6 +323,9 @@ def chart_look(request, stock_id):
 
 @login_required
 def chart_all(request):
+    """
+    所有股票图表
+    """
     if request.method == GET:
         info = request_get_search(request)
         model = model_superuser(request, SharesHold)
@@ -484,6 +340,9 @@ def chart_all(request):
 
 @login_required
 def dragon(request):
+    """
+    龙虎榜
+    """
     if request.method == GET:
         info = request_get_search(request)
         stock = StockSuper.objects.filter(is_delete=False).order_by("-time").first()
@@ -570,6 +429,9 @@ class RecordIndex(ListView):
 
 @login_required
 def record_look(request, record_id):
+    """
+    查看操作记录
+    """
     info = request_get_search(request)
     log = LogEntry.objects.get(id=record_id)
     info.update({"obj": log})

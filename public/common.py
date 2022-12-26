@@ -23,7 +23,9 @@ from public.log import logger
 
 
 def random_str():
-    """随机字符串"""
+    """
+    随机字符串
+    """
     H = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     salt = ""
     for i in range(CodeNumber):
@@ -32,6 +34,9 @@ def random_str():
 
 
 def difference_stock(code: str):
+    """
+    区分沪深市场
+    """
     # 沪市股票包含上证主板和科创板和B股：沪市主板股票代码是60开头、科创板股票代码是688开头、B股代码900开头
     if code.startswith("60") or code.startswith("688") or code.startswith("900"):
         return f"sh{code}"
@@ -82,7 +87,9 @@ def regularly_hold(hold, moment: dict, price: float):
 
 
 def format_time(date_time: datetime):
-    """格式化时间天，小时，分钟，秒"""
+    """
+    格式化时间天，小时，分钟，秒
+    """
     now = etc_time()["now"]
     total_seconds = round((now - date_time).total_seconds())
     total_seconds = total_seconds if total_seconds > 0 else 1
@@ -135,6 +142,9 @@ def surplus_second():
 
 
 def check_stoke_day():
+    """
+    是否休市日
+    """
     moment = etc_time()
     weekday = date(moment["year"], moment["month"], moment["day"]).strftime("%A")
     if not is_workday(date(moment["year"], moment["month"], moment["day"])) or weekday in ["Saturday", "Sunday"]:
@@ -144,6 +154,9 @@ def check_stoke_day():
 
 
 def check_stoke_date():
+    """
+    是否开盘
+    """
     moment = check_stoke_day()
     if not moment:
         return
@@ -216,7 +229,7 @@ def format_obj(obj: object):
 
 def handle_model(model_obj):
     """
-    end_time 时间格式化
+    数据库 时间字段 格式化
     """
     if isinstance(model_obj, list):
         obj_list = model_obj.copy()
@@ -246,23 +259,29 @@ def handle_model(model_obj):
 
 
 def stock_home(obj_list: list):
+    """
+    股票页面展示数据处理
+    """
     data_list = list()
     for obj in obj_list:
         if obj.cost_price:
             detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=obj.id)).order_by("-time").first()
-            data_list.append({
-                "name": obj.name,
-                "code": obj.code,
-                "total_price": round(detail.nowPri * obj.number, 2),
-                "now_price": detail.nowPri,
-                "number": obj.number,
-                "profit_and_loss": obj.profit_and_loss,
-                "cost_price": obj.cost_price,
-                "hold_rate": str(round(obj.profit_and_loss / (obj.cost_price * obj.number) * 100, 3)) + "%",
-                "today_price": obj.today_price,
-                "days": obj.days,
-                "id": obj.id
-            })
+            if not detail:
+                data_list.append(obj)
+            else:
+                data_list.append({
+                    "name": obj.name,
+                    "code": obj.code,
+                    "total_price": round(detail.nowPri * obj.number, 2),
+                    "now_price": detail.nowPri,
+                    "number": obj.number,
+                    "profit_and_loss": obj.profit_and_loss,
+                    "cost_price": obj.cost_price,
+                    "hold_rate": str(round(obj.profit_and_loss / (obj.cost_price * obj.number) * 100, 3)) + "%",
+                    "today_price": obj.today_price,
+                    "days": obj.days,
+                    "id": obj.id
+                })
         else:
             data_list.append(obj)
     return data_list
@@ -409,6 +428,9 @@ def handle_cache(request, flag: str):
 
 
 def handle_price(price):
+    """
+    数据加单位
+    """
     if price >= 100000000 or price <= -100000000:
         price = str(round(price / 100000000, 2)) + "亿"
     elif price >= 10000 or price <= -10000:
@@ -419,7 +441,34 @@ def handle_price(price):
 
 
 def handle_rate(rate):
+    """
+    数据加 %
+    """
     return str(round(rate, 2)) + "%"
+
+
+def font_color(number):  # 字体颜色
+    """
+    根据0判断展示字体颜色
+    """
+    if number > 0:
+        return "red"
+    elif number < 0:
+        return "green"
+    else:
+        return "#757575"
+
+
+def font_color_two(number, number1):  # 字体颜色
+    """
+    两个数据比较判断字体颜色
+    """
+    if number > number1:
+        return "red"
+    elif number < number1:
+        return "green"
+    else:
+        return "#757575"
 
 
 def pagination_data(paginator, page, is_paginated):

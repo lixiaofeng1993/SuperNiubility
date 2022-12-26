@@ -16,6 +16,9 @@ from public.response import JsonResponse
 
 
 def recommend_poetry(request):
+    """
+    推荐诗词
+    """
     if request.method == POST:
         obj_list = cache.get(RECOMMEND)
         if not obj_list:
@@ -25,6 +28,9 @@ def recommend_poetry(request):
 
 @auth_token()
 def poetry_detail(request, poetry_id):
+    """
+    诗词详细数据
+    """
     if request.method == POST:
         user_id = request.session.get("user_id")
         result = cache.get(PoetryDetail.format(user_id=user_id, poetry_id=poetry_id))
@@ -47,6 +53,9 @@ def poetry_detail(request, poetry_id):
 
 @auth_token()
 def todo_done(request, todo_id):
+    """
+    待办操作完成
+    """
     if request.method == POST:
         body = handle_json(request)
         if not body:
@@ -75,6 +84,9 @@ def todo_done(request, todo_id):
 
 @auth_token()
 def todo_home(request, todo_id):
+    """
+    待办是否展示首页
+    """
     if request.method == POST:
         model = model_superuser(request, ToDo)
         td = model.get(id=todo_id)
@@ -93,6 +105,9 @@ def todo_home(request, todo_id):
 
 @auth_token()
 def todo_find_number(request, number):
+    """
+    首页展示待办数据
+    """
     if request.method == POST:
         model = model_superuser(request, ToDo)
         try:
@@ -108,6 +123,9 @@ def todo_find_number(request, number):
 
 @auth_token()
 def stock_import(request, hold_id):
+    """
+    股票历史数据导入
+    """
     if request.method == POST:
         model = model_superuser(request, SharesHold)
         hold = model.get(id=hold_id)
@@ -127,7 +145,7 @@ def stock_import(request, hold_id):
         if not check_stoke_date() or moment["now"] >= moment["end_time"]:
             flag = False
             last_day_stock_history.delay(code=code, hold_id=hold_id, user_id=user_id)
-            while 1:
+            while 1:  # 强制等待异步任务执行完成
                 end_time = cache.get(StockEndTime.format(user_id=user_id))
                 if not end_time:
                     time.sleep(5)
@@ -148,6 +166,9 @@ def stock_import(request, hold_id):
 
 @auth_token()
 def day_chart(request):
+    """
+    今日k线图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "day")
         if isinstance(datasets, dict):
@@ -195,6 +216,9 @@ def day_chart(request):
 
 @auth_token()
 def five_chart(request):
+    """
+    5日k线图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "five")
         if isinstance(datasets, dict):
@@ -244,6 +268,9 @@ def five_chart(request):
 
 @auth_token()
 def ten_chart(request):
+    """
+    10日k线图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "ten")
         if isinstance(datasets, dict):
@@ -293,6 +320,9 @@ def ten_chart(request):
 
 @auth_token()
 def twenty_chart(request):
+    """
+    20日k线图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "twenty")
         if isinstance(datasets, dict):
@@ -342,6 +372,9 @@ def twenty_chart(request):
 
 @auth_token()
 def half_year_chart(request):
+    """
+    全部数据k线图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "year")
         if isinstance(datasets, dict):
@@ -397,6 +430,9 @@ def half_year_chart(request):
 
 @auth_token()
 def buy_sell_chart(request):
+    """
+    买入卖出托单柱状图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "buy")
         if isinstance(datasets, dict):
@@ -519,6 +555,9 @@ def buy_sell_chart(request):
 
 @auth_token()
 def inflow_chart(request):
+    """
+    资金流入流出柱状图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "inflow")
         if isinstance(datasets, dict):
@@ -613,6 +652,9 @@ def inflow_chart(request):
 
 @auth_token()
 def price_chart(request):
+    """
+    持仓日盈折线图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "price")
         if isinstance(datasets, dict):
@@ -650,6 +692,9 @@ def price_chart(request):
 
 @auth_token()
 def cost_chart(request):
+    """
+    持仓成本折线图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "cost")
         if isinstance(datasets, dict):
@@ -683,6 +728,9 @@ def cost_chart(request):
 
 @auth_token()
 def number_chart(request):
+    """
+    每日交易量折线图
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, "number")
         if isinstance(datasets, dict):
@@ -720,6 +768,9 @@ def number_chart(request):
 
 @auth_token()
 def record(request):
+    """
+    首页展示操作记录
+    """
     if request.method == POST:
         log_list = LogEntry.objects.all().order_by("-action_time")[:HomeNumber]
         data_list = list()
@@ -733,6 +784,9 @@ def record(request):
 
 @auth_token()
 def message_remind(request):
+    """
+    消息提醒数据
+    """
     if request.method == POST:
         # moment = etc_time()
         # & Q(date=moment["today"])
@@ -762,6 +816,9 @@ def message_remind(request):
 
 @auth_token()
 def forecast(request):
+    """
+    股票涨跌预测
+    """
     if request.method == POST:
         datasets, user_id, stock_id = handle_cache(request, flag="")
         if not stock_id:

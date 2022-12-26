@@ -6,6 +6,9 @@ from django.contrib.auth.models import User
 
 
 class Author(models.Model):
+    """
+    诗人信息
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, null=False, help_text="诗人名称")
     dynasty = models.CharField(max_length=20, default=None, help_text="诗人所属朝代")
@@ -23,6 +26,9 @@ class Author(models.Model):
 
 
 class Poetry(models.Model):
+    """
+    诗词名句
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     type = models.CharField(max_length=20, default=None, help_text="诗词类型")
     phrase = models.CharField(max_length=200, default=None, help_text="名句")
@@ -225,7 +231,7 @@ class StockDetail(models.Model):
 
 class ToDo(models.Model):
     """
-    待办
+    待办任务
     """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     describe = models.TextField(default=None, help_text="待办描述")
@@ -247,7 +253,7 @@ class ToDo(models.Model):
 
 class Message(models.Model):
     """
-    消息
+    消息数据
     """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, null=False, help_text="消息内容")
@@ -269,7 +275,7 @@ class Message(models.Model):
 
 class KDJStock(models.Model):
     """
-    kdj
+    kdj数据
     """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     k = models.FloatField(default=0.00, help_text="k值")
@@ -293,7 +299,7 @@ class KDJStock(models.Model):
 
 class Shareholder(models.Model):
     """
-    股票股东
+    股票十大股东信息
     """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, default=None, help_text="股票名称")
@@ -321,6 +327,9 @@ class Shareholder(models.Model):
 
 
 class ShareholderNumber(models.Model):
+    """
+    股票人数变化
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, default=None, help_text="股票名称")
     code = models.CharField(max_length=20, default=None, help_text="股票代码")
@@ -403,6 +412,9 @@ class StockSector(models.Model):
 
 
 class StockSuper(models.Model):
+    """
+    龙虎榜数据
+    """
     id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=20, default=None, help_text="股票名称")
     code = models.CharField(max_length=20, default=None, help_text="股票代码")
