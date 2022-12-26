@@ -49,7 +49,8 @@
                                 <span id="text">股票：</span><span id="text-style">{{ obj.name }}</span>
                                 <span id="text">代码：</span><span id="text-style">{{ obj.code }}</span>
                                 <span id="text">数量：</span><span id="text-style">{{ obj.number|default:"--" }} 股</span>
-                                <span id="text">成本：</span><span id="text-style">{{ obj.cost_price|default:"--" }} 元/股</span>
+                                <span id="text">成本：</span><span
+                                    id="text-style">{{ obj.cost_price|default:"--" }} 元/股</span>
                             </div>
                             <div class="input-group mb-3">
                                 <span id="text">盈亏：</span>
@@ -85,9 +86,18 @@
                                 </div>
                             </div>
                         {% endif %}
-                        <div class="bg-light rounded h-100 p-4" id="forecast">
+                        {% if text %}
+                            <div class="bg-light rounded h-100 p-4">
+                                <p class="nav-item mb-4" id="text-style">预测</p>
+                                <div class="input-group mb-3">
+                                    <span id="text"></span>
+                                    <span id="text-style">
+                                    {{ text }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
 
-                        </div>
                         <div class="bg-light rounded h-100 p-4">
                             <p class="nav-item mb-4" id="text-style">盘口</p>
                             <div class="input-group mb-3">
@@ -336,64 +346,6 @@
             document.getElementById('myImg').style.display = "block";
             document.getElementById("img01").src = document.getElementById(imgId).src;
         }
-
-        function forecast() {
-            let ale = $("#alert");
-            let username = "{{ user.username }}";
-            let token = sessionStorage.getItem(username);
-            let dataJson = JSON.stringify({
-                "stock_id": "{{ obj.id }}",
-            })
-            $.ajax({
-                type: "post",
-                url: "{% url 'forecast' %}",
-                headers: {
-                    "Authorization": token
-                },
-                async: false,
-                dataType: "json",
-                data: dataJson,
-                success: function (result) {
-                    console.log("===forecast===>>>", result);
-                    let code = result.code;
-                    let message = result.message;
-                    let for_obj = $("#forecast");
-                    for_obj.find("span").remove();
-                    if (code === 200) {
-                        let data = result.data;
-                        if (data) {
-                            let flag = data.flag;
-                            // let date_time = data.date_time;
-                            let text = data.text;
-                            let color = "";
-                            let msg = "";
-                            let content = "";
-                            if (flag) {
-                                color = "red";
-                                msg = "看涨";
-                            } else {
-                                color = "green";
-                                msg = "看跌";
-                            }
-                            content += `<p class="nav-item mb-4" id="text-style">预测</p><div class="input-group mb-3"><span id="text">` +
-                                `</span><span id="text-style" style="color: ${color};">${msg}</span>` +
-                                `<span id="text">解读：</span><span id="text-style">${text}</span></div>`
-                            for_obj.append(content)
-                        }
-
-                    } else if (code === 401) {
-                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
-                        setTimeout(function () {
-                            top.location.href = "{% url 'login' %}";
-                        }, 1500);
-                    } else {
-                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
-                    }
-                }
-            })
-        }
-
-        forecast();
     </script>
 {% endblock %}
 

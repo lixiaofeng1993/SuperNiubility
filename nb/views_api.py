@@ -204,7 +204,6 @@ def day_chart(request):
                     "color": hold.color,
                 },
                 "labels": labels
-
             })
         logger.info("查询当天股票k线成功.")
         if stock_id:
@@ -256,7 +255,6 @@ def five_chart(request):
                 },
                 "labels": labels,
                 "days": len((set(day_list))) - 1
-
             })
         logger.info("查询5天股票k线成功.")
         if stock_id:
@@ -308,7 +306,6 @@ def ten_chart(request):
                 },
                 "labels": labels,
                 "days": len((set(day_list))) - 1
-
             })
         logger.info("查询10天股票k线成功.")
         if stock_id:
@@ -360,7 +357,6 @@ def twenty_chart(request):
                 },
                 "labels": labels,
                 "days": len((set(day_list))) - 1
-
             })
         logger.info("查询20天股票k线成功.")
         if stock_id:
@@ -418,7 +414,6 @@ def half_year_chart(request):
                 },
                 "labels": labels[-number:],
                 "days": days
-
             })
         logger.info("查询全部股票k线成功.")
         if stock_id:
@@ -683,7 +678,6 @@ def price_chart(request):
                 "color": color,
             },
             "labels": labels,
-
         })
         logger.info("查询持仓日盈成功.")
         cache.set(TodayPrice.format(stock_id=stock_id), dataset, surplus_second())
@@ -719,7 +713,6 @@ def cost_chart(request):
                 "color": color,
             },
             "labels": labels,
-
         })
         logger.info("查询持仓成本成功.")
         cache.set(TodayCostPrice.format(stock_id=stock_id), dataset, surplus_second())
@@ -738,28 +731,16 @@ def number_chart(request):
         if not stock_id:
             return JsonResponse.CheckException()
         hold = datasets[0]
-        dataset = dict()
-        data_list = list()
-        labels = list()
-        detail_list = StockDetail.objects.filter(Q(is_delete=False) &
-                                                 Q(shares_hold_id=hold.id) &
-                                                 Q(time__hour=15)).order_by("time")
         name = hold.name
         color = hold.color
-        diff_list = list()
-        for detail in detail_list:
-            date_time = str(detail.time).split(" ")[0]
-            if date_time not in diff_list:
-                diff_list.append(date_time)
-                data_list.append(round(detail.traNumber / 10000, 2))
-                labels.append(date_time)
+        dataset = dict()
+        data_list, labels = handle_tar_number(stock_id)
         dataset.update({
             name: {
                 "data": data_list,
                 "color": color,
             },
             "labels": labels,
-
         })
         logger.info("查询每日成交量成功.")
         cache.set(TodayTraNumber.format(stock_id=stock_id), dataset, surplus_second())
@@ -812,94 +793,3 @@ def message_remind(request):
                 "type": message.type,
             })
         return JsonResponse.OK(data=result)
-
-
-@auth_token()
-def forecast(request):
-    """
-    股票涨跌预测
-    """
-    if request.method == POST:
-        datasets, user_id, stock_id = handle_cache(request, flag="")
-        if not stock_id:
-            return JsonResponse.CheckException()
-        hold = datasets[0]
-        quote = ef.stock.get_quote_snapshot(hold.code)
-        if quote.empty:
-            return JsonResponse.OK()
-        buy_num = quote["买1数量"] + quote["买2数量"] + quote["买3数量"] + quote["买4数量"] + quote["买5数量"]
-        sell_num = quote["卖1数量"] + quote["卖2数量"] + quote["卖3数量"] + quote["卖4数量"] + quote["卖5数量"]
-        diff_num = round(buy_num - sell_num)
-        buy_text = f"买卖托单差 {diff_num} 手；"
-        flag = True if diff_num > 0 else False
-        date_time = quote["时间"]
-        tra_text, inflow_text = "", ""
-        share_first = InflowStock.objects.filter(
-            Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
-        if share_first:
-            main_inflow = share_first.main_inflow
-            small_inflow = share_first.small_inflow
-            middle_inflow = share_first.middle_inflow
-            big_inflow = share_first.big_inflow
-            huge_inflow = share_first.huge_inflow
-            just_inflow = 0
-            loss_inflow = 0
-
-            def add_inflow(flow):
-                nonlocal just_inflow, loss_inflow
-                if flow >= 0:
-                    just_inflow += flow
-                else:
-                    loss_inflow += flow
-
-            add_inflow(small_inflow)
-            add_inflow(middle_inflow)
-            add_inflow(big_inflow)
-            add_inflow(huge_inflow)
-            if small_inflow > 0:
-                small_rate = round(small_inflow / just_inflow * 100, 2)
-            else:
-                small_rate = round(small_inflow / loss_inflow * 100, 2)
-            if main_inflow < 0 and small_rate > 50:
-                flag = False
-                inflow_text = f"主力流出，小散买入超 {small_rate}%."
-            elif main_inflow > 0 > small_rate:
-                flag = True
-                inflow_text = f"主力流入，小散卖出 {small_rate}%."
-        moment = etc_time()
-        if moment["now"] > moment["stock_time"]:
-            tra_num = quote["成交量"]
-            detail_list = StockDetail.objects.filter(Q(is_delete=False) &
-                                                     Q(shares_hold_id=hold.id) &
-                                                     Q(time__hour=15)).order_by("time")
-            data_list = list()
-            diff_list = list()
-            for detail in detail_list:
-                date_time = str(detail.time).split(" ")[0]
-                if date_time not in diff_list:
-                    diff_list.append(date_time)
-                    data_list.append(detail.traNumber)
-            if data_list:
-                data_list.sort()
-                if tra_num > data_list[-1]:
-                    tra_text = "放量；"
-                elif tra_num < data_list[0]:
-                    tra_text = "缩量；"
-                else:
-                    index = data_list.index(tra_num)
-                    tra_rate = round(index / len(data_list))
-                    if tra_rate < 0.4:
-                        tra_text = f"量偏低，在第{index + 1}位；"
-                    elif 0.4 <= tra_rate <= 0.6:
-                        tra_text = f"量中等，在第{index + 1}位；"
-                    else:
-                        tra_text = f"量偏高，在第{index + 1}位；"
-        text = buy_text + tra_text + inflow_text
-
-        info = {
-            "date_time": date_time,
-            "flag": flag,
-            "text": text,
-        }
-        logger.info("查询预测数据成功.")
-        return JsonResponse.OK(data=info)

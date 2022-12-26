@@ -285,6 +285,10 @@ def stock_look(request, stock_id):
     dragon_obj = StockSuper.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
     # 持仓股东数量数据
     number = handle_holder_number_data(stock_id)
+    # 预测
+    text = inflow.get("text")
+    buy_text, tra_text = forecast(stock_id)
+    text += buy_text + tra_text
     info.update({
         "detail": detail,
         "inflow": inflow,
@@ -292,6 +296,7 @@ def stock_look(request, stock_id):
         "dragon_obj": dragon_obj,
         "holder_number": number,
         "sector": sectors,
+        "text": text,
         "update_time": format_time(update_time),
     })
     Message.objects.filter(Q(is_delete=False) & Q(is_look=False) &
@@ -308,13 +313,15 @@ def chart_look(request, stock_id):
         info = request_get_search(request)
         model = model_superuser(request, SharesHold)
         hold = model.get(id=stock_id)
+        info.update({
+            "obj": hold,
+            "flag": hold.cost_price
+        })
         shares = Shares.objects.filter(Q(is_delete=False) & Q(shares_hold_id=stock_id)).order_by("-update_date").first()
         if not shares:
             return render(request, "home/stock/chart_stock.html", info)
         info.update({
-            "obj": hold,
             "update_time": format_time(shares.update_date),
-            "flag": hold.cost_price
         })
         Message.objects.filter(Q(is_delete=False) & Q(is_look=False) &
                                Q(obj_id=stock_id) & Q(type=Chart)).update(is_look=True)

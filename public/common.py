@@ -418,14 +418,33 @@ def handle_cache(request, flag: str):
             datasets = cache.get(YearChart.format(user_id=user_id))
         elif flag == "kdj":
             datasets = cache.get(TodayKDJChart.format(user_id=user_id))
-    if datasets:
-        return datasets, user_id, stock_id
+    # if datasets:
+    #     return datasets, user_id, stock_id
     model = model_superuser(request, SharesHold)
     if stock_id:
         hold_list = model.filter(Q(is_delete=False) & Q(id=stock_id))
     else:
         hold_list = model.filter(is_delete=False)
     return hold_list, user_id, stock_id
+
+
+def handle_tar_number(stock_id: str):
+    """
+    处理成交量
+    """
+    data_list = list()
+    labels = list()
+    detail_list = StockDetail.objects.filter(Q(is_delete=False) &
+                                             Q(shares_hold_id=stock_id) &
+                                             Q(time__hour=15)).order_by("time")
+    diff_list = list()
+    for detail in detail_list:
+        date_time = str(detail.time).split(" ")[0]
+        if date_time not in diff_list:
+            diff_list.append(date_time)
+            data_list.append(round(detail.traNumber / 10000, 2))
+            labels.append(date_time)
+    return data_list, labels
 
 
 def handle_price(price):

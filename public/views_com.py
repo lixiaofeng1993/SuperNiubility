@@ -5,7 +5,7 @@
 # 创建时间: 2022/12/25 0025 11:45
 # @Version：V 0.1
 # @desc :
-from django.db.models import Q  # 与或非 查询
+import efinance as ef
 
 from nb.models import InflowStock, ShareholderNumber
 from public.common import *
@@ -58,6 +58,35 @@ def handle_detail_data(stock_id: str):
     return data
 
 
+def inflow_forecast(small_price, big_price, middle_price, huge_price, today_price):
+    """
+    流入流出预测
+    """
+    just_price = 0
+    reduce_price = 0
+
+    def add_price(pri: float):
+        nonlocal just_price, reduce_price
+        if pri > 0:
+            just_price += pri
+        elif pri < 0:
+            reduce_price += pri
+
+    add_price(small_price)
+    add_price(big_price)
+    add_price(big_price)
+    add_price(middle_price)
+    add_price(huge_price)
+    if small_price > 0:
+        small_rate = round(small_price / just_price * 100, 2)
+    elif small_price < 0:
+        small_rate = -round(small_price / reduce_price * 100, 2)
+    else:
+        small_rate = 0
+    text = f"主力流入 {today_price}, 小散流入占比 {small_rate} %；"
+    return text
+
+
 def handle_inflow_data(stock_id: str):
     """
     处理资金流入流出数据
@@ -101,6 +130,7 @@ def handle_inflow_data(stock_id: str):
         elif days == 60:
             sixty_price = price
             break
+
     today_price = round(today_price / 10000) if today_price else 0
     five_price = round(five_price / 10000) if five_price else 0
     twenty_price = round(twenty_price / 10000) if twenty_price else 0
@@ -109,6 +139,8 @@ def handle_inflow_data(stock_id: str):
     big_price = round(big_price / 10000) if big_price else 0
     middle_price = round(middle_price / 10000) if middle_price else 0
     huge_price = round(huge_price / 10000) if huge_price else 0
+    text = inflow_forecast(small_price, big_price, middle_price, huge_price, today_price)
+
     data = {
         "main": {
             "main_inflow": today_price,
@@ -142,6 +174,7 @@ def handle_inflow_data(stock_id: str):
             "sixty_price": sixty_price,
             "color": font_color(sixty_price)
         },
+        "text": text
     }
     return data
 
@@ -165,3 +198,35 @@ def handle_holder_number_data(stock_id):
         "notice_date": holder_obj.notice_date.strftime("%Y-%m-%d"),
     } if holder_obj else {}
     return data
+
+
+def forecast(stock_id: str):
+    """
+    股票涨跌预测
+    """
+    hold = SharesHold.objects.get(Q(is_delete=False) & Q(id=stock_id))
+    quote = ef.stock.get_quote_snapshot(hold.code)
+    if quote.empty:
+        return
+    buy_num = quote["买1数量"] + quote["买2数量"] + quote["买3数量"] + quote["买4数量"] + quote["买5数量"]
+    sell_num = quote["卖1数量"] + quote["卖2数量"] + quote["卖3数量"] + quote["卖4数量"] + quote["卖5数量"]
+    diff_num = round(buy_num - sell_num)
+    buy_text, tra_text = f"买入卖出托单差 {diff_num} 手；", ""
+    tra_num = round(quote["成交量"] / 10000, 2)
+    data_list, labels = handle_tar_number(stock_id)
+    if data_list:
+        data_list.sort()
+        if tra_num > data_list[-1]:
+            tra_text = "放量；"
+        elif tra_num < data_list[0]:
+            tra_text = "缩量；"
+        else:
+            index = data_list.index(tra_num)
+            tra_rate = round(index / len(data_list))
+            if tra_rate < 0.4:
+                tra_text = f"量偏低，在第{index + 1}位；"
+            elif 0.4 <= tra_rate <= 0.6:
+                tra_text = f"量中等，在第{index + 1}位；"
+            else:
+                tra_text = f"量偏高，在第{index + 1}位；"
+    return buy_text, tra_text
