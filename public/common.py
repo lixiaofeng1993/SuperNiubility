@@ -279,6 +279,7 @@ def stock_home(obj_list: list):
                     "cost_price": obj.cost_price,
                     "hold_rate": str(round(obj.profit_and_loss / (obj.cost_price * obj.number) * 100, 3)) + "%",
                     "today_price": obj.today_price,
+                    "today_rate": str(round(obj.today_price / (detail.nowPri * obj.number) * 100, 3)) + "%",
                     "days": obj.days,
                     "id": obj.id
                 })

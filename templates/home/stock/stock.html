@@ -59,13 +59,17 @@
                                             </td>
                                         {% endif %}
                                         {% if object.today_price < 0 %}
-                                            <td id="cen"
-                                                style="color: green;font-weight: 900;">{{ object.today_price }}</td>
+                                            <td id="cen" style="color: green;font-weight: 900;">
+                                                <span>{{ object.today_price }}</span><br><span>{{ object.today_rate }}</span>
+                                            </td>
                                         {% elif object.today_price > 0 %}
-                                            <td id="cen"
-                                                style="color: red;font-weight: 900;">{{ object.today_price }}</td>
+                                            <td id="cen" style="color: red;font-weight: 900;">
+                                                <span>{{ object.today_price }}</span><br><span>{{ object.today_rate }}</span>
+                                            </td>
                                         {% else %}
-                                            <td id="cen">{{ object.today_price|default:"--" }}</td>
+                                            <td id="cen">
+                                                <span>{{ object.today_price|default:"--" }}</span><br><span>{{ object.today_rate|default:"--" }}</span>
+                                            </td>
                                         {% endif %}
                                         <td id="cen">{{ object.days|default:"--" }}</td>
                                         <td id="cen">{{ object.code }}</td>
