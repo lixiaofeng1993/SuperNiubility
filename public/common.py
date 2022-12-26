@@ -126,6 +126,7 @@ def etc_time():
         "stock_time": datetime(year, month, day, 15, 0, 0),  # 股市停止时间
         "ap_time": datetime(year, month, day, 11, 40, 00),  # 股市上午停止时间
         "pm_time": datetime(year, month, day, 13, 0, 0),  # 股市下午开始时间
+        "stock_am_time": datetime(year, month, day, 9, 30, 0),  # 股市开始时间
     }
     return moment
 
@@ -418,8 +419,8 @@ def handle_cache(request, flag: str):
             datasets = cache.get(YearChart.format(user_id=user_id))
         elif flag == "kdj":
             datasets = cache.get(TodayKDJChart.format(user_id=user_id))
-    # if datasets:
-    #     return datasets, user_id, stock_id
+    if datasets:
+        return datasets, user_id, stock_id
     model = model_superuser(request, SharesHold)
     if stock_id:
         hold_list = model.filter(Q(is_delete=False) & Q(id=stock_id))

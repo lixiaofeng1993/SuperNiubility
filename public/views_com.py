@@ -83,7 +83,10 @@ def inflow_forecast(small_price, big_price, middle_price, huge_price, today_pric
         small_rate = -round(small_price / reduce_price * 100, 2)
     else:
         small_rate = 0
-    text = f"主力流入 {today_price}, 小散流入占比 {small_rate} %；"
+    if today_price > 0:
+        text = f"主力流入, 小散流入占比 {small_rate} %；"
+    else:
+        text = f"主力流出, 小散流入占比 {small_rate} %；"
     return text
 
 
@@ -108,7 +111,7 @@ def handle_inflow_data(stock_id: str):
             day_list.append(inflow.date)
         days = len(set(day_list))
         if days == 1:
-            if moment and moment["now"] < moment["start_time"]:
+            if moment and moment["now"] < moment["stock_am_time"]:
                 today_price = 0
                 small_price = 0
                 big_price = 0
@@ -206,27 +209,30 @@ def forecast(stock_id: str):
     """
     hold = SharesHold.objects.get(Q(is_delete=False) & Q(id=stock_id))
     quote = ef.stock.get_quote_snapshot(hold.code)
+    buy_text, tra_text = "", ""
     if quote.empty:
-        return
+        return buy_text, tra_text
     buy_num = quote["买1数量"] + quote["买2数量"] + quote["买3数量"] + quote["买4数量"] + quote["买5数量"]
     sell_num = quote["卖1数量"] + quote["卖2数量"] + quote["卖3数量"] + quote["卖4数量"] + quote["卖5数量"]
     diff_num = round(buy_num - sell_num)
-    buy_text, tra_text = f"买入卖出托单差 {diff_num} 手；", ""
-    tra_num = round(quote["成交量"] / 10000, 2)
-    data_list, labels = handle_tar_number(stock_id)
-    if data_list:
-        data_list.sort()
-        if tra_num > data_list[-1]:
-            tra_text = "放量；"
-        elif tra_num < data_list[0]:
-            tra_text = "缩量；"
-        else:
-            index = data_list.index(tra_num)
-            tra_rate = round(index / len(data_list))
-            if tra_rate < 0.4:
-                tra_text = f"量偏低，在第{index + 1}位；"
-            elif 0.4 <= tra_rate <= 0.6:
-                tra_text = f"量中等，在第{index + 1}位；"
+    buy_text = f"买入卖出托单差 {diff_num} 手；"
+    moment = etc_time()
+    if moment["now"] >= moment["stock_time"]:
+        tra_num = round(quote["成交量"] / 10000, 2)
+        data_list, labels = handle_tar_number(stock_id)
+        if data_list:
+            data_list.sort()
+            if tra_num > data_list[-1]:
+                tra_text = "放量；"
+            elif tra_num < data_list[0]:
+                tra_text = "缩量；"
             else:
-                tra_text = f"量偏高，在第{index + 1}位；"
+                index = data_list.index(tra_num)
+                tra_rate = round(index / len(data_list))
+                if tra_rate < 0.4:
+                    tra_text = f"量偏低，在第{index + 1}位；"
+                elif 0.4 <= tra_rate <= 0.6:
+                    tra_text = f"量中等，在第{index + 1}位；"
+                else:
+                    tra_text = f"量偏高，在第{index + 1}位；"
     return buy_text, tra_text
