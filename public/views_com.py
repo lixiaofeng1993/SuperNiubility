@@ -224,12 +224,20 @@ def forecast(stock_id: str):
     股票涨跌预测
     """
     hold = SharesHold.objects.get(Q(is_delete=False) & Q(id=stock_id))
-    quote = ef.stock.get_quote_snapshot(hold.code)
+    moment = etc_time()
     buy_text, tra_text = "", ""
-    if quote.empty:
-        return buy_text, tra_text
-    buy_num = quote["买1数量"] + quote["买2数量"] + quote["买3数量"] + quote["买4数量"] + quote["买5数量"]
-    sell_num = quote["卖1数量"] + quote["卖2数量"] + quote["卖3数量"] + quote["卖4数量"] + quote["卖5数量"]
+    if moment["now"] > moment["end_time"]:
+        detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
+        buy_num = detail.buyOne + detail.buyTwo + detail.buyThree + detail.buyFour + detail.buyFive
+        sell_num = detail.sellOne + detail.sellTwo + detail.sellThree + detail.sellFour + detail.sellFive
+        tra_num = round(detail.traNumber / 10000, 2)
+    else:
+        quote = ef.stock.get_quote_snapshot(hold.code)
+        if quote.empty:
+            return buy_text, tra_text
+        buy_num = quote["买1数量"] + quote["买2数量"] + quote["买3数量"] + quote["买4数量"] + quote["买5数量"]
+        sell_num = quote["卖1数量"] + quote["卖2数量"] + quote["卖3数量"] + quote["卖4数量"] + quote["卖5数量"]
+        tra_num = round(quote["成交量"] / 10000, 2)
     diff_num = round(buy_num - sell_num)
     buy_text = f"买入卖出托单差 {diff_num} 手；"
     if diff_num > 0:
@@ -240,7 +248,6 @@ def forecast(stock_id: str):
         buy_color = ""
     moment = etc_time()
     if moment["now"] >= moment["stock_time"]:
-        tra_num = round(quote["成交量"] / 10000, 2)
         data_list, labels = handle_tar_number(stock_id)
         if data_list:
             data_list.sort()
