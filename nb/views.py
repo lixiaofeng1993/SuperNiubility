@@ -277,7 +277,7 @@ def stock_look(request, stock_id):
     sectors = list()
     for sector in sector_list:
         if sector.sector_name not in sector_list_diff:
-            update_time = sector.update_date
+            update_time = sector.create_date
             sector.update_date = sector.update_date.strftime("%Y-%m-%d %H:%M")
             sectors.append(sector)
         sector_list_diff.append(sector.sector_name)
@@ -292,7 +292,7 @@ def stock_look(request, stock_id):
         "dragon_obj": dragon_obj,
         "holder_number": number,
         "sector": sectors,
-        "update_time": update_time,
+        "update_time": format_time(update_time),
     })
     Message.objects.filter(Q(is_delete=False) & Q(is_look=False) &
                            Q(obj_id=stock_id) & Q(type=Detail)).update(is_look=True)
