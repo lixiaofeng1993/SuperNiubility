@@ -255,7 +255,7 @@ def stock_edit(request, stock_id):
 def stock_look(request, stock_id):
     info = request_get_search(request)
     model = model_superuser(request, SharesHold)
-    hold = model.get(id=stock_id)
+    hold = model.filter(Q(id=stock_id) & Q(is_delete=False)).first()
     info.update({
         "obj": hold,
     })

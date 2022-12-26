@@ -669,7 +669,7 @@ def price_chart(request):
             update_date = str(price.update_date).split(" ")[0]
             labels.append(update_date)
         moment = check_stoke_day()
-        if moment and moment["now"] < moment["stock_time"]:
+        if moment and moment["now"] < moment["today_end_time"]:
             data_list.append(hold.today_price)
             labels.append(str(moment["today"]))
         dataset.update({

@@ -129,15 +129,26 @@ def handle_inflow_data(stock_id: str):
                 middle_price = middle
                 huge_price = huge
             continue
-        if days == 5:
-            five_price = price
-            continue
-        elif days == 20:
-            twenty_price = price
-            continue
-        elif days == 60:
-            sixty_price = price
-            break
+        if today_price == 0:
+            if days == 4:
+                five_price = price
+                continue
+            elif days == 19:
+                twenty_price = price
+                continue
+            elif days == 59:
+                sixty_price = price
+                break
+        else:
+            if days == 5:
+                five_price = price
+                continue
+            elif days == 20:
+                twenty_price = price
+                continue
+            elif days == 60:
+                sixty_price = price
+                break
 
     today_price = round(today_price / 10000) if today_price else 0
     five_price = round(five_price / 10000) if five_price else 0
