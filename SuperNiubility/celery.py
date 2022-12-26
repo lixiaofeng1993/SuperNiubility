@@ -46,7 +46,7 @@ app.conf.beat_schedule = {
     'stock_today_price': {
         # 任务路径
         'task': 'nb.tasks.stock_today_price',
-        'schedule': crontab(minute=1, hour=15),
+        'schedule': crontab(minute=5, hour=15),
         'args': (),
     },
 }

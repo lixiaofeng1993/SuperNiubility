@@ -8,7 +8,7 @@
 from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 
-from .tasks import stock_history, last_day_stock_history, ef
+from .tasks import stock_history, last_day_stock_history
 from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange
 from public.auth_token import auth_token
 from public.common import *

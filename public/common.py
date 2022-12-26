@@ -65,16 +65,16 @@ def delete_cache(user_id, stock_id):
     cache.delete(TodayCostPrice.format(stock_id=stock_id))
 
 
-def regularly_hold(hold, moment: dict, price: float):
+def regularly_hold(hold, moment: dict, price: float, old_price: float):
     """
     实时更新 持有股票收益
     """
     is_profit = hold.is_profit = True if hold.profit_and_loss > 0 else False
     hold.profit_and_loss = round(hold.number * float(price) - hold.number * hold.cost_price, 2)
-    hold.today_price = round((float(price) - hold.last_close_price) * hold.number, 2)
+    hold.today_price = round((float(price) - old_price) * hold.number, 2)
     if hold.cost_price:
         profit_and_loss_ratio(hold, price)
-        if moment["now"] >= moment["stock_time"] > hold.update_date:
+        if moment["now"] >= moment["stock_time"]:
             hold.last_close_price = price
             hold.last_day = moment["today"]
             hold.days += 1

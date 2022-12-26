@@ -127,7 +127,7 @@ def stock_buy_sell(stock_id: str = ""):
         )
         detail_list.append(obj)
         if detail_list:
-            is_profit = regularly_hold(hold, moment, quotes["最新价"])
+            is_profit = regularly_hold(hold, moment, quotes["最新价"], quotes["昨收"])
             if is_profit != hold.is_profit:
                 profit_and_loss(hold)  # 钉钉消息提醒
             if quotes["最新价"] == quotes["涨停价"]:
