@@ -89,15 +89,27 @@
                         {% if text %}
                             <div class="bg-light rounded h-100 p-4">
                                 <p class="nav-item mb-4" id="text-style">预测</p>
-                                <div class="input-group mb-3">
-                                    <span id="text"></span>
-                                    <span id="text-style">
-                                    {{ text }}
-                                    </span>
-                                </div>
+                                {% if text.inflow.text %}
+                                    <div class="input-group mb-3">
+                                        <span id="text"></span>
+                                        <span id="text"
+                                              style="color: {{ text.inflow.color }}">{{ text.inflow.text }}</span>
+                                    </div>
+                                {% endif %}
+                                {% if text.buy.text %}
+                                    <div class="input-group mb-3">
+                                        <span id="text"></span>
+                                        <span id="text" style="color: {{ text.buy.color }}">{{ text.buy.text }}</span>
+                                    </div>
+                                {% endif %}
+                                {% if text.tra %}
+                                    <div class="input-group mb-3">
+                                        <span id="text"></span>
+                                        <span id="text">{{ text.tra }}</span>
+                                    </div>
+                                {% endif %}
                             </div>
                         {% endif %}
-
                         <div class="bg-light rounded h-100 p-4">
                             <p class="nav-item mb-4" id="text-style">盘口</p>
                             <div class="input-group mb-3">

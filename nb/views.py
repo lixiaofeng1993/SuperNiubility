@@ -288,7 +288,6 @@ def stock_look(request, stock_id):
     # 预测
     text = inflow.get("text")
     buy_text, tra_text = forecast(stock_id)
-    text += buy_text + tra_text
     info.update({
         "detail": detail,
         "inflow": inflow,
@@ -296,8 +295,16 @@ def stock_look(request, stock_id):
         "dragon_obj": dragon_obj,
         "holder_number": number,
         "sector": sectors,
-        "text": text,
-        "update_time": format_time(update_time),
+        "text": {
+            "inflow": {
+                "text": text[0],
+                "color": text[1],
+            }, "buy": {
+                "text": buy_text[0],
+                "color": buy_text[1],
+            }, "tra": tra_text
+        },
+        # "update_time": format_time(update_time),
     })
     Message.objects.filter(Q(is_delete=False) & Q(is_look=False) &
                            Q(obj_id=stock_id) & Q(type=Detail)).update(is_look=True)
