@@ -74,9 +74,9 @@ def regularly_hold(hold, moment: dict, price: float, old_price: float):
     hold.today_price = round((float(price) - old_price) * hold.number, 2)
     if hold.cost_price:
         profit_and_loss_ratio(hold, price)
-        if moment["now"] >= moment["stock_time"]:
-            hold.last_close_price = price
-            hold.last_day = moment["today"]
+        hold.last_close_price = price
+        hold.last_day = moment["today"]
+        if moment["now"] >= moment["stock_time"] > hold.update_date:
             hold.days += 1
     try:
         hold.save()
@@ -127,6 +127,7 @@ def etc_time():
         "ap_time": datetime(year, month, day, 11, 40, 00),  # 股市上午停止时间
         "pm_time": datetime(year, month, day, 13, 0, 0),  # 股市下午开始时间
         "stock_am_time": datetime(year, month, day, 9, 30, 0),  # 股市开始时间
+        "inflow_am_time": datetime(year, month, day, 9, 35, 0),  # 数据可能延迟时间
         "today_end_time": datetime(year, month, day, 23, 59, 59),  # 今日结束时间
     }
     return moment

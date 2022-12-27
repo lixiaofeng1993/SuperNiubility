@@ -116,7 +116,7 @@ def handle_inflow_data(stock_id: str):
             day_list.append(inflow.date)
         days = len(set(day_list))
         if days == 1:
-            if moment and moment["now"] < moment["stock_am_time"]:
+            if moment and moment["now"] < moment["inflow_am_time"]:
                 today_price = 0
                 small_price = 0
                 big_price = 0
