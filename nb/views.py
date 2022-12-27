@@ -1,4 +1,3 @@
-import efinance as ef
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView

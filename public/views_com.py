@@ -11,6 +11,36 @@ from nb.models import InflowStock, ShareholderNumber
 from public.common import *
 
 
+def stock_home(obj_list: list):
+    """
+    股票页面展示数据处理
+    """
+    data_list = list()
+    for obj in obj_list:
+        if obj.cost_price:
+            detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=obj.id)).order_by("-time").first()
+            if not detail:
+                data_list.append(obj)
+            else:
+                data_list.append({
+                    "name": obj.name,
+                    "code": obj.code,
+                    "total_price": round(detail.nowPri * obj.number, 2),
+                    "now_price": detail.nowPri,
+                    "number": obj.number,
+                    "profit_and_loss": obj.profit_and_loss,
+                    "cost_price": obj.cost_price,
+                    "hold_rate": str(round(obj.profit_and_loss / (obj.cost_price * obj.number) * 100, 3)) + "%",
+                    "today_price": obj.today_price,
+                    "today_rate": str(round(obj.today_price / (detail.nowPri * obj.number) * 100, 3)) + "%",
+                    "days": obj.days,
+                    "id": obj.id
+                })
+        else:
+            data_list.append(obj)
+    return data_list
+
+
 def handle_detail_data(stock_id: str):
     """
     处理股票详情数据
