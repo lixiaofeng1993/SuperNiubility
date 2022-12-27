@@ -10,15 +10,11 @@ import json
 import time
 from django.core.cache import cache
 from chinese_calendar import is_workday
-from random import randint, choice
+from random import choice, randint
 from django.db.models import Q  # 与或非 查询
-from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
-from django.contrib.admin.options import get_content_type_for_model
 
-from nb.models import Poetry, Message, SharesHold, StockDetail
-from public.send_ding import profit_and_loss, profit_and_loss_ratio, limit_up
+from nb.models import SharesHold
 from public.conf import *
-from public.recommend import recommend_handle
 from public.log import logger
 
 
@@ -63,28 +59,6 @@ def delete_cache(user_id, stock_id):
     cache.delete(TwentyStockChart.format(stock_id=stock_id))
     cache.delete(TodayInflowChart.format(stock_id=stock_id))
     cache.delete(TodayCostPrice.format(stock_id=stock_id))
-
-
-def regularly_hold(hold, moment: dict, price: float, old_price: float):
-    """
-    实时更新 持有股票收益
-    """
-    is_profit = hold.is_profit = True if hold.profit_and_loss > 0 else False
-    hold.profit_and_loss = round(hold.number * float(price) - hold.number * hold.cost_price, 2)
-    hold.today_price = round((float(price) - old_price) * hold.number, 2)
-    if hold.cost_price:
-        if moment["now"] <= moment["stock_time"]:
-            profit_and_loss_ratio(hold, price)
-        hold.last_close_price = price
-        hold.last_day = moment["today"]
-        if moment["now"] >= moment["stock_time"] > hold.update_date:
-            hold.days += 1
-    try:
-        hold.save()
-        logger.info(f"实时更新 持有股票 {hold.name} 收益 保存成功！")
-        return is_profit
-    except Exception as error:
-        logger.error(f"实时更新 持有股票收益 保存报错！===>>> {error}")
 
 
 def format_time(date_time: datetime):
@@ -183,36 +157,6 @@ def handle_json(request):
         return
 
 
-def operation_record(request, model, model_id, repr, action_flag, msg: str = ""):
-    """
-    操作记录
-    删除 action_flag: del
-    添加、编辑 model_id
-    剩余操作 model_id， msg
-    """
-    if not action_flag:
-        action_flag = CHANGE if model_id else ADDITION
-        if not msg:
-            change_message = f"编辑{repr} {model.name}" if model_id else f"添加{repr} {model.name}"
-        else:
-            change_message = msg
-    elif action_flag == "del":
-        action_flag = DELETION
-        change_message = f"删除{repr} {model.name}"
-    elif action_flag == "change":
-        action_flag = CHANGE
-        change_message = f"查看{repr} {model_id}"
-    user_id = request.session["user_id"] if request.session.get("user_id") else model.id
-    LogEntry.objects.log_action(
-        user_id=user_id,
-        content_type_id=get_content_type_for_model(model).id,
-        object_id=model.id,
-        object_repr=repr,
-        action_flag=action_flag,
-        change_message=change_message,
-    )
-
-
 def format_obj(obj: object):
     if hasattr(obj, "end_time"):
         obj.end_time = str(obj.end_time).split(" ")[0]
@@ -260,64 +204,6 @@ def handle_model(model_obj):
     elif isinstance(model_obj, object):
         model_obj = format_obj(model_obj)
     return model_obj
-
-
-def home_poetry():
-    """
-    诗词推荐列表
-    """
-    count = cache.get(APICount)
-    flag = False
-    if count and count < APICountNumber:
-        count += 1
-        flag = True
-        cache.set(APICount, count, surplus_second())
-    elif count and count >= APICountNumber:
-        flag = False
-    else:
-        cache.set(APICount, 1, surplus_second())
-    poetry_type = recommend_handle(flag)
-    # 随机返回一条数据 filter 等于  exclude 不等于
-    poetry_list = Poetry.objects.filter(type=poetry_type).exclude(phrase="").order_by('?')[:HomeNumber]
-    obj_list = list()
-    for poetry in poetry_list:
-        result = {
-            "id": str(poetry.id),
-            "poetry_name": poetry.name,
-            "type": poetry.type,
-            "phrase": poetry.phrase,
-        }
-        if poetry.author:
-            result.update({
-                "author": poetry.author.name,
-                "dynasty": poetry.author.dynasty,
-            })
-        obj_list.append(result)
-    logger.info("查询诗词推荐列表 ===>>> 成功.")
-    cache.set(RECOMMEND, obj_list, surplus_second())
-    return obj_list
-
-
-def message_writing(name: str, user_id, stock_id: str, date_time: datetime, link_type: str):
-    """
-    写入消息提醒
-    """
-    try:
-        cache.delete(TodayChart.format(user_id=user_id))
-        cache.delete(TodayStockChart.format(stock_id=stock_id))
-        cache.delete(TodayBuySellChart.format(stock_id=stock_id))
-        cache.delete(TodayKDJChart.format(user_id=user_id))
-        cache.delete(TodayInflowChart.format(stock_id=stock_id))
-        cache.delete(TodayPrice.format(stock_id=stock_id))
-        message = Message()
-        message.name = name
-        message.obj_id = stock_id
-        message.date = date_time
-        message.type = link_type
-        message.save()
-        logger.info("写入消息提醒成功.")
-    except Exception as error:
-        logger.error(f"写入消息提醒出现异常===>>>{error}")
 
 
 def model_superuser(request, model):
@@ -400,25 +286,6 @@ def handle_cache(request, flag: str):
     else:
         hold_list = model.filter(is_delete=False)
     return hold_list, user_id, stock_id
-
-
-def handle_tar_number(stock_id: str):
-    """
-    处理成交量
-    """
-    data_list = list()
-    labels = list()
-    detail_list = StockDetail.objects.filter(Q(is_delete=False) &
-                                             Q(shares_hold_id=stock_id) &
-                                             Q(time__hour=15)).order_by("time")
-    diff_list = list()
-    for detail in detail_list:
-        date_time = str(detail.time).split(" ")[0]
-        if date_time not in diff_list:
-            diff_list.append(date_time)
-            data_list.append(round(detail.traNumber / 10000, 2))
-            labels.append(date_time)
-    return data_list, labels
 
 
 def handle_price(price):

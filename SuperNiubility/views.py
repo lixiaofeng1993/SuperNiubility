@@ -12,7 +12,8 @@ from public.jwt_sign import create_access_token
 from public.conf import *
 from public.send_email import send_email
 from public.response import JsonResponse
-from public.common import handle_json, home_poetry, operation_record, surplus_second, randint, random_str
+from public.common import handle_json, randint, random_str
+from public.views_com import home_poetry, operation_record
 from public.log import logger
 
 

@@ -6,10 +6,7 @@
 # @Version：V 0.1
 # @desc :
 from django.core.cache import cache
-# from page.helper.error_meg import Config
-import logging
-
-log = logging.getLogger("log")  # 初始化log
+from public.log import logger
 
 
 def page_cache(timeout):
@@ -17,12 +14,12 @@ def page_cache(timeout):
         def wrap2(request, *args, **kwargs):
             key = 'Response-{}'.format(request.get_full_path())  # 拼接唯一的key
             response = cache.get(key)  # 从缓存中获取数据
-            log.info('url -> {} 从缓存中获取数据 -> {}'.format(key, response))
+            logger.info('url -> {} 从缓存中获取数据 -> {}'.format(key, response))
             if response is None:
                 # 获取数据库中的数据,添加到缓存中
                 response = view_func(request, *args, **kwargs)
                 cache.set(key, response, timeout)
-                log.info('url -> {} 从数据库中获取 -> {}'.format(key, response))
+                logger.info('url -> {} 从数据库中获取 -> {}'.format(key, response))
             return response
 
         return wrap2

@@ -9,9 +9,10 @@ from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 
 from .tasks import stock_history, last_day_stock_history
-from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange
+from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange, Poetry
 from public.auth_token import auth_token
 from public.common import *
+from public.views_com import home_poetry, operation_record, handle_tar_number, LogEntry, Message
 from public.response import JsonResponse
 
 

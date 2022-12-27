@@ -5,10 +5,8 @@
 # 创建时间: 2022/11/28 0028 18:48
 # @Version：V 0.1
 # @desc :
-import efinance as ef
-
-from nb.models import Shares, StockDetail, InflowStock, Shareholder, StockSector, ShareholderNumber, StockSuper
-from public.common import *
+from nb.models import Shares, Shareholder, StockSector, StockSuper
+from public.views_com import *
 from public.log import logger
 
 
