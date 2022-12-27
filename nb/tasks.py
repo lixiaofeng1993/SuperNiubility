@@ -142,11 +142,28 @@ def stock_today_price():
             price_list.append(obj)
             cache.delete(TodayPrice.format(stock_id=hold.id))
             cache.delete(TodayTraNumber.format(stock_id=hold.id))
-            hold.today_price = 0
-            hold.save()
     if price_list:
         try:
             StockTodayPrice.objects.bulk_create(price_list)
             logger.info(f"持仓股票日盈数据 保存成功 ===>>> {len(price_list)} 条")
         except Exception as error:
             logger.error(f"持仓股票日盈数据 保存失败 ===>>> {error}")
+
+
+@shared_task()
+def stock_hold_price():
+    """
+    初始化股票持有表收益数据
+    """
+    moment = check_stoke_day()
+    if not moment:  # 判断股市休市时间
+        return
+    hold_list = SharesHold.objects.filter(is_delete=False)
+    for hold in hold_list:
+        if hold.cost_price:
+            hold.today_price = 0
+            try:
+                hold.save()
+                logger.info(f"持仓表初始化数据 保存成功")
+            except Exception as error:
+                logger.error(f"持仓表初始化数据 保存失败 ===>>> {error}")

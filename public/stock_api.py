@@ -308,7 +308,7 @@ def stock_sector():
             return
         update_date = sector.update_date
         seconds = (moment["now"] - update_date).total_seconds()
-        if seconds <= 300 and update_date <= moment["stock_time"]:
+        if seconds <= 300 or update_date > moment["stock_time"]:
             logger.info(f"所属板块数据 剩余更新时间 {300 - seconds}秒")
             return
         df = ef.stock.get_belong_board(hold.code)

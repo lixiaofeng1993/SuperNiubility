@@ -251,7 +251,7 @@ def forecast(stock_id: str):
         data_list, labels = handle_tar_number(stock_id)
         if data_list:
             data_list.sort()
-            index = data_list.index(tra_num)
+            index = data_list.index(tra_num) if tra_num in data_list else 0
             tra_rate = round(index / len(data_list))
             if tra_rate < 0.4:
                 tra_text = f"量偏低，在第{index + 1}位；"
