@@ -76,7 +76,7 @@ def regularly_hold(hold, moment: dict, price: float, old_price: float):
     """
     is_profit = hold.is_profit = True if hold.profit_and_loss > 0 else False
     hold.profit_and_loss = round(hold.number * float(price) - hold.number * hold.cost_price, 2)
-    old_price = old_price if hold.days else hold.last_close_price
+    old_price = old_price if hold.days else hold.buy_price
     hold.today_price = round((float(price) - old_price) * hold.number, 2)
     if hold.cost_price:
         if moment["now"] <= moment["stock_time"]:

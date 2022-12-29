@@ -180,6 +180,7 @@ def stock_add(request):
         code = body.get("code")
         number = body.get("number")
         cost_price = body.get("cost_price")
+        buy_price = body.get("buy_price")
         color = body.get("color")
         days = body["days"] if body.get("days") else 1
         is_detail = body["is_detail"] if body.get("is_detail") else False
@@ -217,7 +218,7 @@ def stock_add(request):
                         real_time_stock.delay(stock_id=hold.id)  # 更新持仓成本后，实时刷新盈亏
                     model.filter(Q(id=stock_id) & Q(is_delete=False)).update(
                         name=name, code=code, number=number, cost_price=cost_price, color=color, user_id=user_id,
-                        is_detail=is_detail, days=days
+                        is_detail=is_detail, days=days, buy_price=buy_price
                     )
                 except Exception as error:
                     return JsonResponse.DatabaseException(data=str(error))
@@ -227,6 +228,7 @@ def stock_add(request):
                 hold.code = code
                 hold.number = number
                 hold.cost_price = cost_price
+                hold.buy_price = buy_price
                 hold.color = color
                 hold.user_id = user_id
                 hold.save()
