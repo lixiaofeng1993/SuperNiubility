@@ -344,6 +344,7 @@ def stock_super():
     if df.empty:
         logger.error(f"龙虎榜查询数据为空.")
         return
+    df = df.where(df.notnull(), "")
     df_list = df.to_dict(orient="records")
     super_list = list()
     for data in df_list:
