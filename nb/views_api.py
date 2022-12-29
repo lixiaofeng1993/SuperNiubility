@@ -8,7 +8,7 @@
 from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 
-from .tasks import stock_history, last_day_stock_history, stock_holder
+from .tasks import stock_history, last_day_stock_history
 from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange, Poetry
 from public.auth_token import auth_token
 from public.common import *
@@ -33,7 +33,6 @@ def poetry_detail(request, poetry_id):
     诗词详细数据
     """
     if request.method == POST:
-        stock_holder.delay()
         user_id = request.session.get("user_id")
         result = cache.get(PoetryDetail.format(user_id=user_id, poetry_id=poetry_id))
         if result:
