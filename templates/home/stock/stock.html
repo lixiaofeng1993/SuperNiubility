@@ -106,6 +106,29 @@
                                     </td>
                                 </tr>
                             {% endfor %}
+                            <tr>
+                                <th>汇总</th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                {% if total_price > 0 %}
+                                    <td style="color: red;font-weight: 900;" id="cen">{{ total_price }}</td>
+                                {% elif total_price < 0 %}
+                                    <td style="color: green;font-weight: 900;" id="cen">{{ total_price }}</td>
+                                {% else %}
+                                    <td id="cen" style="font-weight: 900;">{{ total_price }}</td>
+                                {% endif %}
+                                {% if today_price > 0 %}
+                                    <td style="color: red;font-weight: 900;" id="cen">{{ today_price }}</td>
+                                {% elif today_price < 0 %}
+                                    <td style="color: green;font-weight: 900;" id="cen">{{ today_price }}</td>
+                                {% else %}
+                                    <td id="cen" style="font-weight: 900;">{{ today_price }}</td>
+                                {% endif %}
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
