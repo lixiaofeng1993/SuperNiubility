@@ -149,6 +149,7 @@ def stock_home(obj_list: list):
     """
     股票页面展示数据处理
     """
+    total_price, today_price, hold_price = 0, 0, 0
     data_list = list()
     for obj in obj_list:
         if obj.cost_price:
@@ -170,9 +171,12 @@ def stock_home(obj_list: list):
                     "days": obj.days,
                     "id": obj.id
                 })
+                hold_price += round(detail.nowPri * obj.number, 2)
         else:
             data_list.append(obj)
-    return data_list
+        total_price += obj.profit_and_loss
+        today_price += obj.today_price
+    return data_list, total_price, today_price, hold_price
 
 
 def handle_detail_data(stock_id: str):

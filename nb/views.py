@@ -138,7 +138,7 @@ class StockIndex(ListView):
     template_name = 'home/stock/stock.html'
     context_object_name = 'object_list'
     paginate_by = NumberOfPages
-    total_price, today_price = 0, 0
+    total_price, today_price, hold_price = 0, 0, 0
 
     def dispatch(self, *args, **kwargs):
         return super(StockIndex, self).dispatch(*args, **kwargs)
@@ -147,9 +147,9 @@ class StockIndex(ListView):
         self.request.session["login_from"] = self.request.get_full_path()
         model = model_superuser(self.request, self.model)
         obj_list = model.filter(is_delete=False).order_by("-number", "-create_date")
-        self.total_price, self.today_price = total_stock(obj_list)
         obj_list = handle_model(list(obj_list))
-        return stock_home(obj_list)
+        data_list, self.total_price, self.today_price, self.hold_price = stock_home(obj_list)
+        return data_list
 
     def get_context_data(self, **kwargs):
         self.page = self.request.GET.dict().get('page', '1')
@@ -166,7 +166,8 @@ class StockIndex(ListView):
         if number == 1 and len(self.object_list) > 10:
             self.page = int(self.page) - 1
         context.update({
-            'page': self.page, "flag": flag, "total_price": self.total_price, "today_price": self.today_price
+            "page": self.page, "flag": flag, "total_price": self.total_price, "today_price": self.today_price,
+            "hold_price": self.hold_price
         })
         return context
 

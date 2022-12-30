@@ -206,17 +206,6 @@ def handle_model(model_obj):
     return model_obj
 
 
-def total_stock(obj_list: list):
-    """
-    持仓盈亏，当日盈亏汇总
-    """
-    total_price, today_price = 0, 0
-    for obj in obj_list:
-        total_price += obj.profit_and_loss
-        today_price += obj.today_price
-    return total_price, today_price
-
-
 def model_superuser(request, model):
     """
     用户权限
