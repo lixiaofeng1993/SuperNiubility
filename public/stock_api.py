@@ -82,7 +82,9 @@ def stock_buy_sell(stock_id: str = ""):
             logger.error("买入卖出托单 持仓 表数据为空.")
             return
     else:
-        moment = etc_time()
+        moment = check_stoke_day()
+        if not moment:  # 判断股市开关时间
+            return
         hold_list = SharesHold.objects.filter(Q(is_delete=False) & Q(id=stock_id))
     detail_list = list()
     for hold in hold_list:
