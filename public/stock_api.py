@@ -69,23 +69,17 @@ def stock_today():
             logger.error(f"今日走势K线 保存失败 ===>>> {error}")
 
 
-def stock_buy_sell(stock_id: str = ""):
+def stock_buy_sell():
     """
     买入卖出托单
     """
-    if not stock_id:
-        moment = check_stoke_date()
-        if not moment:  # 判断股市开关时间
-            return
-        hold_list = SharesHold.objects.filter(is_delete=False)
-        if not hold_list:
-            logger.error("买入卖出托单 持仓 表数据为空.")
-            return
-    else:
-        moment = check_stoke_day()
-        if not moment:  # 判断股市开关时间
-            return
-        hold_list = SharesHold.objects.filter(Q(is_delete=False) & Q(id=stock_id))
+    moment = check_stoke_date()
+    if not moment:  # 判断股市开关时间
+        return
+    hold_list = SharesHold.objects.filter(is_delete=False)
+    if not hold_list:
+        logger.error("买入卖出托单 持仓 表数据为空.")
+        return
     detail_list = list()
     for hold in hold_list:
         quotes = ef.stock.get_quote_snapshot(hold.code)
