@@ -96,6 +96,14 @@ def last_day_stock_history(code: str, hold_id: str, user_id):
 
 
 @shared_task()
+def real_time_stock(stock_id: str):
+    """
+    更新股票持仓成本实时更新盈亏
+    """
+    stock_buy_sell(stock_id=stock_id)
+
+
+@shared_task()
 def stock():
     """
     定时写入股票数据

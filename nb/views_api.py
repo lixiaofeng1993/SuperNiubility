@@ -180,14 +180,11 @@ def day_chart(request):
             if check_stoke_day():  # 休市日展示最后一天的数据
                 last_day = str(moment["today"])
             else:
-                if hold.last_day:
-                    last_day = str(hold.last_day).split(" ")[0]
-                else:
-                    share_first = Shares.objects.filter(
-                        Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-date_time").first()
-                    if not share_first:
-                        continue
-                    last_day = share_first.date_time.split(" ")[0]
+                share_first = Shares.objects.filter(
+                    Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-date_time").first()
+                if not share_first:
+                    continue
+                last_day = share_first.date_time.split(" ")[0]
             share_list = Shares.objects.filter(
                 Q(shares_hold_id=hold.id) & Q(is_delete=False) &
                 Q(date_time__contains=last_day)).order_by("date_time")
@@ -440,14 +437,11 @@ def buy_sell_chart(request):
         if check_stoke_day():  # 休市日展示最后一天的数据
             last_day = moment["today"]
         else:
-            if hold.last_day:
-                last_day = hold.last_day
-            else:
-                share_first = StockDetail.objects.filter(
-                    Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
-                if not share_first:
-                    return JsonResponse.OK()
-                last_day = share_first.date
+            share_first = StockDetail.objects.filter(
+                Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
+            if not share_first:
+                return JsonResponse.OK()
+            last_day = share_first.date
         detail_list = StockDetail.objects.filter(
             Q(shares_hold_id=hold.id) & Q(is_delete=False) & Q(date=last_day)).order_by("time")
         if not detail_list:
@@ -565,14 +559,11 @@ def inflow_chart(request):
         if check_stoke_day():  # 休市日展示最后一天的数据
             last_day = moment["today"]
         else:
-            if hold.last_day:
-                last_day = hold.last_day
-            else:
-                share_first = InflowStock.objects.filter(
-                    Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
-                if not share_first:
-                    return JsonResponse.OK()
-                last_day = share_first.date
+            share_first = InflowStock.objects.filter(
+                Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("-time").first()
+            if not share_first:
+                return JsonResponse.OK()
+            last_day = share_first.date
         detail_list = InflowStock.objects.filter(
             Q(shares_hold_id=hold.id) & Q(is_delete=False) & Q(date=last_day)).order_by("time")
         if not detail_list:
