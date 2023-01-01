@@ -260,6 +260,7 @@ def stock_edit(request, stock_id):
 @login_required
 def stock_look(request, stock_id):
     info = request_get_search(request)
+    search_name = info.get("search_name")
     model = model_superuser(request, SharesHold)
     hold = model.filter(Q(id=stock_id) & Q(is_delete=False)).first()
     info.update({
@@ -272,10 +273,25 @@ def stock_look(request, stock_id):
     # 主力资金趋势
     inflow = handle_inflow_data(stock_id)
     # 股票股东
-    holder_list = Shareholder.objects.filter(Q(is_delete=False) &
-                                             Q(shares_hold_id=hold.id)).order_by("-time", "-hold_rate")[:10]
-    for holder in holder_list:
-        holder.time = str(holder.time).split(" ")[0]
+    holder_time_list = Shareholder.objects.filter(Q(is_delete=False) &
+                                                  Q(shares_hold_id=hold.id)).order_by("-time")
+    date_list = list()
+    for holder in holder_time_list:
+        holder.time = holder.time.strftime("%Y-%m-%d")
+        if holder.time not in date_list:
+            date_list.append(holder.time)
+    if search_name:
+        last_day = search_name
+        holder_list = Shareholder.objects.filter(Q(is_delete=False) &
+                                                 Q(shares_hold_id=hold.id) &
+                                                 Q(time=last_day)).order_by("-time", "-hold_rate")
+        for holder in holder_list:
+            holder.time = holder.time.strftime("%Y-%m-%d")
+    elif holder_time_list:
+        holder_list = holder_time_list[:10]
+        last_day = holder_time_list[0].time
+    else:
+        holder_list, last_day = [], ""
     # 股票板块
     sector_list = StockSector.objects.filter(Q(is_delete=False) &
                                              Q(shares_hold_id=hold.id)).order_by("-update_date", "-sector_rate")[:20]
@@ -298,6 +314,8 @@ def stock_look(request, stock_id):
         "detail": detail,
         "inflow": inflow,
         "holder": holder_list,
+        "date_list": date_list,
+        "last_day": last_day,
         "dragon_obj": dragon_obj,
         "holder_number": number,
         "sector": sectors,
@@ -310,7 +328,7 @@ def stock_look(request, stock_id):
                 "color": buy_text[1],
             }, "tra": tra_text
         },
-        "update_time": format_time(update_time),
+        "update_time": format_time(update_time) if update_time else "",
     })
     Message.objects.filter(Q(is_delete=False) & Q(is_look=False) &
                            Q(obj_id=stock_id) & Q(type=Detail)).update(is_look=True)
@@ -365,10 +383,14 @@ def dragon(request):
     """
     if request.method == GET:
         info = request_get_search(request)
+        search_name = info.get("search_name")
         stock = StockSuper.objects.filter(is_delete=False).order_by("-time").first()
         if not stock:
             return render(request, "home/stock/dragon.html", info)
-        last_day = stock.time
+        if search_name:
+            last_day = search_name
+        else:
+            last_day = stock.time.strftime("%Y-%m-%d")
         stock_list = StockSuper.objects.filter(Q(is_delete=False) & Q(time=last_day)).order_by("open_price")
         for stock in stock_list:
             number = StockSuper.objects.filter(Q(is_delete=False) & Q(code=stock.code)).count()
@@ -385,8 +407,16 @@ def dragon(request):
             stock.net_turnover_rate = handle_rate(stock.net_turnover_rate)
             stock.market_equity = handle_price(stock.market_equity)
             stock.turnover_rate = handle_rate(stock.turnover_rate)
+        date_list = list()
+        super_list = StockSuper.objects.filter(is_delete=False).order_by("-time")
+        for stock in super_list:
+            date_time = stock.time.strftime("%Y-%m-%d")
+            if date_time not in date_list:
+                date_list.append(date_time)
         info.update({
-            "stock_list": stock_list
+            "stock_list": stock_list,
+            "date_list": date_list,
+            "last_day": last_day,
         })
         Message.objects.filter(Q(is_delete=False) & Q(is_look=False) & Q(type=Dragon)).update(is_look=True)
         return render(request, "home/stock/dragon.html", info)

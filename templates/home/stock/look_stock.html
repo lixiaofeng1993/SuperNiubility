@@ -274,6 +274,20 @@
                         <div class="bg-light rounded h-100 p-4">
                             <p class="nav-item mb-4" id="text-style">股东信息</p>
                             <div class="col-sm-12 col-xl-12">
+                                <div class="col-sm-3 col-xl-3">
+                                    <div class="bg-light rounded h-20 p-1">
+                                        <select class="form-select form-select-sm mb-1"
+                                                aria-label=".form-select-sm example"
+                                                id="date_time">
+                                            {% if last_day %}
+                                                <option selected value="{{ last_day }}">{{ last_day }}</option>
+                                            {% endif %}
+                                            {% for foo in date_list %}
+                                                <option value="{{ foo }}">{{ foo }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="bg-light rounded h-100 p-4">
                                     <table class="table table-borderless">
                                         <thead>
@@ -358,6 +372,15 @@
             document.getElementById('myImg').style.display = "block";
             document.getElementById("img01").src = document.getElementById(imgId).src;
         }
+
+        $("#date_time").change(function () {
+            let last_day = $("#date_time option:selected").val();
+            let ale = $("#alert");
+            ale.html("查询成功.").addClass("alert-success").show().delay(1500).fadeOut();
+            setTimeout(function () {
+                top.location.href = `/nb/stock/look/{{ obj.id }}/?search-input=${last_day}`;
+            }, 1500);
+        })
     </script>
 {% endblock %}
 

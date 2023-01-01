@@ -11,6 +11,19 @@
                 <div class="bg-light rounded h-100 p-4">
                     <h6 class="nav-item mb-4">股票分析</h6>
                     <p class="nav-item mb-4" style="font-weight: 999;">今日龙虎榜</p>
+                    <div class="col-sm-3 col-xl-3">
+                        <div class="bg-light rounded h-20 p-1">
+                            <select class="form-select form-select-sm mb-1" aria-label=".form-select-sm example"
+                                    id="date_time">
+                                {% if last_day %}
+                                    <option selected value="{{ last_day }}">{{ last_day }}</option>
+                                {% endif %}
+                                {% for foo in date_list %}
+                                    <option value="{{ foo }}">{{ foo }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
@@ -81,4 +94,16 @@
             </div>
         </div>
     </div>
+{% endblock %}
+{% block js %}
+    <script>
+        $("#date_time").change(function () {
+            let last_day = $("#date_time option:selected").val();
+            let ale = $("#alert");
+            ale.html("查询成功.").addClass("alert-success").show().delay(1500).fadeOut();
+            setTimeout(function () {
+                top.location.href = `{% url 'dragon' %}?search-input=${last_day}`;
+            }, 1500);
+        })
+    </script>
 {% endblock %}

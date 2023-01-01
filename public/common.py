@@ -175,6 +175,24 @@ def format_obj(obj: object):
     return obj
 
 
+def format_dict(obj: dict):
+    if "end_time" in obj.keys():
+        obj["end_time"] = str(obj["end_time"]).split(" ")[0]
+    if "update_date" in obj.keys():
+        obj["update_date"] = obj["update_date"].strftime("%Y-%m-%d %H:%M:%S")
+    if "create_date" in obj.keys():
+        obj["create_date"] = obj["create_date"].strftime("%Y-%m-%d %H:%M:%S")
+    if "is_delete" in obj.keys():
+        obj["is_delete"] = "false"
+    if "id" in obj.keys():
+        obj["id"] = str(obj["id"])
+    if "action_time" in obj.keys():
+        obj["action_time"] = obj["action_time"].strftime("%Y-%m-%d %H:%M:%S")
+    if "time" in obj.keys():
+        obj["time"] = obj["time"].strftime("%Y-%m-%d %H:%M:%S")
+    return obj
+
+
 def handle_model(model_obj):
     """
     数据库 时间字段 格式化
@@ -184,20 +202,7 @@ def handle_model(model_obj):
         model_obj = []
         for obj in obj_list:
             if isinstance(obj, dict):
-                if "end_time" in obj.keys():
-                    obj["end_time"] = str(obj["end_time"]).split(" ")[0]
-                if "update_date" in obj.keys():
-                    obj["update_date"] = obj["update_date"].strftime("%Y-%m-%d %H:%M:%S")
-                if "create_date" in obj.keys():
-                    obj["create_date"] = obj["create_date"].strftime("%Y-%m-%d %H:%M:%S")
-                if "is_delete" in obj.keys():
-                    obj["is_delete"] = "false"
-                if "id" in obj.keys():
-                    obj["id"] = str(obj["id"])
-                if "action_time" in obj.keys():
-                    obj["action_time"] = obj["action_time"].strftime("%Y-%m-%d %H:%M:%S")
-                if "time" in obj.keys():
-                    obj["time"] = obj["time"].strftime("%Y-%m-%d %H:%M:%S")
+                obj = format_dict(obj)
             else:
                 obj = format_obj(obj)
             model_obj.append(obj)
