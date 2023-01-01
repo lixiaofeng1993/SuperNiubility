@@ -282,9 +282,13 @@ def stock_look(request, stock_id):
             date_list.append(holder.time)
     if search_name:
         last_day = search_name
-        holder_list = Shareholder.objects.filter(Q(is_delete=False) &
-                                                 Q(shares_hold_id=hold.id) &
-                                                 Q(time=last_day)).order_by("-time", "-hold_rate")
+        try:
+            holder_list = Shareholder.objects.filter(Q(is_delete=False) &
+                                                     Q(shares_hold_id=hold.id) &
+                                                     Q(time=last_day)).order_by("-time", "-hold_rate")
+        except Exception as error:
+            logger.error(f"查询十大股东出现错误 ===>>> {error}")
+            holder_list = list()
         for holder in holder_list:
             holder.time = holder.time.strftime("%Y-%m-%d")
     elif holder_time_list:
@@ -391,7 +395,11 @@ def dragon(request):
             last_day = search_name
         else:
             last_day = stock.time.strftime("%Y-%m-%d")
-        stock_list = StockSuper.objects.filter(Q(is_delete=False) & Q(time=last_day)).order_by("open_price")
+        try:
+            stock_list = StockSuper.objects.filter(Q(is_delete=False) & Q(time=last_day)).order_by("open_price")
+        except Exception as error:
+            logger.error(f"查询龙虎榜出现错误 ===>>> {error}")
+            stock_list = list()
         for stock in stock_list:
             number = StockSuper.objects.filter(Q(is_delete=False) & Q(code=stock.code)).count()
             setattr(stock, "number", number)
