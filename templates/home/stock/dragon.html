@@ -31,6 +31,7 @@
                                 <th scope="col">换手率</th>
                                 <th scope="col">流通市值</th>
                                 <th scope="col">上榜原因</th>
+                                <th scope="col">上榜次数</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -68,6 +69,7 @@
                                     <td>{{ object.turnover_rate }}</td>
                                     <td>{{ object.market_equity }}</td>
                                     <td>{{ object.reason }}</td>
+                                    <td>{{ object.number }}</td>
                                 </tr>
                             {% endfor %}
                             </tbody>

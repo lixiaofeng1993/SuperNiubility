@@ -371,6 +371,8 @@ def dragon(request):
         last_day = stock.time
         stock_list = StockSuper.objects.filter(Q(is_delete=False) & Q(time=last_day)).order_by("open_price")
         for stock in stock_list:
+            number = StockSuper.objects.filter(Q(is_delete=False) & Q(code=stock.code)).count()
+            setattr(stock, "number", number)
             stock.name = stock.name + "\n" + stock.code
             stock.time = stock.time.strftime("%Y-%m-%d")
             stock.rise_rate = handle_rate(stock.rise_rate)
