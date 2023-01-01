@@ -7,7 +7,7 @@ celery==5.2.7
 redis==4.3.5
 eventlet==0.33.2
 django-celery-beat==2.4.0
-chinesecalendar==1.7.2
+chinesecalendar==1.8.0
 django-simpleui==2022.11.30
 starlette==0.22.0
 django_pandas==0.6.6
