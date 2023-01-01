@@ -274,7 +274,7 @@ def stock_look(request, stock_id):
     inflow = handle_inflow_data(stock_id)
     # 股票股东
     holder_time_list = Shareholder.objects.filter(Q(is_delete=False) &
-                                                  Q(shares_hold_id=hold.id)).order_by("-time")
+                                                  Q(shares_hold_id=hold.id)).order_by("-time", "-hold_rate")
     date_list = list()
     for holder in holder_time_list:
         holder.time = holder.time.strftime("%Y-%m-%d")
