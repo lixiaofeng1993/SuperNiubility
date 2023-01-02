@@ -97,7 +97,7 @@ def etc_time():
         "day": today.day,
         "no_time": datetime(year, month, day, 9, 0, 0),  # 禁止添加时间
         "start_time": datetime(year, month, day, 9, 15, 0),  # 定时任务开始时间
-        "end_time": datetime(year, month, day, 15, 30, 0),  # 定时任务结束时间
+        "end_time": datetime(year, month, day, 15, 15, 0),  # 定时任务结束时间
         "stock_time": datetime(year, month, day, 15, 0, 0),  # 股市停止时间
         "ap_time": datetime(year, month, day, 11, 40, 00),  # 股市上午停止时间
         "pm_time": datetime(year, month, day, 13, 0, 0),  # 股市下午开始时间
