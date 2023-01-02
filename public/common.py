@@ -170,7 +170,7 @@ def format_obj(obj: object):
         obj.id = str(obj.id)
     if hasattr(obj, "action_time"):
         obj.action_time = obj.action_time.strftime("%Y-%m-%d %H:%M:%S")
-    if hasattr(obj, "time") and obj.time:
+    if hasattr(obj, "time") and obj.time and not isinstance(obj.time, str):
         obj.time = obj.time.strftime("%Y-%m-%d %H:%M:%S")
     return obj
 
@@ -186,9 +186,11 @@ def format_dict(obj: dict):
         obj["is_delete"] = "false"
     if "id" in obj.keys():
         obj["id"] = str(obj["id"])
+    if "shares_hold" in obj.keys():
+        obj["shares_hold"] = str(obj["shares_hold"])
     if "action_time" in obj.keys():
         obj["action_time"] = obj["action_time"].strftime("%Y-%m-%d %H:%M:%S")
-    if "time" in obj.keys():
+    if "time" in obj.keys() and not isinstance(obj["time"], str):
         obj["time"] = obj["time"].strftime("%Y-%m-%d %H:%M:%S")
     return obj
 

@@ -12,6 +12,7 @@ from .tasks import stock_history, last_day_stock_history
 from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange, Poetry
 from public.auth_token import auth_token
 from public.common import *
+from public.views_com import handle_deal_data
 from public.views_com import home_poetry, operation_record, handle_tar_number, LogEntry, Message
 from public.response import JsonResponse
 
@@ -737,6 +738,23 @@ def number_chart(request):
         logger.info("查询每日成交量成功.")
         cache.set(TodayTraNumber.format(stock_id=stock_id), dataset, surplus_second())
         return JsonResponse.OK(data=dataset)
+
+
+@auth_token()
+def deal_more(request, stock_id):
+    """
+    每日交易量折线图
+    """
+    if request.method == POST:
+        deal_list = handle_deal_data(stock_id, flag=True)
+        data_list = list()
+        for deal in deal_list:
+            color = deal.color
+            deal_dict = model_to_dict(deal)
+            deal_dict["color"] = color
+            data_list.append(deal_dict)
+        data_list = handle_model(data_list)
+        return JsonResponse.OK(data=data_list)
 
 
 @auth_token()

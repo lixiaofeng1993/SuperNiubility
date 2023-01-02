@@ -259,6 +259,7 @@ def stock_edit(request, stock_id):
 
 @login_required
 def stock_look(request, stock_id):
+    cache.delete(f"{stock_id}-number")
     info = request_get_search(request)
     search_name = info.get("search_name")
     model = model_superuser(request, SharesHold)

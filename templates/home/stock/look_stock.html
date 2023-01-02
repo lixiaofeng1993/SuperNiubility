@@ -245,7 +245,7 @@
                                             <th scope="col">单数</th>
                                         </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody id="deal_more">
                                         {% for foo in deal_list %}
                                             <tr>
                                                 <td>{{ foo.time }}</td>
@@ -263,7 +263,18 @@
                                                         {% endif %}
                                                     </td>
                                                 {% elif foo.deal_price < foo.old_price %}
-                                                    <td style="color: green;">{{ foo.deal_price }}</td>
+                                                    <td>
+                                                        <spn style="color: green;">{{ foo.deal_price }}</spn>
+                                                        {% if foo.color == "red" %}
+                                                            <spn style="color: red;">
+                                                                <i class="fa fa-angle-up"></i>
+                                                            </spn>
+                                                        {% elif foo.color == "green" %}
+                                                            <spn style="color: green;">
+                                                                <i class="fa fa-angle-down"></i>
+                                                            </spn>
+                                                        {% endif %}
+                                                    </td>
                                                 {% else %}
                                                     <td>{{ foo.deal_price }}</td>
                                                 {% endif %}
@@ -273,6 +284,11 @@
                                         {% endfor %}
                                         </tbody>
                                     </table>
+                                    {% if deal_list %}
+                                        <a style="margin-left: 40%" href="javascript:void(0);" onclick="deal_more()">
+                                            查看更多<i class="fa fa-angle-right" id="btn-deal"></i>
+                                        </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -425,6 +441,65 @@
                 top.location.href = `/nb/stock/look/{{ obj.id }}/?search-input=${last_day}`;
             }, 1500);
         })
+
+        function deal_more() {
+            let stock_id = "{{ obj.id }}";
+            let more = $("#deal_more");
+            let ale = $("#alert");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            $.ajax({
+                type: "post",
+                url: `/nb/stock/deal/${stock_id}/`,
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                success: function (result) {
+                    console.log("===deal_more===>>>", result);
+                    let code = result.code;
+                    let message = result.message;
+                    let data = result.data;
+                    console.log(data)
+                    if (code === 200) {
+                        let content = "";
+                        for (let i = 0; i < data.length; i++) {
+                            content += `<tr><td>${data[i].time}</td>`
+                            if (data[i].deal_price > data[i].old_price) {
+                                content += `<td><spn style="color: red;">${data[i].deal_price}</spn>`
+                                if (data[i].color === "red") {
+                                    content += `<spn style="color: red;"><i class="fa fa-angle-up"></i></spn>`
+                                } else if (data[i].color === "green") {
+                                    content += `<spn style="color: green;"><i class="fa fa-angle-down"></i></spn>`
+                                }
+                                content += `</td>`
+                            } else if (data[i].deal_price < data[i].old_price) {
+                                content += `<td><spn style="color: green;">${data[i].deal_price}</spn>`
+                                if (data[i].color === "red") {
+                                    content += `<spn style="color: red;"><i class="fa fa-angle-up"></i></spn>`
+                                } else if (data[i].color === "green") {
+                                    content += `<spn style="color: green;"><i class="fa fa-angle-down"></i></spn>`
+                                }
+                                content += `</td>`
+                            } else {
+                                content += `<td>${data[i].deal_price}</td>`
+                            }
+                            content += `<td style="color:${data[i].color};">${data[i].deal_number}</td><td>${data[i].singular}</td></tr>`
+                        }
+                        more.append(content);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }, error: function () {
+                    ale.html("出现未知异常，请联系Bruce.").addClass('alert-danger').show().delay(1500).fadeOut();
+                }
+            })
+        }
     </script>
 {% endblock %}
 

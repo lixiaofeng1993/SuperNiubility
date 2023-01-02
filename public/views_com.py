@@ -423,23 +423,34 @@ def forecast(stock_id: str):
     return [buy_text, buy_color], tra_text
 
 
-def handle_deal_data(stock_id: str):
+def handle_deal_data(stock_id: str, flag: bool = False):
     """
     处理交易明细数据
     """
     moment = check_stoke_day()
     if moment and moment["now"] <= moment["start_time"]:
         return []
-    deal_list = StockDeal.objects.filter(Q(is_delete=False) & Q(shares_hold_id=stock_id)).order_by("-time")[:11]
+    start_number, end_number = 0, 10
+    if flag:
+        number = cache.get(f"{stock_id}-number")
+        if number:
+            start_number = number
+            end_number = number + 10
+    else:
+        start_number = 0
+        end_number = 10
+    deal_list = StockDeal.objects.filter(Q(is_delete=False) &
+                                         Q(shares_hold_id=stock_id)).order_by("-time")[:end_number + 1]
+    deal_number = len(deal_list)
     for index, deal in enumerate(deal_list):
-        if index + 1 > 10:
+        setattr(deal, "color", "")
+        deal.time = deal.time.strftime("%Y-%m-%d %H:%M:%S").split(" ")[-1]
+        deal.deal_number = handle_price(deal.deal_number)
+        if index + 1 > end_number or index + 1 > deal_number - 1:
             break
         if deal_list[index].deal_price > deal_list[index + 1].deal_price:
             setattr(deal, "color", "red")
         elif deal_list[index].deal_price < deal_list[index + 1].deal_price:
             setattr(deal, "color", "green")
-        else:
-            setattr(deal, "color", "")
-        deal.time = deal.time.strftime("%Y-%m-%d %H:%M:%S").split(" ")[-1]
-        deal.deal_number = handle_price(deal.deal_number)
-    return deal_list[:10]
+    cache.set(f"{stock_id}-number", end_number, surplus_second())
+    return deal_list[start_number:end_number]
