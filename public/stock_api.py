@@ -132,8 +132,9 @@ def stock_buy_sell(stock_id: str = ""):
                 limit_up(hold, True)
             elif quotes["最新价"] == quotes["跌停价"]:
                 limit_up(hold, False)
-            message_writing(MessageBuySell.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
-    if detail_list:
+            if not stock_id:
+                message_writing(MessageBuySell.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
+    if detail_list and not stock_id:
         try:
             StockDetail.objects.bulk_create(objs=detail_list)
             logger.info(f"买入卖出托单 保存成功 ===>>> {len(detail_list)} 条")
