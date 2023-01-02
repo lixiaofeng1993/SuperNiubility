@@ -428,7 +428,7 @@ def handle_deal_data(stock_id: str):
     处理交易明细数据
     """
     moment = check_stoke_day()
-    if moment["now"] <= moment["start_time"]:
+    if moment and moment["now"] <= moment["start_time"]:
         return []
     deal_list = StockDeal.objects.filter(Q(is_delete=False) & Q(shares_hold_id=stock_id)).order_by("-time")[:11]
     for index, deal in enumerate(deal_list):
