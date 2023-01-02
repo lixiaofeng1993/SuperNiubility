@@ -285,8 +285,8 @@ def handle_cache(request, flag: str):
             datasets = cache.get(YearChart.format(user_id=user_id))
         elif flag == "kdj":
             datasets = cache.get(TodayKDJChart.format(user_id=user_id))
-    if datasets:
-        return datasets, user_id, stock_id
+    # if datasets:
+    #     return datasets, user_id, stock_id
     model = model_superuser(request, SharesHold)
     if stock_id:
         hold_list = model.filter(Q(is_delete=False) & Q(id=stock_id))

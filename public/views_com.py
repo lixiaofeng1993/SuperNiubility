@@ -62,6 +62,7 @@ def handle_tar_number(stock_id: str):
                                              Q(time__hour=15)).order_by("time")
     diff_list = list()
     for detail in detail_list:
+        logger.info(is_workday(detail.time))
         if not is_workday(detail.time):
             continue
         date_time = str(detail.time).split(" ")[0]
