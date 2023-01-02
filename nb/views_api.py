@@ -743,7 +743,7 @@ def number_chart(request):
 @auth_token()
 def deal_more(request, stock_id):
     """
-    每日交易量折线图
+    每日交易明细查看更多
     """
     if request.method == POST:
         deal_list = handle_deal_data(stock_id, flag=True)
