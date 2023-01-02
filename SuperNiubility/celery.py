@@ -37,9 +37,9 @@ app.conf.beat_schedule = {
         'schedule': crontab(minute="*/5"),
         'args': (),
     },
-    'stock_holder': {
+    'stock_message': {
         # 任务路径
-        'task': 'nb.tasks.stock_holder',
+        'task': 'nb.tasks.stock_message',
         'schedule': crontab(minute=0, hour=17),
         'args': (),
     },

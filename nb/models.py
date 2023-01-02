@@ -446,3 +446,30 @@ class StockSuper(models.Model):
     def delete(self, using=None, keep_parents=False):
         self.is_delete = True
         self.save()
+
+
+class StockDeal(models.Model):
+    """
+    交易日成交明细
+    """
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, default=None, help_text="股票名称")
+    code = models.CharField(max_length=20, default=None, help_text="股票代码")
+    time = models.DateTimeField("时间", null=True, help_text="时间")
+    old_price = models.FloatField(default=0.00, help_text="昨收")
+    deal_price = models.FloatField(default=0.00, help_text="成交价")
+    deal_number = models.IntegerField(default=0, help_text="成交量")
+    singular = models.IntegerField(default=0, help_text="单数")
+
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
+
+    class Meta:
+        db_table = "stock_deal"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()

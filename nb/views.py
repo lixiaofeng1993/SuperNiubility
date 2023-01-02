@@ -314,10 +314,13 @@ def stock_look(request, stock_id):
     # 预测
     text = inflow.get("text")
     buy_text, tra_text = forecast(stock_id)
+    # 交易明细数据
+    deal_list = handle_deal_data(stock_id)
     info.update({
         "detail": detail,
         "inflow": inflow,
         "holder": holder_list,
+        "deal_list": deal_list,
         "date_list": date_list,
         "last_day": last_day,
         "dragon_obj": dragon_obj,

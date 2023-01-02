@@ -6,11 +6,9 @@
 # @Version：V 0.1
 # @desc :
 from celery import Task, shared_task
-from django.db.models import Q  # 与或非 查询
 
 from nb.models import ToDo, Shares, StockTodayPrice, SharesHold
-from public.stock_api import ef, delete_cache, etc_time, cache, StockEndTime, stock_today, stock_buy_sell, stock_inflow, \
-    stock_holder as holder, stock_sector, stock_holder_number, stock_super, TodayPrice, TodayTraNumber, check_stoke_day
+from public.stock_api import *
 from public.log import logger
 
 
@@ -111,15 +109,16 @@ def stock():
     stock_today()
     stock_buy_sell()
     stock_inflow()
+    stock_deal()
     stock_sector()
 
 
 @shared_task()
-def stock_holder():
+def stock_message():
     """
     定时更新龙虎榜、股东数据
     """
-    holder()
+    stock_holder()
     stock_holder_number()
     stock_super()
 

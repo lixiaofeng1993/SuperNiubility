@@ -5,7 +5,7 @@
 # 创建时间: 2022/11/28 0028 18:48
 # @Version：V 0.1
 # @desc :
-from nb.models import Shares, Shareholder, StockSector, StockSuper
+from nb.models import Shares, Shareholder, StockSector, StockSuper, StockDeal
 from public.views_com import *
 from public.log import logger
 
@@ -368,6 +368,45 @@ def stock_super():
             message_writing(MessageDragon.format(name="龙虎榜"), "", "", moment["today"], Dragon)
         except Exception as error:
             logger.error(f"龙虎榜 保存失败 ===>>> {error}")
+
+
+def stock_deal():
+    """
+    获取股票最新交易日成交明细
+    """
+    moment = check_stoke_date()
+    if not moment:  # 判断股市开关时间
+        return
+    hold_list = SharesHold.objects.filter(is_delete=False)
+    if not hold_list:
+        logger.error("成交明细 持仓 表数据为空.")
+        return
+    detail_list = list()
+    for hold in hold_list:
+        detail = ef.stock.get_deal_detail(hold.code)
+        if detail.empty:
+            logger.error(f"成交明细 股票 {hold.name} 查询数据为空.")
+            continue
+        df_list = detail.to_dict(orient="records")
+        for df in df_list:
+            date_time = f"{moment['today']} {df['时间']}"
+            deal = StockDeal.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id) & Q(time=date_time)).exists()
+            if deal:
+                continue
+            obj = StockDeal(
+                code=df["股票代码"], name=df["股票名称"], time=date_time, old_price=df["昨收"],
+                deal_price=df["成交价"], deal_number=df["成交量"], singular=df["单数"], shares_hold_id=hold.id
+            )
+            detail_list.append(obj)
+        if detail_list:
+            message_writing(MessageDeal.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
+    if detail_list:
+        try:
+            StockDeal.objects.bulk_create(objs=detail_list)
+            logger.info(f"成交明细 保存成功 ===>>> {len(detail_list)} 条")
+        except Exception as error:
+            logger.error(f"成交明细 保存失败 ===>>> {error}")
+            return
 
 
 if __name__ == '__main__':

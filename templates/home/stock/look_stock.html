@@ -233,6 +233,50 @@
                             </div>
                         </div>
                         <div class="bg-light rounded h-100 p-4">
+                            <p class="nav-item mb-4" id="text-style">成交明细</p>
+                            <div class="col-sm-12 col-xl-12">
+                                <div class="bg-light rounded h-100 p-4">
+                                    <table class="table table-borderless">
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">时间</th>
+                                            <th scope="col">成交价</th>
+                                            <th scope="col">成交量</th>
+                                            <th scope="col">单数</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for foo in deal_list %}
+                                            <tr>
+                                                <td>{{ foo.time }}</td>
+                                                {% if foo.deal_price > foo.old_price %}
+                                                    <td>
+                                                        <spn style="color: red;">{{ foo.deal_price }}</spn>
+                                                        {% if foo.color == "red" %}
+                                                            <spn style="color: red;">
+                                                                <i class="fa fa-angle-up"></i>
+                                                            </spn>
+                                                        {% elif foo.color == "green" %}
+                                                            <spn style="color: green;">
+                                                                <i class="fa fa-angle-down"></i>
+                                                            </spn>
+                                                        {% endif %}
+                                                    </td>
+                                                {% elif foo.deal_price < foo.old_price %}
+                                                    <td style="color: green;">{{ foo.deal_price }}</td>
+                                                {% else %}
+                                                    <td>{{ foo.deal_price }}</td>
+                                                {% endif %}
+                                                <td style="color:{{ foo.color }};">{{ foo.deal_number }}</td>
+                                                <td>{{ foo.singular }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-light rounded h-100 p-4">
                             <p class="nav-item mb-4" id="text-style">所属板块</p>
                             <div class="col-sm-12 col-xl-12">
                                 <div class="bg-light rounded h-100 p-4">

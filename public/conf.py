@@ -159,6 +159,7 @@ MessageHolder = "【{name}】持仓股东数据更新"
 MessageHolderNumber = "【{name}】持仓股东数量数据更新"
 MessageSector = "【{name}】所属板块数据更新"
 MessageDragon = "【{name}】数据更新"
+MessageDeal = "【{name}】最新成交明细数据更新"
 # 股票详情页面
 Detail = "Detail"
 # 股票图表页面

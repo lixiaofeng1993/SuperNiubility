@@ -9,7 +9,7 @@ import efinance as ef
 from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
 from django.contrib.admin.options import get_content_type_for_model
 
-from nb.models import Poetry, Message, StockDetail, InflowStock, ShareholderNumber
+from nb.models import Poetry, Message, StockDetail, InflowStock, ShareholderNumber, StockDeal
 from public.send_ding import profit_and_loss, profit_and_loss_ratio, limit_up
 from public.recommend import recommend_handle
 from public.common import *
@@ -392,20 +392,13 @@ def forecast(stock_id: str):
     股票涨跌预测
     """
     hold = SharesHold.objects.get(Q(is_delete=False) & Q(id=stock_id))
-    moment = etc_time()
     buy_text, tra_text = "", ""
-    if moment["now"] > moment["end_time"]:
-        detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
-        buy_num = detail.buyOne + detail.buyTwo + detail.buyThree + detail.buyFour + detail.buyFive
-        sell_num = detail.sellOne + detail.sellTwo + detail.sellThree + detail.sellFour + detail.sellFive
-        tra_num = round(detail.traNumber / 10000, 2)
-    else:
-        quote = ef.stock.get_quote_snapshot(hold.code)
-        if quote.empty:
-            return buy_text, tra_text
-        buy_num = quote["买1数量"] + quote["买2数量"] + quote["买3数量"] + quote["买4数量"] + quote["买5数量"]
-        sell_num = quote["卖1数量"] + quote["卖2数量"] + quote["卖3数量"] + quote["卖4数量"] + quote["卖5数量"]
-        tra_num = round(quote["成交量"] / 10000, 2)
+    detail = StockDetail.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id)).order_by("-time").first()
+    if not detail:
+        return [buy_text, ""], tra_text
+    buy_num = detail.buyOne + detail.buyTwo + detail.buyThree + detail.buyFour + detail.buyFive
+    sell_num = detail.sellOne + detail.sellTwo + detail.sellThree + detail.sellFour + detail.sellFive
+    tra_num = round(detail.traNumber / 10000, 2)
     diff_num = round(buy_num - sell_num)
     buy_text = f"买入卖出托单差 {diff_num} 手；"
     if diff_num > 0:
@@ -428,3 +421,25 @@ def forecast(stock_id: str):
             else:
                 tra_text = f"量偏高，在第{index + 1}位；"
     return [buy_text, buy_color], tra_text
+
+
+def handle_deal_data(stock_id: str):
+    """
+    处理交易明细数据
+    """
+    moment = check_stoke_day()
+    if moment["now"] <= moment["start_time"]:
+        return []
+    deal_list = StockDeal.objects.filter(Q(is_delete=False) & Q(shares_hold_id=stock_id)).order_by("-time")[:11]
+    for index, deal in enumerate(deal_list):
+        if index + 1 > 10:
+            break
+        if deal_list[index].deal_price > deal_list[index + 1].deal_price:
+            setattr(deal, "color", "red")
+        elif deal_list[index].deal_price < deal_list[index + 1].deal_price:
+            setattr(deal, "color", "green")
+        else:
+            setattr(deal, "color", "")
+        deal.time = deal.time.strftime("%Y-%m-%d %H:%M:%S").split(" ")[-1]
+        deal.deal_number = handle_price(deal.deal_number)
+    return deal_list[:10]
