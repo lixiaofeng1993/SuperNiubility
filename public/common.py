@@ -127,7 +127,7 @@ def check_stoke_day():
     weekday = date(moment["year"], moment["month"], moment["day"]).strftime("%A")
     if not is_workday(date(moment["year"], moment["month"], moment["day"])) or weekday in ["Saturday", "Sunday"]:
         logger.info(f"当前时间 {moment['today']} 休市日!!!")
-        return moment
+        return
     return moment
 
 
@@ -141,7 +141,7 @@ def check_stoke_date():
     if moment["now"] < moment["start_time"] or moment["now"] > moment["end_time"] or \
             moment["ap_time"] < moment["now"] < moment["pm_time"]:
         logger.info(f"当前时间 {moment['now']} 未开盘!!!")
-        return moment
+        return
     return moment
 
 
