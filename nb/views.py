@@ -302,8 +302,11 @@ def stock_look(request, stock_id):
                                              Q(shares_hold_id=hold.id)).order_by("-update_date", "-sector_rate")[:20]
     sector_list_diff = list()
     sectors = list()
+    moment = check_stoke_day()
     for sector in sector_list:
         if sector.sector_name not in sector_list_diff:
+            if moment and moment["now"] < moment["start_time"]:
+                sector.sector_rate = 0
             update_time = sector.create_date
             sector.update_date = sector.update_date.strftime("%Y-%m-%d %H:%M")
             sectors.append(sector)
