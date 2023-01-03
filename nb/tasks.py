@@ -124,14 +124,17 @@ def stock_message():
 
 
 @shared_task()
-def stock_today_price():
+def stock_today_price(stock_id: str = ""):
     """
     更新股票日盈
     """
     moment = check_stoke_day()
     if not moment:  # 判断股市休市时间
         return
-    hold_list = SharesHold.objects.filter(is_delete=False)
+    if stock_id:
+        hold_list = SharesHold.objects.filter(Q(is_delete=False) & Q(id=stock_id))
+    else:
+        hold_list = SharesHold.objects.filter(is_delete=False)
     price_list = list()
     for hold in hold_list:
         if hold.today_price:

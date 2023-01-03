@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 # from django_pandas.io import read_frame
 
 from nb.models import *
-from nb.tasks import real_time_stock
+from nb.tasks import real_time_stock, stock_today_price
 from public.auth_token import auth_token
 from public.views_com import *
 from public.response import JsonResponse
@@ -210,6 +210,10 @@ def stock_add(request):
             user_id = request.session.get("user_id")
             if stock_id:
                 hold = model.filter(Q(id=stock_id) & Q(is_delete=False)).first()
+                price = StockTodayPrice.objects.filter(shares_hold_id=stock_id).exists()
+                if not price and cost_price in ["0", "0.0"]:
+                    stock_today_price.delay(stock_id=stock_id)
+                    hold.days = 0
                 try:
                     if str(hold.cost_price) != cost_price:  # 持仓成本修改后，更新 StockChange 表
                         change = StockChange()
@@ -444,10 +448,26 @@ def stock_del(request, stock_id):
         model = model_superuser(request, SharesHold)
         hold = model.get(id=stock_id)
         share = Shares.objects.filter(shares_hold_id=stock_id)
+        detail = StockDetail.objects.filter(shares_hold_id=stock_id)
+        deal = StockDeal.objects.filter(shares_hold_id=stock_id)
+        sector = StockSector.objects.filter(shares_hold_id=stock_id)
+        change = StockChange.objects.filter(shares_hold_id=stock_id)
+        price = StockTodayPrice.objects.filter(shares_hold_id=stock_id)
+        inflow = InflowStock.objects.filter(shares_hold_id=stock_id)
+        holder = Shareholder.objects.filter(shares_hold_id=stock_id)
+        number = ShareholderNumber.objects.filter(shares_hold_id=stock_id)
         try:
             hold.user_id = user_id
             hold.save()
             share.delete()
+            detail.delete()
+            deal.delete()
+            sector.delete()
+            change.delete()
+            price.delete()
+            inflow.delete()
+            holder.delete()
+            number.delete()
             hold.delete()
         except Exception as error:
             return JsonResponse.DatabaseException(data=str(error))
