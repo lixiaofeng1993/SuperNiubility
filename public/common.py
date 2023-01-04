@@ -82,7 +82,7 @@ def format_time(date_time: datetime) -> str:
     return _time
 
 
-def etc_time() -> dict[str, Union[date, datetime, int]]:
+def etc_time() -> Dict:
     """
     日期字典
     """
@@ -120,7 +120,7 @@ def surplus_second() -> int:
     return end_second - now_second
 
 
-def check_stoke_day() -> Optional[dict[str, Union[date, datetime, int]]]:
+def check_stoke_day() -> Dict or None:
     """
     是否休市日
     """
@@ -132,7 +132,7 @@ def check_stoke_day() -> Optional[dict[str, Union[date, datetime, int]]]:
     return moment
 
 
-def check_stoke_date() -> Optional[dict[str, Union[date, datetime, int]]]:
+def check_stoke_date() -> Dict or None:
     """
     是否开盘
     """
