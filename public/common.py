@@ -120,7 +120,7 @@ def surplus_second() -> int:
     return end_second - now_second
 
 
-def check_stoke_day() -> Dict or None:
+def check_stoke_day() -> Union[Dict, None]:
     """
     是否休市日
     """
@@ -132,7 +132,7 @@ def check_stoke_day() -> Dict or None:
     return moment
 
 
-def check_stoke_date() -> Dict or None:
+def check_stoke_date() -> Union[Dict, None]:
     """
     是否开盘
     """
@@ -202,7 +202,7 @@ def format_dict(obj: Dict) -> Dict:
     return obj
 
 
-def handle_model(model_obj: Any) -> Union[object, list[Union[dict, object]]]:
+def handle_model(model_obj: Any) -> Union[object, list]:
     """
     数据库 时间字段 格式化
     """
@@ -249,7 +249,7 @@ def request_get_search(request) -> Dict:
     return info
 
 
-def handle_cache(request, flag: str) -> Union[tuple[Optional[Any], Any, Optional[Any]], tuple[Any, Any, Optional[Any]]]:
+def handle_cache(request, flag: str) -> Union[tuple[List, str, str]]:
     """
     判断缓存和查询数据
     """
