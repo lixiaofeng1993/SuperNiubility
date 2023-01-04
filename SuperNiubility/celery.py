@@ -40,7 +40,7 @@ app.conf.beat_schedule = {
     'stock_message': {
         # 任务路径
         'task': 'nb.tasks.stock_message',
-        'schedule': crontab(minute=0, hour=17),
+        'schedule': crontab(minute=30, hour=17),
         'args': (),
     },
     'stock_today_price': {
