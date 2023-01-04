@@ -249,7 +249,7 @@ def request_get_search(request) -> Dict:
     return info
 
 
-def handle_cache(request, flag: str) -> Union[tuple[List, str, str]]:
+def handle_cache(request, flag: str) -> tuple[List, str, str]:
     """
     判断缓存和查询数据
     """
