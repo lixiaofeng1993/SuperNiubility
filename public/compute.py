@@ -68,6 +68,17 @@ def compute_kdj_and_macd(stock_code: str, start_date: str, end_date: str) -> tup
     市场，若此时 DIF 向下继续跌破 DEA，即绿色柱状越来越长，可作卖出信号，该割肉就割
     肉。
     5. 当 DEA 线与 K 线趋势发生背离时为反转信号。
+    RSI:
+    >> 计算公式：
+    N 日 RSI =N 日内收盘涨幅的平均值/(N 日内收盘涨幅均值+N 日内收盘跌幅均值) ×100
+    由上面算式可知 RSI 指标的技术含义，即以向上的力量与向下的力量进行比较，若向上
+    的力量较大，则计算出来的指标上升；若向下的力量较大，则指标下降，由此测算出市场走
+    势的强弱。
+    市场上一般的规则：（快速 RSI 指 14 日的 RSI，慢速 RSI 指 6 日的 RSI）
+    1. RSI 金叉：快速 RSI 从下往上突破慢速 RSI 时,认为是买进机会。
+    2. RSI 死叉：快速 RSI 从上往下跌破慢速 RSI 时,认为是卖出机会
+    3. 慢速 RSI<20 为超卖状态,为买进机会。
+    4. 慢速 RSI>80 为超买状态,为卖出机会。
     """
     bs.login()
     # 获取股票日k线数据
@@ -132,8 +143,26 @@ def compute_kdj_and_macd(stock_code: str, start_date: str, end_date: str) -> tup
     # 折线图
     # df_data.plot(title="KDJ")
     # plt.show()
+
+    df_rsi = pd.DataFrame()
+    df_rsi['close'] = df_status['close'].astype(float)
+    rsi_12days = ta.RSI(df_rsi['close'], timeperiod=12)
+    rsi_6days = ta.RSI(df_rsi['close'], timeperiod=6)
+    rsi_24days = ta.RSI(df_rsi['close'], timeperiod=24)
+    df_rsi['rsi_6days'] = rsi_6days
+    df_rsi['rsi_12days'] = rsi_12days
+    df_rsi['rsi_24days'] = rsi_24days
+    df_rsi['date'] = df_status["date"].values
+    # RSI 超卖和超买
+    rsi_buy_position = df_rsi['rsi_6days'] > 80
+    rsi_sell_position = df_rsi['rsi_6days'] < 20
+    df_rsi.loc[rsi_buy_position[(rsi_buy_position == True) &
+                                (rsi_buy_position.shift() == False)].index, 'rsi_超买超卖'] = '超买'
+    df_rsi.loc[rsi_sell_position[(rsi_sell_position == True) &
+                                 (rsi_sell_position.shift() == False)].index, 'rsi_超买超卖'] = '超卖'
+
     bs.logout()
-    return df_kdj, df_macd
+    return df_kdj, df_macd, df_rsi
 
 
 if __name__ == '__main__':
@@ -141,6 +170,7 @@ if __name__ == '__main__':
     # code = "sh.601069"
     start_date = "2022-06-24"
     end_date = "2023-01-04"
-    df_kdj, df_macd = compute_kdj_and_macd(code, start_date, end_date)
+    df_kdj, df_macd, df_status = compute_kdj_and_macd(code, start_date, end_date)
     df_kdj.to_csv(r"E:\projects\SuperNiubility\tools\2.csv", encoding="gbk")
     df_macd.to_csv(r"E:\projects\SuperNiubility\tools\3.csv", encoding="gbk")
+    df_status.to_csv(r"E:\projects\SuperNiubility\tools\4.csv", encoding="gbk")

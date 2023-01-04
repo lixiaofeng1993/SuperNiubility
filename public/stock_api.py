@@ -5,7 +5,7 @@
 # 创建时间: 2022/11/28 0028 18:48
 # @Version：V 0.1
 # @desc :
-from nb.models import Shares, Shareholder, StockSector, StockSuper, StockKDJ, StockMACD
+from nb.models import Shares, Shareholder, StockSector, StockSuper, StockKDJ, StockMACD, StockRSI
 from public.views_com import *
 from public.compute import compute_kdj_and_macd
 from public.log import logger
@@ -423,24 +423,26 @@ def stock_deal():
 
 def stock_kdj_and_macd(start_date: str = "2022-06-24"):
     """
-    股票kdj、MACD数据
+    股票KDJ、MACD、RSI数据
     """
     moment = check_stoke_day()
     if not moment:
         return
     hold_list = SharesHold.objects.filter(is_delete=False)
     if not hold_list:
-        logger.error("kdj 持仓 表数据为空.")
+        logger.error("股票KDJ、MACD、RSI数据 持仓 表数据为空.")
         return
     kdj_list = list()
     macd_list = list()
+    rsi_list = list()
     end_date = str(moment["today"])
     for hold in hold_list:
-        df_kdj, df_macd = compute_kdj_and_macd(difference_stock(hold.code), start_date, end_date)
+        df_kdj, df_macd, df_rsi = compute_kdj_and_macd(difference_stock(hold.code), start_date, end_date)
         df_kdj = df_kdj.where(df_kdj.notnull(), "")
         df_macd = df_macd.where(df_macd.notnull(), "")
+        df_rsi = df_rsi.where(df_rsi.notnull(), "")
         if df_kdj.empty:
-            logger.error(f"股票kdj数据 股票 {hold.name} 查询数据为空.")
+            logger.error(f"股票 {hold.name} kdj数据 查询数据为空.")
             continue
         df_kdj_list = df_kdj.to_dict(orient="records")
         for df in df_kdj_list:
@@ -457,7 +459,7 @@ def stock_kdj_and_macd(start_date: str = "2022-06-24"):
             cache.delete(TodayKDJChart.format(stock_id=hold.id))
             message_writing(MessageKDJ.format(name=hold.name), hold.id, moment["today"], Chart)
         if df_macd.empty:
-            logger.error(f"股票MACD数据 股票 {hold.name} 查询数据为空.")
+            logger.error(f"股票 {hold.name} MACD数据 查询数据为空.")
             continue
         df_macd_list = df_macd.to_dict(orient="records")
         for df in df_macd_list:
@@ -473,6 +475,26 @@ def stock_kdj_and_macd(start_date: str = "2022-06-24"):
         if macd_list:
             cache.delete(TodayMACDChart.format(stock_id=hold.id))
             message_writing(MessageMACD.format(name=hold.name), hold.id, moment["today"], Chart)
+        if df_rsi.empty:
+            logger.error(f"股票 {hold.name} RSI数据 查询数据为空.")
+            continue
+        df_rsi_list = df_rsi.to_dict(orient="records")
+        for df in df_rsi_list:
+            date_time = f"{df['date']} 00:00:00"
+            rsi = StockRSI.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id) & Q(time=date_time)).exists()
+            if rsi:
+                continue
+            rsi1 = df["rsi_6days"] if df["rsi_6days"] else 0
+            rsi2 = df["rsi_12days"] if df["rsi_12days"] else 0
+            rsi3 = df["rsi_24days"] if df["rsi_24days"] else 0
+            obj = StockRSI(
+                name=hold.name, rsi1=rsi1, rsi2=rsi2, rsi3=rsi3, time=date_time,
+                type=df["rsi_超买超卖"], shares_hold_id=hold.id, close=df["close"]
+            )
+            rsi_list.append(obj)
+        if rsi_list:
+            cache.delete(TodayRSIChart.format(stock_id=hold.id))
+            message_writing(MessageRSI.format(name=hold.name), hold.id, moment["today"], Chart)
     if kdj_list:
         try:
             StockKDJ.objects.bulk_create(objs=kdj_list)
@@ -485,7 +507,12 @@ def stock_kdj_and_macd(start_date: str = "2022-06-24"):
             logger.info(f"股票MACD数据 保存成功 ===>>> {len(macd_list)} 条")
         except Exception as error:
             logger.error(f"股票MACD数据 保存失败 ===>>> {error}")
-            return
+    if rsi_list:
+        try:
+            StockRSI.objects.bulk_create(objs=rsi_list)
+            logger.info(f"股票RSI数据 保存成功 ===>>> {len(rsi_list)} 条")
+        except Exception as error:
+            logger.error(f"股票RSI数据 保存失败 ===>>> {error}")
 
 
 if __name__ == '__main__':

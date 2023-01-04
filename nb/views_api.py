@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 
 from .tasks import stock_history, last_day_stock_history
-from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange, Poetry, StockKDJ, StockMACD
+from nb.models import *
 from public.auth_token import auth_token
 from public.common import *
 from public.views_com import handle_deal_data
@@ -460,6 +460,55 @@ def macd_chart(request):
             })
         logger.info("查询 MACD数据 成功.")
         cache.set(TodayMACDChart.format(stock_id=stock_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
+
+
+@auth_token()
+def rsi_chart(request):
+    """
+    RSI折线图
+    """
+    if request.method == POST:
+        datasets, user_id, stock_id = handle_cache(request, "rsi")
+        if isinstance(datasets, dict):
+            return JsonResponse.OK(data=datasets)
+        dataset = dict()
+        for hold in datasets:
+            rsi_list = StockRSI.objects.filter(Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("time")
+            if not rsi_list:
+                continue
+            rsi_list = handle_model(list(rsi_list))
+            labels = list()
+            rsi1_list = list()
+            rsi2_list = list()
+            rsi3_list = list()
+            for rsi in rsi_list:
+                rsi.time = rsi.time.split(" ")[0]
+                if rsi.type:
+                    label = rsi.type + "-" + rsi.time
+                else:
+                    label = rsi.time
+                labels.append(label)
+                rsi1_list.append(round(rsi.rsi1, 2))
+                rsi2_list.append(round(rsi.rsi2, 2))
+                rsi3_list.append(round(rsi.rsi3, 2))
+            dataset.update({
+                "RSI1": {
+                    "data": rsi1_list[-88:],
+                    "color": "white",
+                },
+                "RSI2": {
+                    "data": rsi2_list[-88:],
+                    "color": "yellow",
+                },
+                "RSI3": {
+                    "data": rsi3_list[-88:],
+                    "color": "purple",
+                },
+                "labels": labels[-88:],
+            })
+        logger.info("查询 RSI数据 成功.")
+        cache.set(TodayRSIChart.format(stock_id=stock_id), dataset, surplus_second())
         return JsonResponse.OK(data=dataset)
 
 

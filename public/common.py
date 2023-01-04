@@ -283,6 +283,8 @@ def handle_cache(request, flag: str):
             datasets = cache.get(TodayKDJChart.format(stock_id=stock_id))
         elif flag == "macd":
             datasets = cache.get(TodayMACDChart.format(stock_id=stock_id))
+        elif flag == "rsi":
+            datasets = cache.get(TodayRSIChart.format(stock_id=stock_id))
     else:
         if flag == "day":
             datasets = cache.get(TodayChart.format(user_id=user_id))

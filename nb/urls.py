@@ -40,6 +40,7 @@ urlpatterns = [
     path("stock/number/", views_api.number_chart, name="number_chart"),
     path("stock/kdj/chart/", views_api.kdj_chart, name="kdj_chart"),
     path("stock/macd/chart/", views_api.macd_chart, name="macd_chart"),
+    path("stock/rsi/chart/", views_api.rsi_chart, name="rsi_chart"),
     path("stock/deal/<uuid:stock_id>/", views_api.deal_more, name="deal_more"),
 
     path("record/", views.RecordIndex.as_view(), name="record"),

@@ -397,6 +397,8 @@ def dragon(request):
     龙虎榜
     """
     if request.method == GET:
+        from .tasks import stock_message
+        stock_message.delay()
         info = request_get_search(request)
         search_name = info.get("search_name")
         stock = StockSuper.objects.filter(is_delete=False).order_by("-time").first()
