@@ -144,7 +144,6 @@ def stock_buy_sell(stock_id: str = ""):
             logger.info(f"买入卖出托单 保存成功 ===>>> {len(detail_list)} 条")
         except Exception as error:
             logger.error(f"买入卖出托单 保存失败 ===>>> {error}")
-            return
 
 
 def stock_inflow():
@@ -418,7 +417,6 @@ def stock_deal():
             logger.info(f"成交明细 保存成功 ===>>> {len(detail_list)} 条")
         except Exception as error:
             logger.error(f"成交明细 保存失败 ===>>> {error}")
-            return
 
 
 def stock_kdj_and_macd(start_date: str = "2022-06-24"):
