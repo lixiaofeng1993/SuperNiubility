@@ -38,6 +38,7 @@ urlpatterns = [
     path("stock/price/", views_api.price_chart, name="price_chart"),
     path("stock/cost/", views_api.cost_chart, name="cost_chart"),
     path("stock/number/", views_api.number_chart, name="number_chart"),
+    path("stock/kdj/chart/", views_api.kdj_chart, name="kdj_chart"),
     path("stock/deal/<uuid:stock_id>/", views_api.deal_more, name="deal_more"),
 
     path("record/", views.RecordIndex.as_view(), name="record"),

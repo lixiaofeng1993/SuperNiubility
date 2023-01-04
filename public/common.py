@@ -35,10 +35,10 @@ def difference_stock(code: str):
     """
     # 沪市股票包含上证主板和科创板和B股：沪市主板股票代码是60开头、科创板股票代码是688开头、B股代码900开头
     if code.startswith("60") or code.startswith("688") or code.startswith("900"):
-        return f"sh{code}"
+        return f"sh.{code}"
     # 深市股票包含主板、中小板、创业板和B股：深市主板股票代码是000开头、中小板股票代码002开头、创业板300开头、B股代码200开头
     elif code.startswith("000") or code.startswith("002") or code.startswith("300") or code.startswith("200"):
-        return f"sz{code}"
+        return f"sz.{code}"
 
 
 def delete_cache(user_id, stock_id):
@@ -54,7 +54,7 @@ def delete_cache(user_id, stock_id):
     cache.delete(TodayChart.format(user_id=user_id))
     cache.delete(TodayStockChart.format(stock_id=stock_id))
     cache.delete(TodayBuySellChart.format(stock_id=stock_id))
-    cache.delete(TodayKDJChart.format(user_id=user_id))
+    cache.delete(TodayKDJChart.format(stock_id=stock_id))
     cache.delete(TwentyChart.format(user_id=user_id))
     cache.delete(TwentyStockChart.format(stock_id=stock_id))
     cache.delete(TodayInflowChart.format(stock_id=stock_id))
@@ -272,6 +272,8 @@ def handle_cache(request, flag: str):
             datasets = cache.get(TodayCostPrice.format(stock_id=stock_id))
         elif flag == "number":
             datasets = cache.get(TodayTraNumber.format(stock_id=stock_id))
+        elif flag == "kdj":
+            datasets = cache.get(TodayKDJChart.format(stock_id=stock_id))
     else:
         if flag == "day":
             datasets = cache.get(TodayChart.format(user_id=user_id))
@@ -283,8 +285,6 @@ def handle_cache(request, flag: str):
             datasets = cache.get(TwentyChart.format(user_id=user_id))
         elif flag == "year":
             datasets = cache.get(YearChart.format(user_id=user_id))
-        elif flag == "kdj":
-            datasets = cache.get(TodayKDJChart.format(user_id=user_id))
     if datasets:
         return datasets, user_id, stock_id
     model = model_superuser(request, SharesHold)

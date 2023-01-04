@@ -18,6 +18,12 @@
             <div class="row g-4">
                 <div class="col-sm-12 col-xl-6">
                     <div class="bg-light rounded h-100 p-4">
+                        <h6 class="mb-4">KDJ</h6>
+                        <canvas id="kdj"></canvas>
+                    </div>
+                </div>
+                <div class="col-sm-12 col-xl-6">
+                    <div class="bg-light rounded h-100 p-4">
                         <h6 class="mb-4">买入卖出托单</h6>
                         <canvas id="buy-sell"></canvas>
                     </div>
@@ -261,11 +267,11 @@
                         }
                         let data_dict = {
                             labels: labels,
-                            datasets: datasets.dataStore
+                            datasets: datasets.dataStore,
                         }
                         let config = {
                             type: 'line', // 设置图表类型
-                            data: data_dict,
+                            data: data_dict
                         };
                         new Chart(chart_obj, config);
                     } else if (code === 401) {
@@ -799,6 +805,73 @@
             })
         }
 
+        function KDJChart() {
+            let ale = $("#alert");
+            let kdj = $("#kdj");
+            let username = "{{ user.username }}";
+            let token = sessionStorage.getItem(username);
+            let dataJson = JSON.stringify({
+                "stock_id": "{{ obj.id }}",
+            })
+            $.ajax({
+                type: "post",
+                url: "{% url 'kdj_chart' %}",
+                headers: {
+                    "Authorization": token
+                },
+                async: false,
+                dataType: "json",
+                data: dataJson,
+                success: function (result) {
+                    console.log("===kdj_chart===>>>", result);
+                    let code = result.code;
+                    let message = result.message;
+                    let data = result.data;
+                    if (code === 200) {
+                        let chart_obj = kdj.get(0).getContext("2d");
+                        let labels = data.labels;
+                        let datasets = new List();
+                        if (JSON.stringify(data) !== "{}") {
+                            for (const key in data) {
+                                if (key !== "labels") {
+                                    let borderColor = data[key].color;
+                                    datasets.append({
+                                        label: key,
+                                        data: data[key].data,
+                                        fill: true,
+                                        tension: 0.1,
+                                        borderColor: borderColor
+                                    })
+                                }
+                            }
+                        } else {
+                            datasets.append({
+                                label: "",
+                                data: [],
+                            })
+                        }
+                        let data_dict = {
+                            labels: labels,
+                            datasets: datasets.dataStore,
+                        }
+                        let config = {
+                            type: 'line', // 设置图表类型
+                            data: data_dict
+                        };
+                        new Chart(chart_obj, config);
+                    } else if (code === 401) {
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                        setTimeout(function () {
+                            top.location.href = "{% url 'login' %}";
+                        }, 1500);
+                    } else {
+                        $("#five-days").text(`<span>${message}</span>`);
+                        ale.html(message).addClass("alert-warning").show().delay(1500).fadeOut();
+                    }
+                }
+            })
+        }
+
         TodayChart();
         FiveDayChart();
         TenDayChart();
@@ -807,6 +880,7 @@
         buySell();
         inflow();
         TraNumberChart();
+        KDJChart();
         let make = {{ flag }};
         if (make) {
             PriceChart();

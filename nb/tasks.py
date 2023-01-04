@@ -118,6 +118,7 @@ def stock_message():
     """
     定时更新龙虎榜、股东数据
     """
+    stock_kdj()
     stock_holder()
     stock_holder_number()
     stock_super()

@@ -56,7 +56,7 @@ TodayCostPrice = "TodayCostPrice-{stock_id}"
 # 成交量
 TodayTraNumber = "TodayTraNumber-{stock_id}"
 # kdj
-TodayKDJChart = "TodayKDJChart-{user_id}"
+TodayKDJChart = "TodayKDJChart-{stock_id}"
 # 验证码缓存
 VerificationCode = "VerificationCode"
 # 每个邮箱十分钟只能发送一次

@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 
 from .tasks import stock_history, last_day_stock_history
-from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange, Poetry
+from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange, Poetry, StockKDJ
 from public.auth_token import auth_token
 from public.common import *
 from public.views_com import handle_deal_data
@@ -362,6 +362,55 @@ def twenty_chart(request):
             cache.set(TwentyStockChart.format(stock_id=stock_id), dataset, surplus_second())
         else:
             cache.set(TwentyChart.format(user_id=user_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
+
+
+@auth_token()
+def kdj_chart(request):
+    """
+    KDJ折线图
+    """
+    if request.method == POST:
+        datasets, user_id, stock_id = handle_cache(request, "kdj")
+        if isinstance(datasets, dict):
+            return JsonResponse.OK(data=datasets)
+        dataset = dict()
+        for hold in datasets:
+            kdj_list = StockKDJ.objects.filter(Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("time")
+            if not kdj_list:
+                continue
+            kdj_list = handle_model(list(kdj_list))
+            labels = list()
+            k_list = list()
+            d_list = list()
+            j_list = list()
+            for kdj in kdj_list:
+                kdj.time = kdj.time.split(" ")[0]
+                if kdj.type:
+                    label = kdj.type + "-" + kdj.time
+                else:
+                    label = kdj.time
+                labels.append(label)
+                k_list.append(round(kdj.k, 2))
+                d_list.append(round(kdj.d, 2))
+                j_list.append(round(kdj.j, 2))
+            dataset.update({
+                "K": {
+                    "data": k_list[-88:],
+                    "color": "white",
+                },
+                "D": {
+                    "data": d_list[-88:],
+                    "color": "yellow",
+                },
+                "J": {
+                    "data": j_list[-88:],
+                    "color": "purple",
+                },
+                "labels": labels[-88:],
+            })
+        logger.info("查询 KDJ数据 成功.")
+        cache.set(TodayKDJChart.format(stock_id=stock_id), dataset, surplus_second())
         return JsonResponse.OK(data=dataset)
 
 

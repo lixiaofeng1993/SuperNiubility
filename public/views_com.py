@@ -93,17 +93,11 @@ def regularly_hold(hold, moment: dict, price: float, old_price: float):
         logger.error(f"实时更新 持有股票收益 保存报错！===>>> {error}")
 
 
-def message_writing(name: str, user_id, stock_id: str, date_time: datetime, link_type: str):
+def message_writing(name: str, stock_id: str, date_time: datetime, link_type: str):
     """
     写入消息提醒
     """
     try:
-        cache.delete(TodayChart.format(user_id=user_id))
-        cache.delete(TodayStockChart.format(stock_id=stock_id))
-        cache.delete(TodayBuySellChart.format(stock_id=stock_id))
-        cache.delete(TodayKDJChart.format(user_id=user_id))
-        cache.delete(TodayInflowChart.format(stock_id=stock_id))
-        cache.delete(TodayPrice.format(stock_id=stock_id))
         message = Message()
         message.name = name
         message.obj_id = stock_id

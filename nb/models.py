@@ -274,7 +274,7 @@ class Message(models.Model):
         self.save()
 
 
-class KDJStock(models.Model):
+class StockKDJ(models.Model):
     """
     kdj数据
     """
@@ -282,12 +282,14 @@ class KDJStock(models.Model):
     k = models.FloatField(default=0.00, help_text="k值")
     d = models.FloatField(default=0.00, help_text="d值")
     j = models.FloatField(default=0.00, help_text="j值")
-    t = models.DateTimeField("时间", null=True, help_text="时间")
+    time = models.DateTimeField("时间", null=True, help_text="时间")
     name = models.CharField(max_length=20, null=False, help_text="股票名称")
-    type = models.CharField(max_length=20, null=False, help_text="分时级别")
+    type = models.CharField(max_length=20, null=False, help_text="金叉-死叉")
+
     is_delete = models.BooleanField(default=False, help_text="是否删除")
     update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
     create_date = models.DateTimeField("保存时间", default=timezone.now)
+
     shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
 
     class Meta:

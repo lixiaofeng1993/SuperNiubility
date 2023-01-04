@@ -5,8 +5,9 @@
 # 创建时间: 2022/11/28 0028 18:48
 # @Version：V 0.1
 # @desc :
-from nb.models import Shares, Shareholder, StockSector, StockSuper, StockDeal
+from nb.models import Shares, Shareholder, StockSector, StockSuper, StockKDJ
 from public.views_com import *
+from public.compute_kdj import compute_kdj
 from public.log import logger
 
 
@@ -57,7 +58,9 @@ def stock_today():
         if new_price:
             try:
                 hold = SharesHold.objects.get(id=stock_dict[key])
-                message_writing(MessageToday.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
+                cache.delete(TodayChart.format(user_id=hold.user_id))
+                cache.delete(TodayStockChart.format(stock_id=hold.id))
+                message_writing(MessageToday.format(name=hold.name), hold.id, moment["today"], Chart)
             except Exception as error:
                 logger.error(f"今日走势K线 更新持仓盈亏出现错误. ===>>> {error}")
                 return
@@ -133,7 +136,8 @@ def stock_buy_sell(stock_id: str = ""):
             elif quotes["最新价"] == quotes["跌停价"]:
                 limit_up(hold, False)
             if not stock_id:
-                message_writing(MessageBuySell.format(name=hold.name), hold.user_id, hold.id, moment["today"], Chart)
+                message_writing(MessageBuySell.format(name=hold.name), hold.id, moment["today"], Chart)
+            cache.delete(TodayBuySellChart.format(stock_id=hold.id))
     if detail_list and not stock_id:
         try:
             StockDetail.objects.bulk_create(objs=detail_list)
@@ -189,7 +193,8 @@ def stock_inflow():
             )
             inflow_list.append(obj)
         if inflow_list:
-            message_writing(MessageInflow.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
+            cache.delete(TodayInflowChart.format(stock_id=hold.id))
+            message_writing(MessageInflow.format(name=hold.name), hold.id, moment["today"], Detail)
     if inflow_list:
         try:
             InflowStock.objects.bulk_create(objs=inflow_list)
@@ -202,7 +207,9 @@ def stock_holder():
     """
     股票持仓十大股东数据变化
     """
-    moment = etc_time()
+    moment = check_stoke_day()
+    if not moment:
+        return
     hold_list = SharesHold.objects.filter(is_delete=False)
     if not hold_list:
         logger.error("持仓股东数据 持仓 表数据为空.")
@@ -234,7 +241,7 @@ def stock_holder():
             )
             holder_list.append(obj)
         if holder_list:
-            message_writing(MessageHolder.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
+            message_writing(MessageHolder.format(name=hold.name), hold.id, moment["today"], Detail)
     if holder_list:
         try:
             Shareholder.objects.bulk_create(objs=holder_list)
@@ -247,7 +254,9 @@ def stock_holder_number():
     """
     持仓股东数量数据变化
     """
-    moment = etc_time()
+    moment = check_stoke_day()
+    if not moment:
+        return
     hold_list = SharesHold.objects.filter(is_delete=False)
     if not hold_list:
         logger.error("持仓股东数量数据 持仓 表数据为空.")
@@ -278,7 +287,7 @@ def stock_holder_number():
                 )
                 holder_list.append(obj)
         if holder_list:
-            message_writing(MessageHolderNumber.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
+            message_writing(MessageHolderNumber.format(name=hold.name), hold.id, moment["today"], Detail)
     if holder_list:
         try:
             ShareholderNumber.objects.bulk_create(objs=holder_list)
@@ -322,7 +331,7 @@ def stock_sector():
             )
             sector_list.append(obj)
         if sector_list:
-            message_writing(MessageSector.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
+            message_writing(MessageSector.format(name=hold.name), hold.id, moment["today"], Detail)
     if sector_list:
         try:
             StockSector.objects.bulk_create(objs=sector_list)
@@ -335,7 +344,9 @@ def stock_super():
     """
     龙虎榜数据
     """
-    moment = etc_time()
+    moment = check_stoke_day()
+    if not moment:
+        return
     holder = StockSuper.objects.filter(is_delete=False).order_by("-time").first()
     if holder:
         base_date_time = str(holder.time).split(" ")[0]
@@ -366,7 +377,7 @@ def stock_super():
         try:
             StockSuper.objects.bulk_create(objs=super_list)
             logger.info(f"龙虎榜 保存成功 ===>>> {len(super_list)}条")
-            message_writing(MessageDragon.format(name="龙虎榜"), "", "", moment["today"], Dragon)
+            message_writing(MessageDragon.format(name="龙虎榜"), "", moment["today"], Dragon)
         except Exception as error:
             logger.error(f"龙虎榜 保存失败 ===>>> {error}")
 
@@ -400,13 +411,54 @@ def stock_deal():
             )
             detail_list.append(obj)
         if detail_list:
-            message_writing(MessageDeal.format(name=hold.name), hold.user_id, hold.id, moment["today"], Detail)
+            message_writing(MessageDeal.format(name=hold.name), hold.id, moment["today"], Detail)
     if detail_list:
         try:
             StockDeal.objects.bulk_create(objs=detail_list)
             logger.info(f"成交明细 保存成功 ===>>> {len(detail_list)} 条")
         except Exception as error:
             logger.error(f"成交明细 保存失败 ===>>> {error}")
+            return
+
+
+def stock_kdj(start_date: str = "2022-06-24"):
+    """
+    股票kdj数据
+    """
+    moment = check_stoke_day()
+    if not moment:
+        return
+    hold_list = SharesHold.objects.filter(is_delete=False)
+    if not hold_list:
+        logger.error("kdj 持仓 表数据为空.")
+        return
+    kdj_list = list()
+    end_date = str(moment["today"])
+    for hold in hold_list:
+        df_data = compute_kdj(difference_stock(hold.code), start_date, end_date)
+        if df_data.empty:
+            logger.error(f"股票kdj数据 股票 {hold.name} 查询数据为空.")
+            continue
+        df_list = df_data.to_dict(orient="records")
+        for df in df_list:
+            date_time = f"{df['date']} 00:00:00"
+            kdj = StockKDJ.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id) & Q(time=date_time)).exists()
+            if kdj:
+                continue
+            obj = StockKDJ(
+                name=hold.name, k=df["K"], d=df["D"], j=df["J"], time=date_time, type=df["KDJ_金叉死叉"],
+                shares_hold_id=hold.id
+            )
+            kdj_list.append(obj)
+        if kdj_list:
+            cache.delete(TodayKDJChart.format(stock_id=hold.id))
+            message_writing(MessageKDJ.format(name=hold.name), hold.id, moment["today"], Chart)
+    if kdj_list:
+        try:
+            StockKDJ.objects.bulk_create(objs=kdj_list)
+            logger.info(f"股票kdj数据 保存成功 ===>>> {len(kdj_list)} 条")
+        except Exception as error:
+            logger.error(f"股票kdj数据 保存失败 ===>>> {error}")
             return
 
 
