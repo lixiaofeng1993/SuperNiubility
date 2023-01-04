@@ -11,7 +11,7 @@ import pandas as pd
 import talib as ta
 
 
-def compute_kdj_and_macd(stock_code: str, start_date: str, end_date: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+def compute_kdj_and_macd(stock_code: str, start_date: str, end_date: str) -> tuple:
     """
     KDJ:
      >> KDJ 的计算比较复杂，首先要计算周期（n 日、n 周等）的 RSV 值，即未成熟随机指标
