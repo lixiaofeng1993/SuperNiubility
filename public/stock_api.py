@@ -485,7 +485,7 @@ def stock_kdj_and_macd(start_date: str = "2022-06-24"):
             logger.info(f"股票MACD数据 保存成功 ===>>> {len(macd_list)} 条")
         except Exception as error:
             logger.error(f"股票MACD数据 保存失败 ===>>> {error}")
-        return
+            return
 
 
 if __name__ == '__main__':
