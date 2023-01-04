@@ -57,6 +57,8 @@ TodayCostPrice = "TodayCostPrice-{stock_id}"
 TodayTraNumber = "TodayTraNumber-{stock_id}"
 # kdj
 TodayKDJChart = "TodayKDJChart-{stock_id}"
+# MACD
+TodayMACDChart = "TodayMACDChart-{stock_id}"
 # 验证码缓存
 VerificationCode = "VerificationCode"
 # 每个邮箱十分钟只能发送一次
@@ -154,6 +156,7 @@ FOLLOW = "这世界怎么那么多人，蹉跎回首，已不再年轻。\n这�
 MessageBuySell = "【{name}】买入卖出托单数据更新"
 MessageToday = "【{name}】今日走势K线数据更新"
 MessageKDJ = "【{name}】今日KDJ数据更新"
+MessageMACD = "【{name}】今日MACD数据更新"
 MessageInflow = "【{name}】资金流入流出数据更新"
 MessageHolder = "【{name}】持仓股东数据更新"
 MessageHolderNumber = "【{name}】持仓股东数量数据更新"

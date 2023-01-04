@@ -5,7 +5,7 @@
 # 创建时间: 2022/11/28 0028 18:48
 # @Version：V 0.1
 # @desc :
-from nb.models import Shares, Shareholder, StockSector, StockSuper, StockKDJ
+from nb.models import Shares, Shareholder, StockSector, StockSuper, StockKDJ, StockMACD
 from public.views_com import *
 from public.compute_kdj import compute_kdj
 from public.log import logger
@@ -421,9 +421,9 @@ def stock_deal():
             return
 
 
-def stock_kdj(start_date: str = "2022-06-24"):
+def stock_kdj_and_macd(start_date: str = "2022-06-24"):
     """
-    股票kdj数据
+    股票kdj、MACD数据
     """
     moment = check_stoke_day()
     if not moment:
@@ -433,14 +433,17 @@ def stock_kdj(start_date: str = "2022-06-24"):
         logger.error("kdj 持仓 表数据为空.")
         return
     kdj_list = list()
+    macd_list = list()
     end_date = str(moment["today"])
     for hold in hold_list:
-        df_data = compute_kdj(difference_stock(hold.code), start_date, end_date)
-        if df_data.empty:
+        df_kdj, df_macd = compute_kdj(difference_stock(hold.code), start_date, end_date)
+        df_kdj = df_kdj.where(df_kdj.notnull(), "")
+        df_macd = df_macd.where(df_macd.notnull(), "")
+        if df_kdj.empty:
             logger.error(f"股票kdj数据 股票 {hold.name} 查询数据为空.")
             continue
-        df_list = df_data.to_dict(orient="records")
-        for df in df_list:
+        df_kdj_list = df_kdj.to_dict(orient="records")
+        for df in df_kdj_list:
             date_time = f"{df['date']} 00:00:00"
             kdj = StockKDJ.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id) & Q(time=date_time)).exists()
             if kdj:
@@ -453,13 +456,36 @@ def stock_kdj(start_date: str = "2022-06-24"):
         if kdj_list:
             cache.delete(TodayKDJChart.format(stock_id=hold.id))
             message_writing(MessageKDJ.format(name=hold.name), hold.id, moment["today"], Chart)
+        if df_macd.empty:
+            logger.error(f"股票MACD数据 股票 {hold.name} 查询数据为空.")
+            continue
+        df_macd_list = df_macd.to_dict(orient="records")
+        for df in df_macd_list:
+            date_time = f"{df['time']} 00:00:00"
+            kdj = StockMACD.objects.filter(Q(is_delete=False) & Q(shares_hold_id=hold.id) & Q(time=date_time)).exists()
+            if kdj:
+                continue
+            obj = StockMACD(
+                name=hold.name, dif=df["dif"], dea=df["dea"], macd=df["hist"], time=date_time, type=df["MACD_金叉死叉"],
+                shares_hold_id=hold.id
+            )
+            macd_list.append(obj)
+        if macd_list:
+            cache.delete(TodayMACDChart.format(stock_id=hold.id))
+            message_writing(MessageMACD.format(name=hold.name), hold.id, moment["today"], Chart)
     if kdj_list:
         try:
             StockKDJ.objects.bulk_create(objs=kdj_list)
             logger.info(f"股票kdj数据 保存成功 ===>>> {len(kdj_list)} 条")
         except Exception as error:
             logger.error(f"股票kdj数据 保存失败 ===>>> {error}")
-            return
+    if macd_list:
+        try:
+            StockMACD.objects.bulk_create(objs=macd_list)
+            logger.info(f"股票MACD数据 保存成功 ===>>> {len(macd_list)} 条")
+        except Exception as error:
+            logger.error(f"股票MACD数据 保存失败 ===>>> {error}")
+        return
 
 
 if __name__ == '__main__':

@@ -300,6 +300,32 @@ class StockKDJ(models.Model):
         self.save()
 
 
+class StockMACD(models.Model):
+    """
+    kdj数据
+    """
+    id = models.UUIDField(primary_key=True, max_length=32, default=uuid.uuid4, editable=False)
+    dif = models.FloatField(default=0.00, help_text="dif值")
+    dea = models.FloatField(default=0.00, help_text="dea值")
+    macd = models.FloatField(default=0.00, help_text="macd值")
+    time = models.DateTimeField("时间", null=True, help_text="时间")
+    name = models.CharField(max_length=20, null=False, help_text="股票名称")
+    type = models.CharField(max_length=20, null=False, help_text="金叉-死叉")
+
+    is_delete = models.BooleanField(default=False, help_text="是否删除")
+    update_date = models.DateTimeField("更新时间", auto_now=True, help_text="更新时间")
+    create_date = models.DateTimeField("保存时间", default=timezone.now)
+
+    shares_hold = models.ForeignKey(SharesHold, on_delete=models.CASCADE, default="", null=True, help_text="持仓股票ID")
+
+    class Meta:
+        db_table = "stock_macd"
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_delete = True
+        self.save()
+
+
 class Shareholder(models.Model):
     """
     股票十大股东信息

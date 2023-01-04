@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from dateutil.relativedelta import relativedelta
 
 from .tasks import stock_history, last_day_stock_history
-from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange, Poetry, StockKDJ
+from nb.models import ToDo, Shares, StockDetail, InflowStock, StockTodayPrice, StockChange, Poetry, StockKDJ, StockMACD
 from public.auth_token import auth_token
 from public.common import *
 from public.views_com import handle_deal_data
@@ -411,6 +411,55 @@ def kdj_chart(request):
             })
         logger.info("查询 KDJ数据 成功.")
         cache.set(TodayKDJChart.format(stock_id=stock_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
+
+
+@auth_token()
+def macd_chart(request):
+    """
+    MACD折线图
+    """
+    if request.method == POST:
+        datasets, user_id, stock_id = handle_cache(request, "macd")
+        if isinstance(datasets, dict):
+            return JsonResponse.OK(data=datasets)
+        dataset = dict()
+        for hold in datasets:
+            macd_list = StockMACD.objects.filter(Q(shares_hold_id=hold.id) & Q(is_delete=False)).order_by("time")
+            if not macd_list:
+                continue
+            macd_list = handle_model(list(macd_list))
+            labels = list()
+            dif_list = list()
+            dea_list = list()
+            m_list = list()
+            for macd in macd_list:
+                macd.time = macd.time.split(" ")[0]
+                if macd.type:
+                    label = macd.type + "-" + macd.time
+                else:
+                    label = macd.time
+                labels.append(label)
+                dif_list.append(round(macd.dif, 2))
+                dea_list.append(round(macd.dea, 2))
+                m_list.append(round(macd.macd, 2))
+            dataset.update({
+                "DIF": {
+                    "data": dif_list[-88:],
+                    "color": "white",
+                },
+                "DEA": {
+                    "data": dea_list[-88:],
+                    "color": "yellow",
+                },
+                "MACD": {
+                    "data": m_list[-88:],
+                    "color": "purple",
+                },
+                "labels": labels[-88:],
+            })
+        logger.info("查询 MACD数据 成功.")
+        cache.set(TodayMACDChart.format(stock_id=stock_id), dataset, surplus_second())
         return JsonResponse.OK(data=dataset)
 
 
