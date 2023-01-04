@@ -7,7 +7,7 @@
 # @desc :
 from nb.models import Shares, Shareholder, StockSector, StockSuper, StockKDJ, StockMACD
 from public.views_com import *
-from public.compute_kdj import compute_kdj
+from public.compute import compute_kdj_and_macd
 from public.log import logger
 
 
@@ -436,7 +436,7 @@ def stock_kdj_and_macd(start_date: str = "2022-06-24"):
     macd_list = list()
     end_date = str(moment["today"])
     for hold in hold_list:
-        df_kdj, df_macd = compute_kdj(difference_stock(hold.code), start_date, end_date)
+        df_kdj, df_macd = compute_kdj_and_macd(difference_stock(hold.code), start_date, end_date)
         df_kdj = df_kdj.where(df_kdj.notnull(), "")
         df_macd = df_macd.where(df_macd.notnull(), "")
         if df_kdj.empty:

@@ -8,6 +8,7 @@
 
 import json
 import time
+from typing import Dict, List, Union, Any, Optional
 from django.core.cache import cache
 from chinese_calendar import is_workday
 from random import choice, randint
@@ -18,7 +19,7 @@ from public.conf import *
 from public.log import logger
 
 
-def random_str():
+def random_str() -> str:
     """
     随机字符串
     """
@@ -29,7 +30,7 @@ def random_str():
     return salt
 
 
-def difference_stock(code: str):
+def difference_stock(code: str) -> str:
     """
     区分沪深市场
     """
@@ -41,7 +42,7 @@ def difference_stock(code: str):
         return f"sz.{code}"
 
 
-def delete_cache(user_id, stock_id):
+def delete_cache(user_id: Any, stock_id: Any) -> None:
     """
     清除redis缓存
     """
@@ -61,7 +62,7 @@ def delete_cache(user_id, stock_id):
     cache.delete(TodayCostPrice.format(stock_id=stock_id))
 
 
-def format_time(date_time: datetime):
+def format_time(date_time: datetime) -> str:
     """
     格式化时间天，小时，分钟，秒
     """
@@ -81,7 +82,7 @@ def format_time(date_time: datetime):
     return _time
 
 
-def etc_time():
+def etc_time() -> dict[str, Union[date, datetime, int]]:
     """
     日期字典
     """
@@ -108,7 +109,7 @@ def etc_time():
     return moment
 
 
-def surplus_second():
+def surplus_second() -> int:
     """
     当天剩余秒数
     """
@@ -119,7 +120,7 @@ def surplus_second():
     return end_second - now_second
 
 
-def check_stoke_day():
+def check_stoke_day() -> Optional[dict[str, Union[date, datetime, int]]]:
     """
     是否休市日
     """
@@ -131,7 +132,7 @@ def check_stoke_day():
     return moment
 
 
-def check_stoke_date():
+def check_stoke_date() -> Optional[dict[str, Union[date, datetime, int]]]:
     """
     是否开盘
     """
@@ -145,7 +146,7 @@ def check_stoke_date():
     return moment
 
 
-def handle_json(request):
+def handle_json(request) -> Optional[Any]:
     """
     转化js json传参为dict
     """
@@ -157,7 +158,10 @@ def handle_json(request):
         return
 
 
-def format_obj(obj: object):
+def format_obj(obj: object) -> object:
+    """
+    格式化对象
+    """
     if hasattr(obj, "end_time"):
         obj.end_time = str(obj.end_time).split(" ")[0]
     if hasattr(obj, "update_date"):
@@ -175,7 +179,10 @@ def format_obj(obj: object):
     return obj
 
 
-def format_dict(obj: dict):
+def format_dict(obj: Dict) -> Dict:
+    """
+    格式化字典
+    """
     if "end_time" in obj.keys():
         obj["end_time"] = str(obj["end_time"]).split(" ")[0]
     if "update_date" in obj.keys():
@@ -195,7 +202,7 @@ def format_dict(obj: dict):
     return obj
 
 
-def handle_model(model_obj):
+def handle_model(model_obj: Any) -> Union[object, list[Union[dict, object]]]:
     """
     数据库 时间字段 格式化
     """
@@ -213,7 +220,7 @@ def handle_model(model_obj):
     return model_obj
 
 
-def model_superuser(request, model):
+def model_superuser(request, model: Any) -> Any:
     """
     用户权限
     超级管理员可以看所有，普通用户只能看自己的数据
@@ -226,7 +233,7 @@ def model_superuser(request, model):
         return model.objects.filter(user_id=user_id)
 
 
-def request_get_search(request) -> dict:
+def request_get_search(request) -> Dict:
     """
     封装获取get请求公共参数
     :param request:
@@ -242,7 +249,7 @@ def request_get_search(request) -> dict:
     return info
 
 
-def handle_cache(request, flag: str):
+def handle_cache(request, flag: str) -> Union[tuple[Optional[Any], Any, Optional[Any]], tuple[Any, Any, Optional[Any]]]:
     """
     判断缓存和查询数据
     """
@@ -297,7 +304,7 @@ def handle_cache(request, flag: str):
     return hold_list, user_id, stock_id
 
 
-def handle_price(price):
+def handle_price(price: Union[int, float]) -> Union[str, float]:
     """
     数据加单位
     """
@@ -310,14 +317,14 @@ def handle_price(price):
     return price
 
 
-def handle_rate(rate):
+def handle_rate(rate: Union[int, float]) -> str:
     """
     数据加 %
     """
     return str(round(rate, 2)) + "%"
 
 
-def font_color(number):  # 字体颜色
+def font_color(number: int) -> str:  # 字体颜色
     """
     根据0判断展示字体颜色
     """
@@ -329,7 +336,7 @@ def font_color(number):  # 字体颜色
         return "#757575"
 
 
-def font_color_two(number, number1):  # 字体颜色
+def font_color_two(number: Union[int, float], number1: Union[int, float]) -> str:  # 字体颜色
     """
     两个数据比较判断字体颜色
     """
@@ -341,7 +348,7 @@ def font_color_two(number, number1):  # 字体颜色
         return "#757575"
 
 
-def pagination_data(paginator, page, is_paginated):
+def pagination_data(paginator, page, is_paginated: Any) -> Union[dict, dict[str, Union[list, bool]]]:
     """
     牛掰的分页
     :param paginator:

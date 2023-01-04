@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # _*_ coding: utf-8 _*_
 # 创 建 人: 李先生
-# 文 件 名: compute_kdj.py
+# 文 件 名: compute.py
 # 创建时间: 2023/1/3 0003 21:54
 # @Version：V 0.1
 # @desc :
@@ -11,7 +11,7 @@ import pandas as pd
 import talib as ta
 
 
-def compute_kdj(stock_code: str, start_date: str, end_date: str):
+def compute_kdj_and_macd(stock_code: str, start_date: str, end_date: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     KDJ:
      >> KDJ 的计算比较复杂，首先要计算周期（n 日、n 周等）的 RSV 值，即未成熟随机指标
@@ -91,8 +91,8 @@ def compute_kdj(stock_code: str, start_date: str, end_date: str):
     dif, dea, hist = ta.MACD(df_status['close'].astype(
         float).values, fastperiod=12, slowperiod=26, signalperiod=9)
     df_macd = pd.DataFrame({'dif': dif[33:], 'dea': dea[33:], 'hist': hist[33:]},
-                           index=df_status['date'][33:], columns=['dif', 'dea', 'hist'])
-    df_macd["time"] = df_status['date'][33:].values
+                           index=df_status['date'].iloc[33:], columns=['dif', 'dea', 'hist'])
+    df_macd["time"] = df_status['date'].iloc[33:].values
     # 寻找 MACD 金叉和死叉
     datenumber = int(df_macd.shape[0])
     for i in range(datenumber - 1):
@@ -141,6 +141,6 @@ if __name__ == '__main__':
     # code = "sh.601069"
     start_date = "2022-06-24"
     end_date = "2023-01-04"
-    df_kdj, df_macd = compute_kdj(code, start_date, end_date)
+    df_kdj, df_macd = compute_kdj_and_macd(code, start_date, end_date)
     df_kdj.to_csv(r"E:\projects\SuperNiubility\tools\2.csv", encoding="gbk")
     df_macd.to_csv(r"E:\projects\SuperNiubility\tools\3.csv", encoding="gbk")
