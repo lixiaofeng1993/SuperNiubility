@@ -348,7 +348,7 @@ def font_color_two(number: Union[int, float], number1: Union[int, float]) -> str
         return "#757575"
 
 
-def pagination_data(paginator, page, is_paginated: Any) -> Union[dict, dict[str, Union[list, bool]]]:
+def pagination_data(paginator, page, is_paginated: Any) -> Dict:
     """
     牛掰的分页
     :param paginator:
