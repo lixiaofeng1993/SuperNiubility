@@ -19,3 +19,4 @@ Faker~=15.3.3
 gunicorn==20.1.0
 gevent==22.10.2
 supervisor==4.1.0
+baostock==0.8.8

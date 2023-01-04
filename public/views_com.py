@@ -422,19 +422,33 @@ def handle_deal_data(stock_id: str, flag: bool = False):
     处理交易明细数据
     """
     moment = check_stoke_day()
-    if moment and moment["now"] <= moment["start_time"]:
-        return []
+    if moment:
+        if moment["now"] <= moment["start_time"]:
+            return []
+        else:
+            year = moment["year"]
+            month = moment["month"]
+            day = moment["day"]
+    else:
+        deal = StockDeal.objects.filter(Q(is_delete=False) &
+                                        Q(shares_hold_id=stock_id)).order_by("-time").first()
+        if not deal:
+            logger.error(f"交易明细数据查询为空.")
+            return []
+        date_time = deal.time.strftime("%Y-%m-%d").split("-")
+        year = date_time[0]
+        month = date_time[1]
+        day = date_time[2]
     start_number, end_number = 0, 10
     if flag:
         number = cache.get(f"{stock_id}-number")
         if number:
             start_number = number
             end_number = number + 10
-    else:
-        start_number = 0
-        end_number = 10
     deal_list = StockDeal.objects.filter(Q(is_delete=False) &
-                                         Q(shares_hold_id=stock_id)).order_by("-time")[:end_number + 1]
+                                         Q(shares_hold_id=stock_id) &
+                                         Q(time__year=year) & Q(time__month=month) &
+                                         Q(time__day=day)).order_by("-time")[:end_number + 1]
     deal_number = len(deal_list)
     for index, deal in enumerate(deal_list):
         setattr(deal, "color", "")
