@@ -9,7 +9,7 @@ import efinance as ef
 from django.contrib.admin.models import LogEntry, CHANGE, ADDITION, DELETION
 from django.contrib.admin.options import get_content_type_for_model
 
-from nb.models import Poetry, Message, StockDetail, InflowStock, ShareholderNumber, StockDeal
+from nb.models import *
 from public.send_ding import profit_and_loss, profit_and_loss_ratio, limit_up
 from public.recommend import recommend_handle
 from public.common import *
@@ -462,3 +462,21 @@ def handle_deal_data(stock_id: str, flag: bool = False):
             setattr(deal, "color", "green")
     cache.set(f"{stock_id}-number", end_number, surplus_second())
     return deal_list[start_number:end_number]
+
+
+def handle_index(stock_id: str) -> list:
+    """
+    KDJ、MACD、RSI指标
+    """
+    kdj = StockKDJ.objects.filter(Q(is_delete=False) &
+                                  Q(shares_hold_id=stock_id)).exclude(type="").order_by("-time").first()
+    kdj.time = kdj.time.strftime("%Y-%m-%d")
+    macd = StockMACD.objects.filter(Q(is_delete=False) &
+                                    Q(shares_hold_id=stock_id)).exclude(type="").order_by("-time").first()
+    macd.time = macd.time.strftime("%Y-%m-%d")
+    rsi = StockRSI.objects.filter(Q(is_delete=False) &
+                                  Q(shares_hold_id=stock_id)).exclude(type="").order_by("-time").first()
+    rsi.time = rsi.time.strftime("%Y-%m-%d")
+    index_list = ["KDJ：" + kdj.time + " 出现 " + kdj.type, "MACD：" + macd.time + " 出现 " + macd.type,
+                  "RSI：" + rsi.time + " 出现 " + rsi.type]
+    return index_list

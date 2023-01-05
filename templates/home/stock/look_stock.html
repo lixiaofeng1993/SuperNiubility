@@ -2,27 +2,6 @@
 
 {% block css %}
     <style>
-
-        /* 弹窗的位置和背景颜色 */
-        .modal {
-            display: none;
-            position: fixed; /* 绝对定位 */
-            z-index: 1; /* 元素置前 */
-            padding-top: 50px;
-            width: 100%;
-            height: 100%;
-            overflow: auto; /* 溢出出现滚动条 */
-        }
-
-        /* 弹窗图片的大小 */
-        .myContent {
-            margin: auto;
-            display: block;
-            min-height: 500px;
-            max-height: 600px;
-            background-color: #F3F6F9;
-        }
-
         #text {
             margin-left: 5%;
         }
@@ -108,6 +87,13 @@
                                         <span id="text">{{ text.tra }}</span>
                                     </div>
                                 {% endif %}
+                                {% for foo in index_list %}
+                                    <div class="input-group mb-3">
+                                        <span id="text"></span>
+                                        <span id="text" style="font-weight: 600;">{{ foo }}</span>
+                                    </div>
+                                {% endfor %}
+
                             </div>
                         {% endif %}
                         <div class="bg-light rounded h-100 p-4">

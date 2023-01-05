@@ -5,7 +5,6 @@ from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 # from django_pandas.io import read_frame
 
-from nb.models import *
 from nb.tasks import real_time_stock, stock_today_price
 from public.auth_token import auth_token
 from public.views_com import *
@@ -324,6 +323,8 @@ def stock_look(request, stock_id):
     buy_text, tra_text = forecast(stock_id)
     # 交易明细数据
     deal_list = handle_deal_data(stock_id)
+    # 指标
+    index_list = handle_index(stock_id)
     info.update({
         "detail": detail,
         "inflow": inflow,
@@ -334,6 +335,7 @@ def stock_look(request, stock_id):
         "dragon_obj": dragon_obj,
         "holder_number": number,
         "sector": sectors,
+        "index_list": index_list,
         "text": {
             "inflow": {
                 "text": text[0],
