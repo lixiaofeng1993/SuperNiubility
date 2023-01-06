@@ -197,10 +197,15 @@ def day_chart(request):
             for share in share_list:
                 labels.append(share.date_time)
                 data_list.append(share.new_price)
+            price_mean = round(sum(data_list) / len(data_list), 2)
+            mean_list = [price_mean] * len(data_list)
             dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
+                },
+                "均价": {
+                    "data": mean_list,
                 },
                 "labels": labels
             })
@@ -246,11 +251,16 @@ def five_chart(request):
                     labels.append(share.date_time)
                     data_list.append(share.new_price)
             data_list = list(reversed(data_list))
+            price_mean = round(sum(data_list) / len(data_list), 2)
+            mean_list = [price_mean] * len(data_list)
             labels = list(reversed(labels))
             dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
+                },
+                "均价": {
+                    "data": mean_list,
                 },
                 "labels": labels,
                 "days": len((set(day_list))) - 1
@@ -297,11 +307,16 @@ def ten_chart(request):
                     labels.append(share.date_time)
                     data_list.append(share.new_price)
             data_list = list(reversed(data_list))
+            price_mean = round(sum(data_list) / len(data_list), 2)
+            mean_list = [price_mean] * len(data_list)
             labels = list(reversed(labels))
             dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
+                },
+                "均价": {
+                    "data": mean_list,
                 },
                 "labels": labels,
                 "days": len((set(day_list))) - 1
@@ -348,11 +363,16 @@ def twenty_chart(request):
                     labels.append(share.date_time)
                     data_list.append(share.new_price)
             data_list = list(reversed(data_list))
+            price_mean = round(sum(data_list) / len(data_list), 2)
+            mean_list = [price_mean] * len(data_list)
             labels = list(reversed(labels))
             dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
+                },
+                "均价": {
+                    "data": mean_list,
                 },
                 "labels": labels,
                 "days": len((set(day_list))) - 1
@@ -362,6 +382,68 @@ def twenty_chart(request):
             cache.set(TwentyStockChart.format(stock_id=stock_id), dataset, surplus_second())
         else:
             cache.set(TwentyChart.format(user_id=user_id), dataset, surplus_second())
+        return JsonResponse.OK(data=dataset)
+
+
+@auth_token()
+def half_year_chart(request):
+    """
+    全部数据k线图
+    """
+    if request.method == POST:
+        datasets, user_id, stock_id = handle_cache(request, "year")
+        if isinstance(datasets, dict):
+            return JsonResponse.OK(data=datasets)
+        dataset = dict()
+        moment = etc_time()
+        diff = dict()
+        for hold in datasets:
+            share_list = Shares.objects.filter(
+                Q(shares_hold_id=hold.id) &
+                Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("date_time")
+            if not share_list:
+                continue
+            share_list = handle_model(list(share_list))
+            labels = list()
+            data_list = list()
+            day_list = list()
+            for share in share_list:
+                date_time = share.date_time
+                day_flag = date_time.split(" ")[0]
+                day_list.append(day_flag)
+                flag = date_time.split(":")[-1]
+                if flag in StockRule:
+                    labels.append(share.date_time)
+                    data_list.append(share.new_price)
+            number = diff.get("number")  # 多个股票，数据不一致的问题
+            days = diff.get("days")
+            if number and number <= len(labels):
+                pass
+            if days and days <= len(set(day_list)):
+                pass
+            else:
+                diff["number"] = len(labels)
+                diff["days"] = len(set(day_list))
+            number = diff.get("number")
+            days = diff.get("days")
+            price_mean = round(sum(data_list) / len(data_list), 2)
+            mean_list = [price_mean] * len(data_list)
+            dataset.update({
+                hold.name: {
+                    "data": data_list[-number:],
+                    "color": hold.color,
+                },
+                "均价": {
+                    "data": mean_list[-number:],
+                },
+                "labels": labels[-number:],
+                "days": days
+            })
+        logger.info("查询全部股票k线成功.")
+        if stock_id:
+            cache.set(YearStockChart.format(stock_id=stock_id), dataset, surplus_second())
+        else:
+            cache.set(YearChart.format(user_id=user_id), dataset, surplus_second())
         return JsonResponse.OK(data=dataset)
 
 
@@ -509,63 +591,6 @@ def rsi_chart(request):
             })
         logger.info("查询 RSI数据 成功.")
         cache.set(TodayRSIChart.format(stock_id=stock_id), dataset, surplus_second())
-        return JsonResponse.OK(data=dataset)
-
-
-@auth_token()
-def half_year_chart(request):
-    """
-    全部数据k线图
-    """
-    if request.method == POST:
-        datasets, user_id, stock_id = handle_cache(request, "year")
-        if isinstance(datasets, dict):
-            return JsonResponse.OK(data=datasets)
-        dataset = dict()
-        moment = etc_time()
-        diff = dict()
-        for hold in datasets:
-            share_list = Shares.objects.filter(
-                Q(shares_hold_id=hold.id) &
-                Q(is_delete=False)).exclude(date_time__contains=str(moment["today"])).order_by("date_time")
-            if not share_list:
-                continue
-            share_list = handle_model(list(share_list))
-            labels = list()
-            data_list = list()
-            day_list = list()
-            for share in share_list:
-                date_time = share.date_time
-                day_flag = date_time.split(" ")[0]
-                day_list.append(day_flag)
-                flag = date_time.split(":")[-1]
-                if flag in StockRule:
-                    labels.append(share.date_time)
-                    data_list.append(share.new_price)
-            number = diff.get("number")  # 多个股票，数据不一致的问题
-            days = diff.get("days")
-            if number and number <= len(labels):
-                pass
-            if days and days <= len(set(day_list)):
-                pass
-            else:
-                diff["number"] = len(labels)
-                diff["days"] = len(set(day_list))
-            number = diff.get("number")
-            days = diff.get("days")
-            dataset.update({
-                hold.name: {
-                    "data": data_list[-number:],
-                    "color": hold.color,
-                },
-                "labels": labels[-number:],
-                "days": days
-            })
-        logger.info("查询全部股票k线成功.")
-        if stock_id:
-            cache.set(YearStockChart.format(stock_id=stock_id), dataset, surplus_second())
-        else:
-            cache.set(YearChart.format(user_id=user_id), dataset, surplus_second())
         return JsonResponse.OK(data=dataset)
 
 
