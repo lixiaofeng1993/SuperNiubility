@@ -199,13 +199,14 @@ def day_chart(request):
                 data_list.append(share.new_price)
             price_mean = round(sum(data_list) / len(data_list), 2)
             mean_list = [price_mean] * len(data_list)
+            if stock_id:
+                dataset.update({"均价": {
+                    "data": mean_list,
+                }})
             dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
-                },
-                "均价": {
-                    "data": mean_list,
                 },
                 "labels": labels
             })
@@ -254,13 +255,14 @@ def five_chart(request):
             price_mean = round(sum(data_list) / len(data_list), 2)
             mean_list = [price_mean] * len(data_list)
             labels = list(reversed(labels))
+            if stock_id:
+                dataset.update({"均价": {
+                    "data": mean_list,
+                }})
             dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
-                },
-                "均价": {
-                    "data": mean_list,
                 },
                 "labels": labels,
                 "days": len((set(day_list))) - 1
@@ -310,13 +312,14 @@ def ten_chart(request):
             price_mean = round(sum(data_list) / len(data_list), 2)
             mean_list = [price_mean] * len(data_list)
             labels = list(reversed(labels))
+            if stock_id:
+                dataset.update({"均价": {
+                    "data": mean_list,
+                }})
             dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
-                },
-                "均价": {
-                    "data": mean_list,
                 },
                 "labels": labels,
                 "days": len((set(day_list))) - 1
@@ -366,13 +369,14 @@ def twenty_chart(request):
             price_mean = round(sum(data_list) / len(data_list), 2)
             mean_list = [price_mean] * len(data_list)
             labels = list(reversed(labels))
+            if stock_id:
+                dataset.update({"均价": {
+                    "data": mean_list,
+                }})
             dataset.update({
                 hold.name: {
                     "data": data_list,
                     "color": hold.color,
-                },
-                "均价": {
-                    "data": mean_list,
                 },
                 "labels": labels,
                 "days": len((set(day_list))) - 1
@@ -428,13 +432,14 @@ def half_year_chart(request):
             days = diff.get("days")
             price_mean = round(sum(data_list) / len(data_list), 2)
             mean_list = [price_mean] * len(data_list)
+            if stock_id:
+                dataset.update({"均价": {
+                    "data": mean_list,
+                }})
             dataset.update({
                 hold.name: {
                     "data": data_list[-number:],
                     "color": hold.color,
-                },
-                "均价": {
-                    "data": mean_list[-number:],
                 },
                 "labels": labels[-number:],
                 "days": days
